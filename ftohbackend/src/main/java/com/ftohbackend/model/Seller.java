@@ -2,5 +2,10 @@ package com.ftohbackend.model;
 
 public class Seller {
 
-	// helow team 
+	Integer sellerid;
+	String sellerfirstname;
+	String sellerlastname;
+	String sellerpassword;
+	String selleremail;
+	
 }
