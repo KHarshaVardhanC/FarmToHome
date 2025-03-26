@@ -28,5 +28,11 @@ public class Seller {
 	String sellerPassword;
 	@Column(nullable = false)
 	String sellerStatus;
+	public Integer getSellerId() {
+		return sellerId;
+	}
+	public void setSellerId(Integer sellerId) {
+		this.sellerId = sellerId;
+	}
 	
 }
