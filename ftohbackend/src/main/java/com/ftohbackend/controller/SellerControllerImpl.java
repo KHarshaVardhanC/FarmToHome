@@ -52,6 +52,15 @@ public class SellerControllerImpl implements SellerController {
 		
 		return modelMapper.map(sellerService.getSeller(sellerId), SellerDTO.class);
 	}
+	@Override
+	@GetMapping("")
+	public List<SellerDTO> getSeller() {
+		// TODO Auto-generated method stub
+		
+		return  sellerService.getSeller().stream().map(DTO -> modelMapper.map(DTO, SellerDTO.class))
+				.collect(Collectors.toList());
+	}
+	
 
 	@Override
 	@DeleteMapping("/{sellerId}")
@@ -74,14 +83,11 @@ public class SellerControllerImpl implements SellerController {
 		Seller seller=modelMapper.map(sellerdto, Seller.class);
 		return sellerService.updateSeller(sellerId, seller);
 	}
-
 	@Override
-	@GetMapping("")
-	public List<SellerDTO> getSeller() {
-		// TODO Auto-generated method stub
-		
-		return  sellerService.getSeller().stream().map(DTO -> modelMapper.map(DTO, SellerDTO.class))
-                .collect(Collectors.toList());
+	@PutMapping("/{sellerId}/{sellerStatus}")
+	public String updateSeller(@PathVariable Integer sellerId, @PathVariable String sellerStatus)
+	{
+		return sellerService.updateSeller(sellerId, sellerStatus);
 	}
 
 	

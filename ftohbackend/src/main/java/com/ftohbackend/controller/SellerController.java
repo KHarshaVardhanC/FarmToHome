@@ -18,5 +18,7 @@ public interface SellerController {
 
 	public String updateSeller(Integer sellerId, SellerDTO sellerdto);
 
+	public String updateSeller(Integer sellerId, String sellerStatus);
+
 }
 

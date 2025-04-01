@@ -18,5 +18,7 @@ public interface SellerService {
 	public String deleteSeller();
 	
 	public String updateSeller(Integer sellerId, Seller seller);
+
+	public String updateSeller(Integer sellerId, String sellerStatus);
 	
 }

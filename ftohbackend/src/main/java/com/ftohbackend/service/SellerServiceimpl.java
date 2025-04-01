@@ -58,9 +58,29 @@ public class SellerServiceimpl implements SellerService{
 		sl.setSellerMobileNumber(seller.getSellerMobileNumber());
 		sl.setSellerPassword(seller.getSellerPassword());
 		sl.setSellerStatus(seller.getSellerStatus());
-		
+		sellerRepository.save(sl);
 		return "Updated Seller Details Successfully";
 		 
+	}
+	
+	@Override
+	public String updateSeller(Integer sellerId,String sellerStatus)
+	{
+		Seller sl=sellerRepository.findById(sellerId).get();
+		sl.setSellerStatus(sellerStatus);
+		sellerRepository.save(sl);
+		if(sellerStatus.equals("Active"))
+		{
+			return "Seller Account is Activated Successfully";
+			
+		}
+		else if(sellerStatus.equals("Inactive"))
+		{
+			return "Seller Account is Activated Successfully";
+			
+		}
+		
+		return "Seller Account status Activated";
 	}
 
 	@Override
