@@ -1,7 +1,13 @@
 package com.ftohbackend.repository;
 
-public class sellerRepository {
-	
-	// seller repo
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.ftohbackend.model.Seller;
+
+@Repository
+public interface SellerRepository extends JpaRepository<Seller, Integer> {
+
+
 	
 }
