@@ -72,7 +72,7 @@ public class SellerServiceimpl implements SellerService{
 		if(sellerStatus.equals("Active"))
 		{
 			return "Seller Account is Activated Successfully";
-			
+			 
 		}
 		else if(sellerStatus.equals("Inactive"))
 		{

@@ -1,2 +1,11 @@
 *.properties
 *.class
+
+/.settings/
+/.project
+/.classpath
+/target/
+/bin/
+/*.iml
+/.idea/
+/.mvn/
