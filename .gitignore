@@ -9,3 +9,10 @@
 /*.iml
 /.idea/
 /.mvn/
+
+
+# Frontend (React + Vite)
+ftohfrontend/node_modules/
+ftohfrontend/dist/
+ftohfrontend/.env
+ftohfrontend/.DS_Store
