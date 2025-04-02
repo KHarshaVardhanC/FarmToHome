@@ -1,14 +1,14 @@
 *.properties
 *.class
 
-/.settings/
-/.project
-/.classpath
-/target/
-/bin/
-/*.iml
-/.idea/
-/.mvn/
+ftohbackend/.settings/
+ftohbackend/.project
+ftohbackend/.classpath
+ftohbackend/target/
+ftohbackend/bin/
+ftohbackend/*.iml
+ftohbackend/.idea/
+ftohbackend/.mvn/
 
 
 # Frontend (React + Vite)
