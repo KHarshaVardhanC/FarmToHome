@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +20,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/customer")
-public class CustomerControllerImpl 
-{
+public class CustomerControllerImpl implements CustomerController{
 	
 	@Autowired 
 	private ModelMapper modelmapper;
@@ -42,7 +40,7 @@ public class CustomerControllerImpl
 	}
 	
 	@GetMapping("/")
-	public List<Customer> getAllCustomer(){
+	public List<Customer> getAllCustomers(){
 		return customerservice.getCustomer();
 	}
 	
