@@ -72,7 +72,7 @@ public class SellerServiceimpl implements SellerService{
 		if(sellerStatus.equals("Active"))
 		{
 			return "Seller Account is Activated Successfully";
-			
+			 
 		}
 		else if(sellerStatus.equals("Inactive"))
 		{
@@ -90,5 +90,13 @@ public class SellerServiceimpl implements SellerService{
 		return sellerRepository.findAll();
 	}
 
+	@Override
+	public Seller authenticateSeller(String email, String password) {
+        Seller seller = sellerRepository.findBySellerEmail(email);
+        if (seller != null && seller.verifyPassword(password)) {
+            return seller;
+        }
+        return null;
+    }
 	
 }

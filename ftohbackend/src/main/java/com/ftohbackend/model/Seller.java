@@ -2,12 +2,12 @@ package com.ftohbackend.model;
 
 import java.util.Date;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Pattern;
 
 @Table(name="Seller")
 @Entity
@@ -53,7 +53,7 @@ public class Seller {
 		this.sellerCity = sellerCity;
 		this.sellerState = sellerState;
 		this.sellerPincode = sellerPincode;
-		this.sellerPassword = sellerPassword;
+		this.setSellerPassword(sellerPassword); 
 		this.sellerStatus = sellerStatus;
 	}
 	public Seller() {
@@ -96,8 +96,14 @@ public class Seller {
 		return sellerPassword;
 	}
 	public void setSellerPassword(String sellerPassword) {
-		this.sellerPassword = sellerPassword;
-	}
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        this.sellerPassword = passwordEncoder.encode(sellerPassword);
+    }
+    
+    public boolean verifyPassword(String rawPassword) {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        return passwordEncoder.matches(rawPassword, this.sellerPassword);
+    }
 	public String getSellerStatus() {
 		return sellerStatus;
 	}

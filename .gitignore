@@ -1,2 +1,18 @@
-*.properties
 *.class
+
+ftohbackend/.settings/
+ftohbackend/.project
+ftohbackend\.classpath
+ftohbackend/.classpath
+ftohbackend/target/
+ftohbackend/bin/
+ftohbackend/*.iml
+ftohbackend/.idea/
+ftohbackend/.mvn/
+
+
+# Frontend (React + Vite)
+ftohfrontend/node_modules/
+ftohfrontend/dist/
+ftohfrontend/.env
+ftohfrontend/.DS_Store

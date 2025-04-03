@@ -2,6 +2,9 @@ package com.ftohbackend.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+
+import com.ftohbackend.controller.SellerControllerImpl.LoginRequest;
 import com.ftohbackend.dto.SellerDTO;
 
 public interface SellerController {
@@ -19,6 +22,8 @@ public interface SellerController {
 	public String updateSeller(Integer sellerId, SellerDTO sellerdto);
 
 	public String updateSeller(Integer sellerId, String sellerStatus);
+
+	public ResponseEntity<?> loginSeller(LoginRequest loginRequest);
 
 }
 
