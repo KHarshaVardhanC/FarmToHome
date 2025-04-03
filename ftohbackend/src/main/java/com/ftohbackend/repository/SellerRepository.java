@@ -7,7 +7,7 @@ import com.ftohbackend.model.Seller;
 
 @Repository
 public interface SellerRepository extends JpaRepository<Seller, Integer> {
-
+	Seller findBySellerEmail(String sellerEmail);
 
 	
 }

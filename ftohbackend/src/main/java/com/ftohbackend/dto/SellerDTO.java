@@ -21,7 +21,8 @@ public class SellerDTO {
 	String sellerState;
 	@Pattern(regexp = "^[0-9]{6,6}$", message = "Pincode must be 6 digits")
 	String sellerPincode;
-	String sellerPassword;
+	
+	String sellerPassword; 
 	String sellerStatus;
 	
 	public SellerDTO(Integer sellerId, String sellerEmail, String sellerFirstName, String sellerLastName, Date sellerDOB,
@@ -119,10 +120,4 @@ public class SellerDTO {
 				+ ", sellerPincode=" + sellerPincode + ", sellerPassword=" + sellerPassword + ", sellerStatus="
 				+ sellerStatus + "]";
 	}
-	
-	
-	
-	
-	
-	
 }
