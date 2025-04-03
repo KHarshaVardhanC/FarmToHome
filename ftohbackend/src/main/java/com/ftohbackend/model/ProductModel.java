@@ -4,101 +4,125 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name="AllProduct")
-public class allProductModel {
+@Table(name = "product")
+public class ProductModel {
 
-	@Id
-	@Column(name="product_id")
-	Integer product_id;
+    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "productid")
+    Integer productid;
 
-	@Column(name="seller_id")
-	String seller_id;
+    @Column(name = "sellerid")
+    String sellerid;
 
-	@Column(name="product_price")
-	Double product_price;
+    @NotNull(message = "Product price cannot be null")
+    @Positive(message = "Product price must be positive")
+    @Column(name = "productprice")
+    Double productprice;
 
-	@Column(name="product_name")
-	String product_name;
+    @NotBlank(message = "Product name cannot be blank")
+    @Size(max = 100, message = "Product name cannot exceed 100 characters")
+    @Column(name = "productname")
+    String productname;
 
-	@Column(name="product_quantity")
-	Double product_quantity;
+    @NotNull(message = "Product quantity cannot be null")
+    @PositiveOrZero(message = "Product quantity must be zero or positive")
+    @Column(name = "productquantity")
+    Double productquantity;
 
-	@Column(name="product_location")
-	String product_location;
+    @NotBlank(message = "Seller area cannot be blank")
+    @Column(name = "sellerarea")
+    String sellerarea;
 
-	public Integer getProduct_id() {
-		return product_id;
-	}
+    @NotBlank(message = "Seller place cannot be blank")
+    @Column(name = "sellerplace")
+    String sellerplace;
 
-	public void setProduct_id(Integer product_id) {
-		this.product_id = product_id;
-	}
+    // Constructors
+    public ProductModel() {
+        super();
+    }
 
-	public String getSeller_id() {
-		return seller_id;
-	}
+    public ProductModel(Integer productid, String sellerid, Double productprice, String productname,
+                        Double productquantity, String sellerarea, String sellerplace) {
+        super();
+        this.productid = productid;
+        this.sellerid = sellerid;
+        this.productprice = productprice;
+        this.productname = productname;
+        this.productquantity = productquantity;
+        this.sellerarea = sellerarea;
+        this.sellerplace = sellerplace;
+    }
 
-	public void setSeller_id(String seller_id) {
-		this.seller_id = seller_id;
-	}
+    // Getters and Setters
+    public Integer getproductid() {
+        return productid;
+    }
 
-	public Double getProduct_price() {
-		return product_price;
-	}
+    public void setproductid(Integer productid) {
+        this.productid = productid;
+    }
 
-	public void setProduct_price(Double product_price) {
-		this.product_price = product_price;
-	}
+    public String getsellerid() {
+        return sellerid;
+    }
 
-	public String getProduct_name() {
-		return product_name;
-	}
+    public void setsellerid(String sellerid) {
+        this.sellerid = sellerid;
+    }
 
-	public void setProduct_name(String product_name) {
-		this.product_name = product_name;
-	}
+    public Double getproductprice() {
+        return productprice;
+    }
 
-	public Double getProduct_quantity() {
-		return product_quantity;
-	}
+    public void setproductprice(Double productprice) {
+        this.productprice = productprice;
+    }
 
-	public void setProduct_quantity(Double product_quantity) {
-		this.product_quantity = product_quantity;
-	}
+    public String getproductname() {
+        return productname;
+    }
 
-	public String getProduct_location() {
-		return product_location;
-	}
+    public void setproductname(String productname) {
+        this.productname = productname;
+    }
 
-	public void setProduct_location(String product_location) {
-		this.product_location = product_location;
-	}
+    public Double getproductquantity() {
+        return productquantity;
+    }
 
-	public allProductModel(Integer product_id, String seller_id, Double product_price, String product_name,
-			Double product_quantity, String product_location) {
-		super();
-		this.product_id = product_id;
-		this.seller_id = seller_id;
-		this.product_price = product_price;
-		this.product_name = product_name;
-		this.product_quantity = product_quantity;
-		this.product_location = product_location;
-	}
+    public void setproductquantity(Double productquantity) {
+        this.productquantity = productquantity;
+    }
 
-	public allProductModel() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+    public String getsellerarea() {
+        return sellerarea;
+    }
 
-	@Override
-	public String toString() {
-		return "allProductModel [product_id=" + product_id + ", seller_id=" + seller_id + ", product_price="
-				+ product_price + ", product_name=" + product_name + ", product_quantity=" + product_quantity
-				+ ", product_location=" + product_location + "]";
-	}
+    public void setsellerarea(String sellerarea) {
+        this.sellerarea = sellerarea;
+    }
 
+    public String getsellerplace() {
+        return sellerplace;
+    }
 
+    public void setsellerplace(String sellerplace) {
+        this.sellerplace = sellerplace;
+    }
 
+    @Override
+    public String toString() {
+        return "ProductModel [productid=" + productid + ", sellerid=" + sellerid + ", productprice="
+                + productprice + ", productname=" + productname + ", productquantity=" + productquantity
+                + ", sellerarea=" + sellerarea + ", sellerplace=" + sellerplace + "]";
+    }
 }

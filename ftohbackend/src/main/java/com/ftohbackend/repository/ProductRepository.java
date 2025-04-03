@@ -1,13 +1,13 @@
 package com.ftohbackend.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import com.ftohbackend.model.allProductModel;
+import com.ftohbackend.model.ProductModel;
 
 
+@Repository
+public interface ProductRepository extends JpaRepository<ProductModel,Integer>{
 
-public interface allProductRepository extends JpaRepository<allProductModel,Integer>{
-
-	public allProductModel getProductByTitle(String name);
 
 }

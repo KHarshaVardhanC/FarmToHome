@@ -5,38 +5,67 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ftohbackend.model.allProductModel;
-import com.ftohbackend.repository.allProductRepository;
+import com.ftohbackend.model.ProductModel;
+import com.ftohbackend.repository.ProductRepository;
 
 import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
-public class allProductService {
+public class ProductServiceImpl implements ProductService{
 
 	@Autowired
-	allProductRepository allProductRepo;
+	ProductRepository ProductRepo;
 
-	public String addProduct(allProductModel product) {
-		allProductRepo.save(product);
+	@Override
+	public String addProduct(ProductModel product) {
+		ProductRepo.save(product);
 		return("Added product");
 	}
 
-	public List<allProductModel> getAllProduct(){
-		return allProductRepo.findAll();
+	@Override
+	public List<ProductModel> getAllProduct(){
+		return ProductRepo.findAll();
 	}
 
-	public allProductModel getProductByTitle(String name) {
-		List<allProductModel> allProducts=allProductRepo.findAll();
-		allProductModel pro=new allProductModel();
-		for(allProductModel prod: allProducts) {
-			if(prod.getProduct_name().equalsIgnoreCase(name)) {
+	@Override
+	public ProductModel getProductByTitle(String name) {
+		List<ProductModel> allProducts=ProductRepo.findAll();
+		ProductModel pro=new ProductModel();
+		for(ProductModel prod: allProducts) {
+			if(prod.getproductname().equalsIgnoreCase(name)) {
 				return prod;
 			}
 
 		}
 		return null;
 	}
+	@Override
+	public String updateProduct(Integer productId, ProductModel updatedDetails) {
+        ProductModel product = ProductRepo.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
+
+        if (updatedDetails.getproductprice() != null) {
+			product.setproductprice(updatedDetails.getproductprice());
+		}
+        if (updatedDetails.getproductname() != null) {
+			product.setproductname(updatedDetails.getproductname());
+		}
+        if (updatedDetails.getproductquantity() != null) {
+			product.setproductquantity(updatedDetails.getproductquantity());
+		}
+
+
+        ProductRepo.save(product);
+        return "Product updated successfully";
+    }
+
+	@Override
+	public String deleteProduct(Integer productId) {
+		ProductRepo.deleteById(productId);
+		return "Product is deleted";
+	}
+
 
 
 
