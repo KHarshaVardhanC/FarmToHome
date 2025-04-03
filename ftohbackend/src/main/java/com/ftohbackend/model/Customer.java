@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
 public class Customer {
 	
 	@Id
-	private Integer customer_id;
+	private Integer customerid;
 	
 	@Column(nullable=false)
 	private String firstname;
@@ -34,10 +34,10 @@ public class Customer {
         )
 	private String phonenumber;
     private Boolean isActive;
-	public Customer(Integer customer_id, String firstname, String lastname, String email, String password,
+	public Customer(Integer customerid, String firstname, String lastname, String email, String password,
 			String location, @Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid phone number format") String phonenumber, Boolean isActive) {
 		super();
-		this.customer_id = customer_id;
+		this.customerid = customerid;
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.email = email;
@@ -46,11 +46,11 @@ public class Customer {
 		this.phonenumber=phonenumber;
 		this.isActive=isActive;
 	}
-	public Integer getCustomer_id() {
-		return customer_id;
+	public Integer getCustomerid() {
+		return customerid;
 	}
-	public void setCustomer_id(Integer customer_id) {
-		this.customer_id = customer_id;
+	public void setCustomer_id(Integer customerid) {
+		this.customerid = customerid;
 	}
 	public String getFirstname() {
 		return firstname;
@@ -95,7 +95,7 @@ public class Customer {
 	}
 	@Override
 	public String toString() {
-		return "Customer [customer_id=" + customer_id + ", firstname=" + firstname + ", lastname=" + lastname
+		return "Customer [customerid=" + customerid + ", firstname=" + firstname + ", lastname=" + lastname
 				+ ", email=" + email + ", password=" + password + ", location=" + location + "]";
 	}
 

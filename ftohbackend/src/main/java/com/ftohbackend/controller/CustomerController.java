@@ -12,9 +12,7 @@ public String addCustomer(CustomerDTO customer);
 	
 	public List<Customer> getCustomer();
 	
-	public String deleteCustomer(Integer customerId);
-	
-	public String deleteCustomer();
+
 	
 	public String updateCustomer(Integer customerId, Customer customer);
 }

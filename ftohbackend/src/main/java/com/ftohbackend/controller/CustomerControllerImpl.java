@@ -26,7 +26,7 @@ public class CustomerControllerImpl
 {
 	
 	@Autowired 
-	ModelMapper modelmapper;
+	private ModelMapper modelmapper;
 	
 	@Autowired
 	private CustomerService customerservice;
@@ -43,22 +43,23 @@ public class CustomerControllerImpl
 	}
 	
 	@GetMapping("/")
-	public List<Customer> getCustomer(){
+	public List<Customer> getAllCustomer(){
 		return customerservice.getCustomer();
 	}
 	
-	@DeleteMapping("/{customerId}")
+	/*@DeleteMapping("/{customerId}")
 	public String deleteCustomer(@PathVariable Integer customerId) {
 		return customerservice.deleteCustomer(customerId);
 	}
 	
 	@DeleteMapping("/")
-	public String deleteCustomer() {
+	public String deleteAllCustomer() {
 		return customerservice.deleteCustomer();
 	}
+	*/
 	
 	@PutMapping("/{customerId}")
-	public String updateCustomer(@PathVariable Integer customerId, @RequestBody CustomerDTO customerdto) {
+	public String updateCustomer(@PathVariable Integer customerId,@Valid @RequestBody CustomerDTO customerdto) {
 		Customer customer=modelmapper.map(customerdto, Customer.class);
 		return customerservice.updateCustomer(customerId, customer);
 	}
