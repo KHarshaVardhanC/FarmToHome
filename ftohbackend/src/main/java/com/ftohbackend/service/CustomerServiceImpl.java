@@ -8,7 +8,7 @@ import com.ftohbackend.model.Customer;
 import com.ftohbackend.repository.customerRepository;
 
 @Service
-public class CustomerServiceImpl {
+public class CustomerServiceImpl implements CustomerService {
 	customerRepository customerrepository;
 	public String addCustomer(Customer customer) {
 		customerrepository.save(customer);

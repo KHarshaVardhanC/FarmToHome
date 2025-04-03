@@ -6,13 +6,13 @@ import com.ftohbackend.dto.CustomerDTO;
 import com.ftohbackend.model.Customer;
 
 public interface CustomerController {
-public String addCustomer(CustomerDTO customer);
+    public String addCustomer(CustomerDTO customer);
 	
 	public Customer getCustomer(Integer customerId);
 	
-	public List<Customer> getCustomer();
+	public List<Customer> getAllCustomers();
 	
 
 	
-	public String updateCustomer(Integer customerId, Customer customer);
+	public String updateCustomer(Integer customerId, CustomerDTO customerDTO);
 }
