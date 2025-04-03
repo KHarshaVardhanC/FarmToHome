@@ -20,5 +20,7 @@ public interface SellerService {
 	public String updateSeller(Integer sellerId, Seller seller);
 
 	public String updateSeller(Integer sellerId, String sellerStatus);
+
+	Seller authenticateSeller(String email, String password);
 	
 }

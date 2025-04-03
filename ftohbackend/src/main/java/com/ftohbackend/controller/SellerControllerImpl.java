@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -89,6 +90,63 @@ public class SellerControllerImpl implements SellerController {
 	{
 		return sellerService.updateSeller(sellerId, sellerStatus);
 	}
-
+	
+	
+	@Override
+	@PostMapping("/login")
+    public ResponseEntity<?> loginSeller(@RequestBody LoginRequest loginRequest) {
+        Seller seller = sellerService.authenticateSeller(
+            loginRequest.getEmail(), 
+            loginRequest.getPassword()
+        );
+        
+        if (seller != null) {
+            // Create and return a response with seller data (excluding password)
+            return ResponseEntity.ok(new SellerResponse(
+                seller.getSellerId(),
+                seller.getSellerEmail(),
+                seller.getSellerFirstName(),
+                seller.getSellerLastName()
+                // ... other fields you want to return ...
+            ));
+        } else {
+            return ResponseEntity.status(401).body("Invalid email or password");
+        }
+    }
+    
+    // Inner class for login request
+    public static class LoginRequest {
+        private String email;
+        private String password;
+        
+        // Getters and setters
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
+    
+    // Inner class for seller response (without sensitive data)
+    public static class SellerResponse {
+        private Integer sellerId;
+        private String sellerEmail;
+        private String sellerFirstName;
+        private String sellerLastName;
+        // ... other non-sensitive fields ...
+        
+        public SellerResponse(Integer sellerId, String sellerEmail, 
+                            String sellerFirstName, String sellerLastName) {
+            this.sellerId = sellerId;
+            this.sellerEmail = sellerEmail;
+            this.sellerFirstName = sellerFirstName;
+            this.sellerLastName = sellerLastName;
+        }
+        
+        // Getters
+        public Integer getSellerId() { return sellerId; }
+        public String getSellerEmail() { return sellerEmail; }
+        public String getSellerFirstName() { return sellerFirstName; }
+        public String getSellerLastName() { return sellerLastName; }
+    }
 	
 }

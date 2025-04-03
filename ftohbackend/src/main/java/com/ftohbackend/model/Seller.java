@@ -2,6 +2,8 @@ package com.ftohbackend.model;
 
 import java.util.Date;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
