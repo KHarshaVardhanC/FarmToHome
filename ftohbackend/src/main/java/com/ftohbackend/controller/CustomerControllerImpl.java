@@ -28,7 +28,7 @@ public class CustomerControllerImpl
 	@Autowired 
 	private ModelMapper modelmapper;
 	
-	@Autowired
+	@Autowired(required=true)
 	private CustomerService customerservice;
 	
 	@PostMapping("/")
