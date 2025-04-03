@@ -21,6 +21,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/customer")
+
 public class CustomerControllerImpl 
 {
 	
@@ -28,7 +29,7 @@ public class CustomerControllerImpl
 	ModelMapper modelmapper;
 	
 	@Autowired
-	CustomerService customerservice;
+	private CustomerService customerservice;
 	
 	@PostMapping("/")
     public String addCustomer(@Valid @RequestBody CustomerDTO customerdto) {

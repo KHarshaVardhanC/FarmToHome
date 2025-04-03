@@ -3,6 +3,8 @@ package com.ftohbackend.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -27,6 +29,10 @@ public class allProductModel {
 
 	@Column(name="product_location")
 	String product_location;
+	
+	 @ManyToOne
+	    @JoinColumn(name = "seller", referencedColumnName = "sellerId")
+	    private Seller seller;
 
 	public Integer getProduct_id() {
 		return product_id;

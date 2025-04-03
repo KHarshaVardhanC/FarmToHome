@@ -1,16 +1,19 @@
 package com.ftohbackend.repository;
-import com.ftohbackend.model.AllOrders;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.ftohbackend.model.AllOrders;
+import com.ftohbackend.model.Customer;
+import com.ftohbackend.model.Seller;
 
-@Repository
 public interface AllOrdersRepository extends JpaRepository<AllOrders, Integer> {
     
-    // Custom query method to find orders by customer ID
-    List<AllOrders> findByCustomerCustomerId(Integer customerId);
+    List<AllOrders> findByCustomer(Customer customer_id);
     
-    // Custom query method to find orders by seller ID
-    List<AllOrders> findByProductSellerSellerId(Integer sellerId);
+    List<AllOrders> findByProduct_Seller(Seller sellerId);
+
 }
+
+

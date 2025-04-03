@@ -15,7 +15,7 @@ public class AllOrders {
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
-    private AllProduct product;
+    private allProductModel product;
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
