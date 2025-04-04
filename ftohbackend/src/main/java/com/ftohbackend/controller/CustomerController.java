@@ -11,7 +11,7 @@ import com.ftohbackend.dto.CustomerDTO;
 import jakarta.validation.Valid;
 
 public interface CustomerController {
-    public String addCustomer(@Valid CustomerDTO customer);
+    public ResponseEntity<String> addCustomer(@Valid CustomerDTO customer);
 	
 	public ResponseEntity<CustomerDTO>  getCustomer(Integer customerId);
 	
@@ -19,5 +19,5 @@ public interface CustomerController {
 	
 
 	
-	public String updateCustomer(Integer customerId,@Valid CustomerDTO customerDTO);
+	public ResponseEntity<String> updateCustomer(Integer customerId,@Valid CustomerDTO customerDTO);
 }

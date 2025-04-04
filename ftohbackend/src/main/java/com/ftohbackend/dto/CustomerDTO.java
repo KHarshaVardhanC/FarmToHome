@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class CustomerDTO {
+	
+	
 	Integer customerId;
 
 	@NotNull(message = "First name cannot be null")
@@ -26,6 +28,10 @@ public class CustomerDTO {
 	@Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid phone number format")
 	String customerPhoneNumber;
 	Boolean customerIsActive;
+	
+	public CustomerDTO() {
+		super();
+	}
 	public CustomerDTO(Integer customerId,  String customerFirstName,
 			 String customerLastName,
 			 String customerEmail,

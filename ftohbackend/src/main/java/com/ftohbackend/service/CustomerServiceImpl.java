@@ -32,39 +32,39 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 	
 	@Transactional
-	public String updateCustomer(Integer customerId, Customer customer) {
-//		if (customerrepository.existsById(customerId)) {
-//	        Customer existingCustomer = customerrepository.findById(customerId).get();
-//
-//	        // Update only non-null fields
-//	        if (customer.Firstname() != null) {
-//	            existingCustomer.setFirstname(customer.getFirstname());
-//	        }
-//	        if (customer.getLastname() != null) {
-//	            existingCustomer.setLastname(customer.getLastname());
-//	        }
-//	        if (customer.getEmail() != null) {
-//	            existingCustomer.setEmail(customer.getEmail());
-//	        }
-//	        if (customer.getPassword() != null) {
-//	            existingCustomer.setPassword(customer.getPassword());
-//	        }
-//	        if (customer.getLocation() != null) {
-//	            existingCustomer.setLocation(customer.getLocation());
-//	        }	
-//	        if (customer.getPhonenumber() != null) {
-//	            existingCustomer.setPhonenumber(customer.getPhonenumber());
-//	        }
-//	        if (customer.getIsActive() != null) {
-//	            existingCustomer.setIsActive(customer.getIsActive());
-//	        }
-//
-//	        customerrepository.save(existingCustomer);
-//	        return "Customer updated successfully";
-//	    } else {
-//	    }
-	return "Customer not found";
-	}
+	  public String updateCustomer(Integer customerId, Customer customer) {
+        if (customerrepository.existsById(customerId)) {
+            Customer existingCustomer = customerrepository.findById(customerId).get();
+
+            // Update only non-null fields
+            if (customer.getCustomerFirstName() != null) {
+                existingCustomer.setCustomerFirstName(customer.getCustomerFirstName());
+            }
+            if (customer.getCustomerLastName() != null) {
+                existingCustomer.setCustomerLastName(customer.getCustomerLastName());
+            }
+            if (customer.getCustomerEmail() != null) {
+                existingCustomer.setCustomerEmail(customer.getCustomerEmail());
+            }
+            if (customer.getCustomerPassword() != null) {
+                existingCustomer.setCustomerPassword(customer.getCustomerPassword());
+            }
+            if (customer.getCustomerLocation() != null) {
+                existingCustomer.setCustomerLocation(customer.getCustomerLocation());
+            }
+            if (customer.getCustomerPhoneNumber() != null) {
+                existingCustomer.setCustomerPhoneNumber(customer.getCustomerPhoneNumber());
+            }
+            if (customer.getCustomerIsActive() != null) {
+                existingCustomer.setCustomerIsActive(customer.getCustomerIsActive());
+            }
+
+            customerrepository.save(existingCustomer);
+            return "Customer updated successfully";
+        } else {
+            return "Customer not found";
+        }
+    }
 }
 
 

@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,11 +34,13 @@ public class CustomerControllerImpl implements CustomerController{
 	private CustomerService customerservice;
 	
 	@PostMapping("")
-    public String addCustomer(@Valid @RequestBody CustomerDTO customerdto) {
-		Customer customer=modelmapper.map(customerdto, Customer.class);
-		return customerservice.addCustomer(customer);
-    }
-	
+	public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerdto) {
+	    Customer customer = modelmapper.map(customerdto, Customer.class);
+	    String result = customerservice.addCustomer(customer);
+
+	    return ResponseEntity.status(HttpStatus.CREATED).body(result);
+	}
+
 	@GetMapping("/{customerId}")
 	public ResponseEntity<CustomerDTO> getCustomer(@PathVariable Integer customerId) {
 	    Customer customer = customerservice.getCustomer(customerId);
@@ -66,9 +69,14 @@ public class CustomerControllerImpl implements CustomerController{
 	*/
 	
 	@PutMapping("/{customerId}")
-	public String updateCustomer(@PathVariable Integer customerId,@Valid @RequestBody CustomerDTO customerdto) {
-		Customer customer=modelmapper.map(customerdto, Customer.class);
-		return customerservice.updateCustomer(customerId, customer);
-	}
+    public ResponseEntity<String> updateCustomer(@PathVariable Integer customerId, @RequestBody CustomerDTO customerDTO) {
+        // Convert DTO to Entity using ModelMapper
+        Customer customer = modelmapper.map(customerDTO, Customer.class);
+
+        // Pass the entity to the service
+        String response = customerservice.updateCustomer(customerId, customer);
+
+        return ResponseEntity.ok(response);
+    }
 }
 
