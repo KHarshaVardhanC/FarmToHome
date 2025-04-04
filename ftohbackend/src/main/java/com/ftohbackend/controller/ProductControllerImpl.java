@@ -1,5 +1,8 @@
 package com.ftohbackend.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,6 +49,14 @@ public class ProductControllerImpl {
 	public String deleteProduct(@PathVariable Integer productid){
 		return prodservice.deleteProduct(productid);
 	}
+	
+	@GetMapping("/product/seller/{sellerid}")
+    public List<ProductDto> getProductsBySellerId(@PathVariable Integer sellerid) {
+        return prodservice.getAllProductBySellerId(sellerid)
+                .stream()
+                .map(product -> modelMapper.map(product, ProductDto.class))
+                .collect(Collectors.toList());
+    }
 
 
 
