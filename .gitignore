@@ -13,8 +13,8 @@ ftohbackend/.mvn/
 
 
 # Frontend (React + Vite)
-ftohfrontend/node_modules/
-ftohfrontend/dist/
-ftohfrontend/.env
-ftohfrontend/.DS_Store
+villagecartfrontend/node_modules/
+villagecartfrontend/dist/
+villagecartfrontend/.env
+villagecartfrontend/.DS_Store
 .qodo
