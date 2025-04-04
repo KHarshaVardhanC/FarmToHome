@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.ftohbackend.model.ProductModel;
 import com.ftohbackend.repository.ProductRepository;
+import com.ftohbackend.repository.SellerRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -16,6 +17,10 @@ public class ProductServiceImpl implements ProductService{
 
 	@Autowired
 	ProductRepository ProductRepo;
+	
+	@Autowired
+	SellerRepository sellerRepository;
+
 
 	@Override
 	public String addProduct(ProductModel product) {
@@ -27,7 +32,13 @@ public class ProductServiceImpl implements ProductService{
 	public List<ProductModel> getAllProduct(){
 		return ProductRepo.findAll();
 	}
-
+	
+	public List<ProductModel> getAllProductBySellerId(Integer sellerid){
+		return ProductRepo.findAll().stream()
+	            .filter(product -> product.getSeller().getSellerId().equals(sellerid))
+	            .toList(); 
+	}
+	
 	@Override
 	public ProductModel getProductByTitle(String name) {
 		List<ProductModel> allProducts=ProductRepo.findAll();
@@ -65,6 +76,8 @@ public class ProductServiceImpl implements ProductService{
 		ProductRepo.deleteById(productId);
 		return "Product is deleted";
 	}
+	
+
 
 
 
