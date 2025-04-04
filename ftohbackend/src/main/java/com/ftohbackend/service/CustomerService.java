@@ -10,11 +10,8 @@ public interface CustomerService {
 	
 	public Customer getCustomer(Integer customerId);
 	
-	public List<Customer> getCustomer();
+	public List<Customer> getAllCustomers();
 	
-	public String deleteCustomer(Integer customerId);
-	
-	public String deleteCustomer();
 	
 	public String updateCustomer(Integer customerId, Customer customer);
 }

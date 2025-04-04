@@ -1,9 +1,12 @@
 package com.ftohbackend.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,30 +23,37 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/customer")
+@Validated
 public class CustomerControllerImpl implements CustomerController{
 	
 	@Autowired 
 	private ModelMapper modelmapper;
 	
-	@Autowired(required=true)
+	@Autowired
 	private CustomerService customerservice;
 	
-	@PostMapping("/")
+	@PostMapping("")
     public String addCustomer(@Valid @RequestBody CustomerDTO customerdto) {
 		Customer customer=modelmapper.map(customerdto, Customer.class);
 		return customerservice.addCustomer(customer);
     }
 	
 	@GetMapping("/{customerId}")
-	public Customer getCustomer(@PathVariable Integer customerId) {
-		return customerservice.getCustomer(customerId);
+	public ResponseEntity<CustomerDTO> getCustomer(@PathVariable Integer customerId) {
+	    Customer customer = customerservice.getCustomer(customerId);
+	    CustomerDTO customerDTO=modelmapper.map(customer,CustomerDTO.class);
+	    return ResponseEntity.ok(customerDTO); // Return HTTP 200 with customer data
 	}
-	
+
 	@GetMapping("/")
-	public List<Customer> getAllCustomers(){
-		return customerservice.getCustomer();
+	public ResponseEntity<List<CustomerDTO>> getAllCustomers() {
+	    List<Customer> customers= customerservice.getAllCustomers(); 
+	    
+	    List<CustomerDTO> customerDTOs = customers.stream().map(customer -> modelmapper.map(customer, CustomerDTO.class)).collect(Collectors.toList()); // ✅ Using Collectors.toList() for Java 8+
+
+	    return ResponseEntity.ok(customerDTOs); // Return HTTP 200 with the list of customers
 	}
-	
+
 	/*@DeleteMapping("/{customerId}")
 	public String deleteCustomer(@PathVariable Integer customerId) {
 		return customerservice.deleteCustomer(customerId);
@@ -61,3 +71,4 @@ public class CustomerControllerImpl implements CustomerController{
 		return customerservice.updateCustomer(customerId, customer);
 	}
 }
+

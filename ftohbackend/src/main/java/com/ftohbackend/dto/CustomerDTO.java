@@ -5,105 +5,100 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class CustomerDTO {
-	Integer customer_id;
-	
+	Integer customerId;
+
 	@NotNull(message = "First name cannot be null")
-	String firstname;
-	
+	String customerFirstName;
+
 	@NotNull(message = "First name cannot be null")
-	String lastname;
-	
-	 @NotNull(message = "Email cannot be null")
-	    @Pattern(
-	        regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
-	        message = "Invalid email format"
-	    )
-	String email;
-	 
-	 @NotNull(message = "Password cannot be null")
-	    @Size(min = 8, message = "Password must be at least 8 characters long")
-	String password;
-	 
-	String location;
-	
-	@Pattern(
-	        regexp = "^[6-9]\\d{9}$",
-	        message = "Invalid phone number format"
-	    )
-	String phonenumber;
-	Boolean isActive;
-	public CustomerDTO(Integer customer_id, String firstname, String lastname, String email, String password,
-			String location, String phonenumber, Boolean isActive) {
+	String customerLastName;
+
+	@NotNull(message = "Email cannot be null")
+	@Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Invalid email format")
+	String customerEmail;
+
+	@NotNull(message = "Password cannot be null")
+	@Size(min = 8, message = "Password must be at least 8 characters long")
+	String customerPassword;
+
+	String customerLocation;
+
+	@Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid phone number format")
+	String customerPhoneNumber;
+	Boolean customerIsActive;
+	public CustomerDTO(Integer customerId,  String customerFirstName,
+			 String customerLastName,
+			 String customerEmail,
+			 String customerPassword,
+			String customerLocation,
+			  String customerPhoneNumber,
+			Boolean customerIsActive) {
 		super();
-		this.customer_id = customer_id;
-		this.firstname = firstname;
-		this.lastname = lastname;
-		this.email = email;
-		this.password = password;
-		this.location = location;
-		this.phonenumber = phonenumber;
-		this.isActive = isActive;
+		this.customerId = customerId;
+		this.customerFirstName = customerFirstName;
+		this.customerLastName = customerLastName;
+		this.customerEmail = customerEmail;
+		this.customerPassword = customerPassword;
+		this.customerLocation = customerLocation;
+		this.customerPhoneNumber = customerPhoneNumber;
+		this.customerIsActive = customerIsActive;
 	}
-	public Integer getCustomer_id() {
-		return customer_id;
+	public Integer getCustomerId() {
+		return customerId;
 	}
-	public void setCustomer_id(Integer customer_id) {
-		this.customer_id = customer_id;
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
 	}
-	public String getFirstname() {
-		return firstname;
+	public String getCustomerFirstName() {
+		return customerFirstName;
 	}
-	public void setFirstname(String firstname) {
-		this.firstname = firstname;
+	public void setCustomerFirstName(String customerFirstName) {
+		this.customerFirstName = customerFirstName;
 	}
-	public String getLastname() {
-		return lastname;
+	public String getCustomerLastName() {
+		return customerLastName;
 	}
-	public void setLastname(String lastname) {
-		this.lastname = lastname;
+	public void setCustomerLastName(String customerLastName) {
+		this.customerLastName = customerLastName;
 	}
-	public String getEmail() {
-		return email;
+	public String getCustomerEmail() {
+		return customerEmail;
 	}
-	public void setEmail(String email) {
-		this.email = email;
+	public void setCustomerEmail(String customerEmail) {
+		this.customerEmail = customerEmail;
 	}
-	public String getPassword() {
-		return password;
+	public String getCustomerPassword() {
+		return customerPassword;
 	}
-	public void setPassword(String password) {
-		this.password = password;
+	public void setCustomerPassword(String customerPassword) {
+		this.customerPassword = customerPassword;
 	}
-	public String getLocation() {
-		return location;
+	public String getCustomerLocation() {
+		return customerLocation;
 	}
-	public void setLocation(String location) {
-		this.location = location;
+	public void setCustomerLocation(String customerLocation) {
+		this.customerLocation = customerLocation;
 	}
-	public String getPhonenumber() {
-		return phonenumber;
+	public String getCustomerPhoneNumber() {
+		return customerPhoneNumber;
 	}
-	public void setPhonenumber(String phonenumber) {
-		this.phonenumber = phonenumber;
+	public void setCustomerPhoneNumber(String customerPhoneNumber) {
+		this.customerPhoneNumber = customerPhoneNumber;
 	}
-	public Boolean getIsActive() {
-		return isActive;
+	public Boolean getCustomerIsActive() {
+		return customerIsActive;
 	}
-	public void setIsActive(Boolean isActive) {
-		this.isActive = isActive;
+	public void setCustomerIsActive(Boolean customerIsActive) {
+		this.customerIsActive = customerIsActive;
 	}
 	@Override
 	public String toString() {
-		return "CustomerDTO [customer_id=" + customer_id + ", firstname=" + firstname + ", lastname=" + lastname
-				+ ", email=" + email + ", password=" + password + ", location=" + location + ", phonenumber="
-				+ phonenumber + ", isActive=" + isActive + "]";
+		return "CustomerDTO [customerId=" + customerId + ", customerFirstName=" + customerFirstName
+				+ ", customerLastName=" + customerLastName + ", customerEmail=" + customerEmail + ", customerPassword="
+				+ customerPassword + ", customerLocation=" + customerLocation + ", customerPhoneNumber="
+				+ customerPhoneNumber + ", customerIsActive=" + customerIsActive + "]";
 	}
+
 	
 }
 
-
-//add pro to cart
-//place an order
-//view orders
-//view cart
-//add to cart
