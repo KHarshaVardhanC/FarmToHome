@@ -1,20 +1,23 @@
+
+
 package com.ftohbackend.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+
 import com.ftohbackend.dto.CustomerDTO;
-import com.ftohbackend.model.Customer;
+
+import jakarta.validation.Valid;
 
 public interface CustomerController {
-public String addCustomer(CustomerDTO customer);
+    public String addCustomer(@Valid CustomerDTO customer);
 	
-	public Customer getCustomer(Integer customerId);
+	public ResponseEntity<CustomerDTO>  getCustomer(Integer customerId);
 	
-	public List<Customer> getCustomer();
+	public ResponseEntity<List<CustomerDTO>> getAllCustomers();
 	
-	public String deleteCustomer(Integer customerId);
+
 	
-	public String deleteCustomer();
-	
-	public String updateCustomer(Integer customerId, Customer customer);
+	public String updateCustomer(Integer customerId,@Valid CustomerDTO customerDTO);
 }

@@ -21,6 +21,6 @@ public class AllOrders {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    private double productPrice;
-    private double productQuantity;
+  //  private double productPrice;
+    //private double productQuantity;
 }
