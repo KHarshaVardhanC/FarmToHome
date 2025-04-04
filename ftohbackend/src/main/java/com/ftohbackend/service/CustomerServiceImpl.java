@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.repository.customerRepository;
 
+//service
 @Service
 public class CustomerServiceImpl implements CustomerService {
 	
