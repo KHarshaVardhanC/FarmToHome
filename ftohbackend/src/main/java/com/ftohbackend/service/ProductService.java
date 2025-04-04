@@ -20,6 +20,9 @@ public interface ProductService {
 	public String updateProduct(Integer productId, ProductModel updatedDetails);
 
 	public String deleteProduct(Integer productId) ;
+	
+	public List<ProductModel> getAllProductBySellerId(Integer sellerid);
+
 
 
 

@@ -1,8 +1,12 @@
 package com.ftohbackend.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,9 +22,10 @@ public class ProductModel {
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "productid")
     Integer productid;
-
-    @Column(name = "sellerid")
-    String sellerid;
+    
+    @ManyToOne(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
+    @JoinColumn(name = "sellerId")
+    Seller seller;
 
     @NotNull(message = "Product price cannot be null")
     @Positive(message = "Product price must be positive")
@@ -50,19 +55,27 @@ public class ProductModel {
         super();
     }
 
-    public ProductModel(Integer productid, String sellerid, Double productprice, String productname,
-                        Double productquantity, String sellerarea, String sellerplace) {
-        super();
-        this.productid = productid;
-        this.sellerid = sellerid;
-        this.productprice = productprice;
-        this.productname = productname;
-        this.productquantity = productquantity;
-        this.sellerarea = sellerarea;
-        this.sellerplace = sellerplace;
-    }
+  
 
-    // Getters and Setters
+    public ProductModel(Integer productid, Seller seller,
+			@NotNull(message = "Product price cannot be null") @Positive(message = "Product price must be positive") Double productprice,
+			@NotBlank(message = "Product name cannot be blank") @Size(max = 100, message = "Product name cannot exceed 100 characters") String productname,
+			@NotNull(message = "Product quantity cannot be null") @PositiveOrZero(message = "Product quantity must be zero or positive") Double productquantity,
+			@NotBlank(message = "Seller area cannot be blank") String sellerarea,
+			@NotBlank(message = "Seller place cannot be blank") String sellerplace) {
+		super();
+		this.productid = productid;
+		this.seller = seller;
+		this.productprice = productprice;
+		this.productname = productname;
+		this.productquantity = productquantity;
+		this.sellerarea = sellerarea;
+		this.sellerplace = sellerplace;
+	}
+
+
+
+	// Getters and Setters
     public Integer getproductid() {
         return productid;
     }
@@ -71,13 +84,7 @@ public class ProductModel {
         this.productid = productid;
     }
 
-    public String getsellerid() {
-        return sellerid;
-    }
-
-    public void setsellerid(String sellerid) {
-        this.sellerid = sellerid;
-    }
+   
 
     public Double getproductprice() {
         return productprice;
@@ -119,10 +126,19 @@ public class ProductModel {
         this.sellerplace = sellerplace;
     }
 
-    @Override
-    public String toString() {
-        return "ProductModel [productid=" + productid + ", sellerid=" + sellerid + ", productprice="
-                + productprice + ", productname=" + productname + ", productquantity=" + productquantity
-                + ", sellerarea=" + sellerarea + ", sellerplace=" + sellerplace + "]";
-    }
+    public Seller getSeller() {
+		return seller;
+	}
+
+	public void setSeller(Seller seller) {
+		this.seller = seller;
+	}
+	
+
+	@Override
+	public String toString() {
+		return "ProductModel [productid=" + productid + ", seller=" + seller + ", productprice=" + productprice
+				+ ", productname=" + productname + ", productquantity=" + productquantity + ", sellerarea=" + sellerarea
+				+ ", sellerplace=" + sellerplace + "]";
+	}
 }
