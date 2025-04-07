@@ -1,30 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.4.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com</groupId>
 	<artifactId>ftohbackend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>ftohbackend</name>
 	<description>Demo project for Spring Boot</description>
-	<url/>
+	<url />
 	<licenses>
-		<license/>
+		<license />
 	</licenses>
 	<developers>
-		<developer/>
+		<developer />
 	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection />
+		<developerConnection />
+		<tag />
+		<url />
 	</scm>
 	<properties>
 		<java.version>17</java.version>
@@ -39,12 +40,12 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
-    <groupId>org.modelmapper</groupId>
-    <artifactId>modelmapper</artifactId>
-    <version>3.1.0</version>
-</dependency>
+			<groupId>org.modelmapper</groupId>
+			<artifactId>modelmapper</artifactId>
+			<version>3.1.0</version>
+		</dependency>
 
-		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -62,63 +63,53 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>org.springdoc</groupId>
-		    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-		    <version>2.8.5</version>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.8.5</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.webjars</groupId>
-		    <artifactId>swagger-ui</artifactId>
-		    <version>5.20.0</version>
+			<groupId>org.webjars</groupId>
+			<artifactId>swagger-ui</artifactId>
+			<version>5.20.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
-<dependency>
-    <groupId>io.springfox</groupId>
-    <artifactId>springfox-boot-starter</artifactId>
-    <version>3.0.0</version>
-</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-boot-starter</artifactId>
+			<version>3.0.0</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.restdocs</groupId>
 			<artifactId>spring-restdocs-mockmvc</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-    <groupId>org.projectlombok</groupId>
-    <artifactId>lombok</artifactId>
-    <version>1.18.30</version>
-    <scope>provided</scope>
-</dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.30</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-validation</artifactId>
-</dependency>
-<!-- https://mvnrepository.com/artifact/javax.validation/validation-api -->
-<dependency>
-    <groupId>javax.validation</groupId>
-    <artifactId>validation-api</artifactId>
-    <version>1.1.0.CR2</version>
-</dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.validation/validation-api -->
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>1.1.0.CR2</version>
+		</dependency>
 
-<dependency>
-    <groupId>org.springframework.security</groupId>
-    <artifactId>spring-security-crypto</artifactId>
-<<<<<<< HEAD
-    <version>5.7.1</version> <!-- or latest version -->
-</dependency>
- 
-=======
- 
-</dependency>
-
->>>>>>> 7ebfb14 (customer)
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
 
 
-
-		
 	</dependencies>
 
 	<build>

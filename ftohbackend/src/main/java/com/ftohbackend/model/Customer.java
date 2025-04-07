@@ -1,13 +1,22 @@
 package com.ftohbackend.model;
 
-import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "customer")
 public class Customer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    
     private Integer customerId;
 
     private String customerFirstName;
@@ -18,25 +27,44 @@ public class Customer {
     private String customerPhoneNumber;
     private Boolean customerIsActive;
 
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Order> orders=new ArrayList<>();
+    
+    
     public Customer() {
         super();
     }
 
-    public Customer(Integer customerId, String customerFirstName, String customerLastName,
-                    String customerEmail, String customerPassword, String customerLocation,
-                    String customerPhoneNumber, Boolean customerIsActive) {
-        super();
-        this.customerId = customerId;
-        this.customerFirstName = customerFirstName;
-        this.customerLastName = customerLastName;
-        this.customerEmail = customerEmail;
-        this.customerPassword = customerPassword;
-        this.customerLocation = customerLocation;
-        this.customerPhoneNumber = customerPhoneNumber;
-        this.customerIsActive = customerIsActive;
-    }
 
-    public Integer getCustomerId() {
+    public Customer(Integer customerId, String customerFirstName, String customerLastName, String customerEmail,
+			String customerPassword, String customerLocation, String customerPhoneNumber, Boolean customerIsActive,
+			List<Order> orders) {
+		super();
+		this.customerId = customerId;
+		this.customerFirstName = customerFirstName;
+		this.customerLastName = customerLastName;
+		this.customerEmail = customerEmail;
+		this.customerPassword = customerPassword;
+		this.customerLocation = customerLocation;
+		this.customerPhoneNumber = customerPhoneNumber;
+		this.customerIsActive = customerIsActive;
+		this.orders = orders;
+	}
+
+
+	
+
+	public List<Order> getOrders() {
+		return orders;
+	}
+
+
+	public void setOrders(List<Order> orders) {
+		this.orders = orders;
+	}
+
+
+	public Integer getCustomerId() {
         return customerId;
     }
 
@@ -100,11 +128,14 @@ public class Customer {
         this.customerIsActive = customerIsActive;
     }
 
-    @Override
-    public String toString() {
-        return "Customer [customerId=" + customerId + ", customerFirstName=" + customerFirstName
-                + ", customerLastName=" + customerLastName + ", customerEmail=" + customerEmail + ", customerPassword="
-                + customerPassword + ", customerLocation=" + customerLocation + ", customerPhoneNumber="
-                + customerPhoneNumber + ", customerIsActive=" + customerIsActive + "]";
-    }
+
+	@Override
+	public String toString() {
+		return "Customer [customerId=" + customerId + ", customerFirstName=" + customerFirstName + ", customerLastName="
+				+ customerLastName + ", customerEmail=" + customerEmail + ", customerPassword=" + customerPassword
+				+ ", customerLocation=" + customerLocation + ", customerPhoneNumber=" + customerPhoneNumber
+				+ ", customerIsActive=" + customerIsActive + ", order=" + orders + "]";
+	}
+    
+    
 }
