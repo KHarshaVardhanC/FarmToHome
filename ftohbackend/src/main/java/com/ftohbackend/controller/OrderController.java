@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
+import com.ftohbackend.dto.CustomerOrderDTO;
 import com.ftohbackend.dto.OrderDTO;
+import com.ftohbackend.dto.SellerOrderDTO;
 import com.ftohbackend.model.Order;
 
 public interface OrderController {
@@ -13,8 +15,11 @@ public interface OrderController {
 
 	Order getOrderById(Integer orderId);
 
-	ResponseEntity<List<Order>> getOrdersByCustomerId(Integer customerId);
+	List<CustomerOrderDTO> getOrdersByCustomerId(Integer customerId);
 
 	public String addOrder(OrderDTO orderDTO);
 
+	List<SellerOrderDTO> getOrdersBySellerId(Integer sellerId);
+
+	
 }

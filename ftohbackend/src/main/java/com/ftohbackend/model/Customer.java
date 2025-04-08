@@ -14,9 +14,9 @@ import jakarta.persistence.Table;
 @Table(name = "customer")
 public class Customer {
 
-    @Id
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
     
+	@Id
     private Integer customerId;
 
     private String customerFirstName;

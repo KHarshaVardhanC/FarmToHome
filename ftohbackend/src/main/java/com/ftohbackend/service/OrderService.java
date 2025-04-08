@@ -15,5 +15,9 @@ public interface OrderService {
 
 	String addOrder(Order order);
 
+	List<Order> getOrdersBySellerId(Integer sellerId);
+
+	String deleteOrder(Integer orderId);
+
 
 }

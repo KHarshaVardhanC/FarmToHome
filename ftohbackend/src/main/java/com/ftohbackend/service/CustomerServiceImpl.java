@@ -7,35 +7,33 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ftohbackend.model.Customer;
-import com.ftohbackend.repository.customerRepository;
+import com.ftohbackend.repository.CustomerRepository;
 
 //service
 @Service
 public class CustomerServiceImpl implements CustomerService {
 	
 	@Autowired
-	private customerRepository customerrepository;
+	private CustomerRepository customerRepository;
 	
 	
 	public String addCustomer(Customer customer) {
-		customerrepository.save(customer);
+		customerRepository.save(customer);
 		return "customer added successfully";
 	}
 	
-	@Transactional(readOnly = true)
+//	@Transactional(readOnly = true)
 	public Customer getCustomer(Integer customerId) {
-		return customerrepository.findById(customerId).get();
+		return customerRepository.findById(customerId).get();
 	}
 	
-	@Transactional(readOnly = true)
 	public List<Customer> getAllCustomers(){
-		return customerrepository.findAll();
+		return customerRepository.findAll();
 	}
 	
-	@Transactional
-	  public String updateCustomer(Integer customerId, Customer customer) {
-        if (customerrepository.existsById(customerId)) {
-            Customer existingCustomer = customerrepository.findById(customerId).get();
+ 	  public String updateCustomer(Integer customerId, Customer customer) {
+        if (customerRepository.existsById(customerId)) {
+            Customer existingCustomer = customerRepository.findById(customerId).get();
 
             // Update only non-null fields
             if (customer.getCustomerFirstName() != null) {
@@ -60,7 +58,7 @@ public class CustomerServiceImpl implements CustomerService {
                 existingCustomer.setCustomerIsActive(customer.getCustomerIsActive());
             }
 
-            customerrepository.save(existingCustomer);
+            customerRepository.save(existingCustomer);
             return "Customer updated successfully";
         } else {
             return "Customer not found";

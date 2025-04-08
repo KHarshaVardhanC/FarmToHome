@@ -1,10 +1,10 @@
 package com.ftohbackend.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,10 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ftohbackend.dto.CustomerOrderDTO;
 import com.ftohbackend.dto.OrderDTO;
+import com.ftohbackend.dto.SellerOrderDTO;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.model.Order;
 import com.ftohbackend.model.Product;
+import com.ftohbackend.model.Seller;
 import com.ftohbackend.service.CustomerService;
 import com.ftohbackend.service.OrderService;
 import com.ftohbackend.service.ProductService;
@@ -25,7 +28,7 @@ import com.ftohbackend.service.ProductService;
 public class OrderControllerImpl implements OrderController {
 
 	@Autowired
-    private OrderService orderService;
+    OrderService orderService;
 	
 	@Autowired
 	ProductService productService;
@@ -53,19 +56,54 @@ public class OrderControllerImpl implements OrderController {
 	  
     @GetMapping("/customer/{customerId}")
     @Override
-    public ResponseEntity<List<Order>> getOrdersByCustomerId(@PathVariable Integer customerId) {
-//        List<Order> orders = orderService.getOrderByCustomerId(customerId);
-//        return ResponseEntity.ok(orders);
-    	return null;
+    public List<CustomerOrderDTO> getOrdersByCustomerId(@PathVariable Integer customerId) {
+        List<Order> orders = orderService.getOrderByCustomerId(customerId);
+        List<CustomerOrderDTO> customerorders=new ArrayList<>();
+        
+        for(Order order:orders)
+        {
+        	CustomerOrderDTO customerorderdto=new CustomerOrderDTO();
+        	customerorderdto.setOrderId(order.getOrderId());
+        	customerorderdto.setOrderQuantity(order.getOrderQuantity());
+        	
+        	Product product=order.getProduct();
+        	customerorderdto.setProductName(product.getProductName());
+        	customerorderdto.setProductPrice(product.getProductPrice());
+        	
+        	Seller seller=product.getSeller();
+        	customerorderdto.setSellerName(seller.getSellerFirstName()+" "+seller.getSellerLastName());
+        	customerorders.add(customerorderdto);
+        }
+        return customerorders;
     }
-//
-//    @GetMapping("/seller/{sellerId}")
-//    @Override
-//    public ResponseEntity<List<AllOrders>> getOrdersBySellerId(@PathVariable Integer sellerId) {
-//        List<AllOrders> orders = allOrdersService.getOrdersBySellerId(sellerId);
-//        return ResponseEntity.ok(orders);
-//    }
-//
+
+    @GetMapping("/seller/{sellerId}")
+    @Override
+    public List<SellerOrderDTO> getOrdersBySellerId(@PathVariable Integer sellerId) {
+        List<SellerOrderDTO> sellerorders=new ArrayList<>(); 
+        
+        List<Order> orders= orderService.getOrdersBySellerId(sellerId);
+        
+        for(Order order:orders)
+        {
+        	SellerOrderDTO sellerorderdto=new SellerOrderDTO();
+        	sellerorderdto.setOrderId(order.getOrderId());
+        	sellerorderdto.setOrderQuantity(order.getOrderQuantity());
+        	
+        	Product product=order.getProduct();
+        	
+        	sellerorderdto.setProductName(product.getProductName());
+        	sellerorderdto.setProductPrice(product.getProductPrice());
+        	
+        	Customer customer=order.getCustomer();
+        	sellerorderdto.setCustomerName(customer.getCustomerFirstName()+" "+customer.getCustomerLastName());
+        	
+        	sellerorders.add(sellerorderdto);
+        	
+        }
+        return sellerorders;
+    }
+
 
     @PostMapping("/add")
     @Override

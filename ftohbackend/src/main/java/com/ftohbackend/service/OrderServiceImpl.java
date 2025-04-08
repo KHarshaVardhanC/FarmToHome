@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ftohbackend.model.Customer;
 import com.ftohbackend.model.Order;
 import com.ftohbackend.repository.OrderRepository;
 import com.ftohbackend.repository.SellerRepository;
@@ -17,7 +18,7 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderRepository orderRepository;
     @Autowired
-    private customerRepository customerRepository;
+    private CustomerRepository customerRepository;
     
     @Autowired
     private SellerRepository sellerRepository;
@@ -34,21 +35,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> getOrderByCustomerId(Integer customerId) {
-//        Customer customer = customerRepository.findById(customerId)
-//                .orElseThrow(() -> new RuntimeException("Customer not found"));
-//        
-//        return orderRepository.findByCustomerId(customer);
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        
+        List<Order> orders= orderRepository.findByCustomerCustomerId(customerId);
     	
-    	return null;
+    	return orders;
     }
-//
-//    @Override
-//    public List<AllOrders> getOrdersBySellerId(Integer sellerId) {
-//        Seller seller = sellerRepository.findById(sellerId)
-//                .orElseThrow(() -> new RuntimeException("Seller not found"));
-//        
-//        return allOrdersRepository.findByProduct_Seller(seller);
-//    }
+
 
     @Override
     public String addOrder(Order order) {
@@ -57,8 +51,16 @@ public class OrderServiceImpl implements OrderService {
          return "Order Successful";
     }
 
-//    @Override
-//    public void deleteOrder(Integer orderId) {
-//        allOrdersRepository.deleteById(orderId);
-//    }
+	@Override
+	public List<Order> getOrdersBySellerId(Integer sellerId) {
+		// TODO Auto-generated method stub
+		
+		return orderRepository.findAll().stream().filter(x->x.getProduct().getSeller().getSellerId()==sellerId).toList();
+	}
+
+    @Override
+    public String deleteOrder(Integer orderId) {
+        orderRepository.deleteById(orderId);
+        return "Order Deletion Successful";
+    }
 }
