@@ -15,9 +15,9 @@ public interface OrderService {
 
 	String addOrder(Order order)throws OrderException;
 
-	List<Order> getOrdersBySellerId(Integer sellerId);
+	List<Order> getOrdersBySellerId(Integer sellerId) throws OrderException;
 
-	String deleteOrder(Integer orderId);
+	String deleteOrder(Integer orderId) throws OrderException;
 
 
 }
