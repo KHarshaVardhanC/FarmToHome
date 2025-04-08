@@ -2,16 +2,17 @@ package com.ftohbackend.service;
 
 import java.util.List;
 
+import com.ftohbackend.exception.CustomerException;
 import com.ftohbackend.model.Customer;
 
 
 public interface CustomerService {
-	public String addCustomer(Customer customer);
+	public String addCustomer(Customer customer) throws CustomerException;
 	
-	public Customer getCustomer(Integer customerId);
+	public Customer getCustomer(Integer customerId)throws CustomerException;
 	
-	public List<Customer> getAllCustomers();
+	public List<Customer> getAllCustomers()throws CustomerException;
 	
 	
-	public String updateCustomer(Integer customerId, Customer customer);
+	public String updateCustomer(Integer customerId, Customer customer)throws CustomerException;
 }

@@ -1,14 +1,16 @@
 package com.ftohbackend.repository;
 
-import com.ftohbackend.model.Rating;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.ftohbackend.exception.RatingException;
+import com.ftohbackend.model.Rating;
 
 @Repository
 public interface RatingRepository extends JpaRepository<Rating, Integer> {
-    List<Rating> findByProductId(Integer productId);
+    List<Rating> findByProductId(Integer productId) throws RatingException;
 
-    List<Rating> findByCustomerId(Integer customerId);
+    List<Rating> findByCustomerId(Integer customerId) throws RatingException;
 }

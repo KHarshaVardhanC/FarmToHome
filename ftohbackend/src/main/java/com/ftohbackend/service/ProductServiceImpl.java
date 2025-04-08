@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ftohbackend.dto.ProductWithSellerDetailsDTO;
+import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Product;
 import com.ftohbackend.model.Seller;
 import com.ftohbackend.repository.ProductRepository;
@@ -31,20 +32,33 @@ public class ProductServiceImpl implements ProductService {
 	ModelMapper modelMapper;
 
 	@Override
-	public String addProduct(Product product) {
+	public String addProduct(Product product) throws ProductException {
+		if (product == null) {
+			throw new ProductException("Product object is null.");
+		}
 		productRepository.save(product);
-		return ("Added product");
+		return "Product added successfully";
 	}
 
 	@Override
-	public List<Product> getAllProduct() {
-		return productRepository.findAll();
+	public List<Product> getAllProduct() throws ProductException {
+		List<Product> products = productRepository.findAll();
+		if (products.isEmpty()) {
+			throw new ProductException("No products found.");
+		}
+		return products;
 	}
 	
 	@Override
-	public List<Product> getAllProduct(Integer sellerId)
-	{
-		return productRepository.findBySellerSellerId(sellerId);
+	public List<Product> getAllProduct(Integer sellerId) throws ProductException {
+		if (sellerId == null) {
+			throw new ProductException("Seller ID cannot be null.");
+		}
+		List<Product> products = productRepository.findBySellerSellerId(sellerId);
+		if (products.isEmpty()) {
+			throw new ProductException("No products found for seller ID: " + sellerId);
+		}
+		return products;
 	}
 
 //	public List<Product> getAllProductBySellerId(Integer sellerid) {
@@ -53,7 +67,10 @@ public class ProductServiceImpl implements ProductService {
 //	}
 
 	@Override
-	public Product getProductByTitle(String name) {
+	public Product getProductByTitle(String name) throws ProductException {
+		if (name == null || name.trim().isEmpty()) {
+			throw new ProductException("Product name cannot be null or empty.");
+		}
 		List<Product> allProducts = productRepository.findAll();
 		Product product = new Product();
 		for (Product prod : allProducts) {
@@ -62,13 +79,15 @@ public class ProductServiceImpl implements ProductService {
 			}
 
 		}
-		return null;
-	}
+		throw new ProductException("Product with name '" + name + "' not found.");	}
 
 	@Override
-	public String updateProduct(Integer productId, Product updatedDetails) {
+	public String updateProduct(Integer productId, Product updatedDetails) throws ProductException {
+		if (productId == null || updatedDetails == null) {
+			throw new ProductException("Product ID and updated details cannot be null.");
+		}
 		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
+				.orElseThrow(() -> new ProductException("Product not found with ID: " + productId));
 
 		if (updatedDetails.getProductPrice() != null) {
 			product.setProductPrice(updatedDetails.getProductPrice());
@@ -85,22 +104,33 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public String deleteProduct(Integer productId) {
-		productRepository.deleteById(productId);
-		return "Product is deleted";
+	public String deleteProduct(Integer productId) throws ProductException {
+		if (productId == null) {
+			throw new ProductException("Product ID cannot be null.");
+		}
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductException("Product not found with ID: " + productId));
+		productRepository.delete(product);
+		return "Product deleted successfully";
 	}
 
 	@Override
-	public List<Product> getProductsBySellerId(Integer sellerId) {
-		return productRepository.findBySellerSellerId(sellerId);
-	}
+	public List<Product> getProductsBySellerId(Integer sellerId)throws ProductException  {
+		if (sellerId == null) {
+			throw new ProductException("Seller ID cannot be null.");
+		}
+		List<Product> products = productRepository.findBySellerSellerId(sellerId);
+		if (products.isEmpty()) {
+			throw new ProductException("No products found for seller ID: " + sellerId);
+		}
+		return products;	}
 
-	@Override
-	public Product createProduct(Integer sellerId, Product product) {
-		Seller seller = sellerRepository.findById(sellerId).orElseThrow(() -> new RuntimeException("Seller not found"));
-		product.setSeller(seller);
-		return productRepository.save(product);
-	}
+//	@Override
+//	public Product createProduct(Integer sellerId, Product product)throws ProductException  {
+//		Seller seller = sellerRepository.findById(sellerId).orElseThrow(() -> new RuntimeException("Seller not found"));
+//		product.setSeller(seller);
+//		return productRepository.save(product);
+//	}
 
 //	@Override
 //	public List<ProductWithSellerDetailsDTO> searchProductsWithSellerDetails(String productName) {
@@ -108,38 +138,40 @@ public class ProductServiceImpl implements ProductService {
 //		return products.stream().map(ProductWithSellerDetailsDTO::new).collect(Collectors.toList());
 //	}
 
+//	@Override
+//	public List<ProductWithSellerDetailsDTO> searchProductsWithSellerDetails(String productName)throws ProductException  {
+//		// Input validation
+//		if (productName == null || productName.trim().isEmpty()) {
+//			throw new IllegalArgumentException("Product name cannot be null or empty");
+//		}
+//
+//		// Search products with seller details
+//		List<Product> products = productRepository.findProductsByNameWithSeller(productName.trim());
+//
+//		// Handle null case
+//		if (products == null) {
+//			return Collections.emptyList();
+//		}
+//
+//		// Convert to DTOs
+//		return products.stream().filter(Objects::nonNull) // Filter out null products
+//				.map(product -> {
+//					ProductWithSellerDetailsDTO dto = new ProductWithSellerDetailsDTO(product);
+//
+//					// Set seller details
+//
+//					return dto;
+//				}).collect(Collectors.toList());
+//	}
+
 	@Override
-	public List<ProductWithSellerDetailsDTO> searchProductsWithSellerDetails(String productName) {
-		// Input validation
-		if (productName == null || productName.trim().isEmpty()) {
-			throw new IllegalArgumentException("Product name cannot be null or empty");
+	public Product getProduct(Integer productId) throws ProductException {
+		if (productId == null) {
+			throw new ProductException("Product ID cannot be null.");
 		}
-
-		// Search products with seller details
-		List<Product> products = productRepository.findProductsByNameWithSeller(productName.trim());
-
-		// Handle null case
-		if (products == null) {
-			return Collections.emptyList();
-		}
-
-		// Convert to DTOs
-		return products.stream().filter(Objects::nonNull) // Filter out null products
-				.map(product -> {
-					ProductWithSellerDetailsDTO dto = new ProductWithSellerDetailsDTO(product);
-
-					// Set seller details
-
-					return dto;
-				}).collect(Collectors.toList());
+		return productRepository.findById(productId)
+				.orElseThrow(() -> new ProductException("Product not found with ID: " + productId));
 	}
-
-	@Override
-	public Product getProduct(Integer productId) {
-		// TODO Auto-generated method stub
-		
-		return productRepository.findById(productId).get();
-//		return null;
-	}
-
 }
+
+

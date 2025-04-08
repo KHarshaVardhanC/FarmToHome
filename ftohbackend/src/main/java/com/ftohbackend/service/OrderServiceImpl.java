@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ftohbackend.exception.OrderException;
 import com.ftohbackend.model.Order;
 import com.ftohbackend.repository.OrderRepository;
 import com.ftohbackend.repository.SellerRepository;
@@ -23,17 +24,17 @@ public class OrderServiceImpl implements OrderService {
     private SellerRepository sellerRepository;
 
     @Override
-    public List<Order> getAllOrders() {
+    public List<Order> getAllOrders()throws OrderException {
         return orderRepository.findAll();
     }
 
     @Override
-    public Order getOrderById(Integer orderId) {
+    public Order getOrderById(Integer orderId)throws OrderException {
         return orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
     }
 
     @Override
-    public List<Order> getOrderByCustomerId(Integer customerId) {
+    public List<Order> getOrderByCustomerId(Integer customerId)throws OrderException {
 //        Customer customer = customerRepository.findById(customerId)
 //                .orElseThrow(() -> new RuntimeException("Customer not found"));
 //        
@@ -51,7 +52,7 @@ public class OrderServiceImpl implements OrderService {
 //    }
 
     @Override
-    public String addOrder(Order order) {
+    public String addOrder(Order order)throws OrderException {
          orderRepository.save(order);
          
          return "Order Successful";

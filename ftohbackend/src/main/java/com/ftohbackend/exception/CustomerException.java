@@ -1,9 +1,9 @@
 package com.ftohbackend.exception;
 
-public class CustomExceptions extends Exception {
+public class CustomerException extends Exception {
 
 	
-	public CustomExceptions(String message)
+	public CustomerException(String message)
 	{
 		super(message);
 	}

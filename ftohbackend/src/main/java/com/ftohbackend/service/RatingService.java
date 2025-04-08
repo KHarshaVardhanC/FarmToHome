@@ -1,19 +1,20 @@
 package com.ftohbackend.service;
 
-import com.ftohbackend.model.Rating;
-
 import java.util.List;
 
+import com.ftohbackend.exception.RatingException;
+import com.ftohbackend.model.Rating;
+
 public interface RatingService {
-    Rating addRating(Rating rating);
+    Rating addRating(Rating rating) throws RatingException;
 
-    List<Rating> getAllRatings();
+    List<Rating> getAllRatings() throws RatingException;
 
-    List<Rating> getRatingsByProductId(Integer productId);
+    List<Rating> getRatingsByProductId(Integer productId) throws RatingException;
 
-    List<Rating> getRatingsByCustomerId(Integer customerId);
+    List<Rating> getRatingsByCustomerId(Integer customerId) throws RatingException;
 
-    Rating getRatingById(Integer ratingId);
+    Rating getRatingById(Integer ratingId) throws RatingException;
 
-    void deleteRating(Integer ratingId);
+    void deleteRating(Integer ratingId) throws RatingException;
 }
