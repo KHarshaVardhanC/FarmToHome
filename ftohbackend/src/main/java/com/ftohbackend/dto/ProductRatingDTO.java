@@ -8,20 +8,24 @@ public class ProductRatingDTO {
 	Integer ratingValue;
 	String feedback;
 	String productName;
+	String ImageUrl;
 	LocalDateTime createdAt;
 	public ProductRatingDTO() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-	public ProductRatingDTO(Integer ratingId, Integer ratingValue, String feedback, String productName,
+	
+	public ProductRatingDTO(Integer ratingId, Integer ratingValue, String feedback, String productName, String imageUrl,
 			LocalDateTime createdAt) {
 		super();
 		this.ratingId = ratingId;
 		this.ratingValue = ratingValue;
 		this.feedback = feedback;
 		this.productName = productName;
+		ImageUrl = imageUrl;
 		this.createdAt = createdAt;
 	}
+
 	public Integer getRatingId() {
 		return ratingId;
 	}
@@ -52,12 +56,22 @@ public class ProductRatingDTO {
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
-	
+
+	public String getImageUrl() {
+		return ImageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		ImageUrl = imageUrl;
+	}
+
 	@Override
 	public String toString() {
 		return "ProductRatingDTO [ratingId=" + ratingId + ", ratingValue=" + ratingValue + ", feedback=" + feedback
-				+ ", productName=" + productName + ", createdAt=" + createdAt +  "]";
+				+ ", productName=" + productName + ", ImageUrl=" + ImageUrl + ", createdAt=" + createdAt + "]";
 	}
+	
+	
 	
 	
 }

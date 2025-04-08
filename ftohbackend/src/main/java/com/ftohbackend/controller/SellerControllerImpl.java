@@ -1,7 +1,5 @@
 package com.ftohbackend.controller;
 
-
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,131 +21,137 @@ import com.ftohbackend.service.SellerService;
 
 import jakarta.validation.Valid;
 
-
 @RestController
 @RequestMapping("/seller")
 public class SellerControllerImpl implements SellerController {
 
-	
 	@Autowired
 	ModelMapper modelMapper;
-	
+
 	@Autowired
 	SellerService sellerService;
-	
-	
+
 	@Override
 	@PostMapping("")
 	public String addSeller(@Valid @RequestBody SellerDTO sellerdto) throws Exception {
 		// TODO Auto-generated method stub
-		Seller seller=modelMapper.map(sellerdto, Seller.class);
+		Seller seller = modelMapper.map(sellerdto, Seller.class);
 		return sellerService.addSeller(seller);
-		
+
 	}
 
 	@Override
 	@GetMapping("/{sellerId}")
 	public SellerDTO getSeller(@PathVariable Integer sellerId) throws Exception {
 		// TODO Auto-generated method stub
-		
-		
+
 		return modelMapper.map(sellerService.getSeller(sellerId), SellerDTO.class);
 	}
+
 	@Override
 	@GetMapping("")
-	public List<SellerDTO> getSeller() throws Exception{
-		// TODO Auto-generated method stub
-		
-		return  sellerService.getSeller().stream().map(DTO -> modelMapper.map(DTO, SellerDTO.class))
+	public List<SellerDTO> getSeller() throws Exception {
+
+		return sellerService.getSeller().stream().map(DTO -> modelMapper.map(DTO, SellerDTO.class))
 				.collect(Collectors.toList());
 	}
-	
 
 	@Override
 	@DeleteMapping("/{sellerId}")
-	public String deleteSeller(@PathVariable Integer sellerId) throws Exception{
-		// TODO Auto-generated method stub
+	public String deleteSeller(@PathVariable Integer sellerId) throws Exception {
 		return sellerService.deleteSeller(sellerId);
 	}
 
 	@Override
 	@DeleteMapping("")
 	public String deleteSeller() throws Exception {
-		// TODO Auto-generated method stub
 //		return sellerService.deleteSeller();
 		return "delete";
 	}
-	
+
 	@Override
 	@PutMapping("/{sellerId}")
 	public String updateSeller(@PathVariable Integer sellerId, @RequestBody SellerDTO sellerdto) throws Exception {
-		// TODO Auto-generated method stub
-		Seller seller=modelMapper.map(sellerdto, Seller.class);
+		Seller seller = modelMapper.map(sellerdto, Seller.class);
 		return sellerService.updateSeller(sellerId, seller);
 	}
+
 	@Override
 	@PutMapping("/{sellerId}/{sellerStatus}")
-	public String updateSeller(@PathVariable Integer sellerId, @PathVariable String sellerStatus) throws Exception
-	{
+	public String updateSeller(@PathVariable Integer sellerId, @PathVariable String sellerStatus) throws Exception {
 		return sellerService.updateSeller(sellerId, sellerStatus);
 	}
-	
-	
+
 	@Override
 	@PostMapping("/login")
-    public ResponseEntity<?> loginSeller(@RequestBody LoginRequest loginRequest) throws Exception {
-        Seller seller = sellerService.authenticateSeller(
-            loginRequest.getEmail(), 
-            loginRequest.getPassword()
-        );
-        
-        if (seller != null) {
-            // Create and return a response with seller data (excluding password)
-            return ResponseEntity.ok(new SellerResponse(
-                seller.getSellerId(),
-                seller.getSellerEmail(),
-                seller.getSellerFirstName(),
-                seller.getSellerLastName()
-                // ... other fields you want to return ...
-            ));
-        } else {
-            return ResponseEntity.status(401).body("Invalid email or password");
-        }
-    }
-    
-    // Inner class for login request
-    public static class LoginRequest {
-        private String email;
-        private String password;
-        
-        // Getters and setters
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-    }
-    
-    // Inner class for seller response (without sensitive data)
-    public static class SellerResponse {
-        private Integer sellerId;
-        private String sellerEmail;
-        private String sellerFirstName;
-        private String sellerLastName;
-        // ... other non-sensitive fields ...
-        
-        public SellerResponse(Integer sellerId, String sellerEmail, 
-                            String sellerFirstName, String sellerLastName) {
-            this.sellerId = sellerId;
-            this.sellerEmail = sellerEmail;
-            this.sellerFirstName = sellerFirstName;
-            this.sellerLastName = sellerLastName;
-        }
-        
-        // Getters
-        public Integer getSellerId() { return sellerId; }
-        public String getSellerEmail() { return sellerEmail; }
-        public String getSellerFirstName() { return sellerFirstName; }
-        public String getSellerLastName() { return sellerLastName; }
-    }
-	
+	public ResponseEntity<?> loginSeller(@RequestBody LoginRequest loginRequest) throws Exception {
+		Seller seller = sellerService.authenticateSeller(loginRequest.getEmail(), loginRequest.getPassword());
+
+		if (seller != null) {
+			// Create and return a response with seller data (excluding password)
+			return ResponseEntity.ok(new SellerResponse(seller.getSellerId(), seller.getSellerEmail(),
+					seller.getSellerFirstName(), seller.getSellerLastName()
+			// ... other fields you want to return ...
+			));
+		} else {
+			return ResponseEntity.status(401).body("Invalid email or password");
+		}
+	}
+
+	// Inner class for login request
+	public static class LoginRequest {
+		private String email;
+		private String password;
+
+		// Getters and setters
+		public String getEmail() {
+			return email;
+		}
+
+		public void setEmail(String email) {
+			this.email = email;
+		}
+
+		public String getPassword() {
+			return password;
+		}
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
+	}
+
+	// Inner class for seller response (without sensitive data)
+	public static class SellerResponse {
+		private Integer sellerId;
+		private String sellerEmail;
+		private String sellerFirstName;
+		private String sellerLastName;
+		// ... other non-sensitive fields ...
+
+		public SellerResponse(Integer sellerId, String sellerEmail, String sellerFirstName, String sellerLastName) {
+			this.sellerId = sellerId;
+			this.sellerEmail = sellerEmail;
+			this.sellerFirstName = sellerFirstName;
+			this.sellerLastName = sellerLastName;
+		}
+
+		// Getters
+		public Integer getSellerId() {
+			return sellerId;
+		}
+
+		public String getSellerEmail() {
+			return sellerEmail;
+		}
+
+		public String getSellerFirstName() {
+			return sellerFirstName;
+		}
+
+		public String getSellerLastName() {
+			return sellerLastName;
+		}
+	}
+
 }

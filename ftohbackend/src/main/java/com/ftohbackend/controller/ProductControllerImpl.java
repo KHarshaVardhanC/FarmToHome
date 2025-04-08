@@ -123,7 +123,8 @@ public class ProductControllerImpl implements ProductController {
 			sellerproductDTO.setProductName(product.getProductName());
 			sellerproductDTO.setProductQuantity(product.getProductQuantity());
 			sellerproductDTO.setProductPrice(product.getProductPrice());
-
+			sellerproductDTO.setImageUrl(product.getImageUrl());
+			sellerproductDTO.setProductDescription(product.getProductDescription());
 			sellerproductdtos.add(sellerproductDTO);
 		}
 

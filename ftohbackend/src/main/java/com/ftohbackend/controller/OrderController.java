@@ -21,5 +21,7 @@ public interface OrderController {
 
 	List<SellerOrderDTO> getOrdersBySellerId(Integer sellerId) throws Exception;
 
+	String deleteOrder(Integer orderId) throws Exception;
+
 	
 }

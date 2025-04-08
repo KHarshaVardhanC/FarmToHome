@@ -75,6 +75,7 @@ public class RatingControllerImpl implements RatingController {
 			productratingdto.setFeedback(rating.getFeedback());
 			productratingdto.setRatingValue(rating.getRatingValue());
 			productratingdto.setCreatedAt(rating.getCreatedAt());
+			productratingdto.setImageUrl(rating.getProduct().getImageUrl());
 			
 			productratings.add(productratingdto);
 		}
