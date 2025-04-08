@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ftohbackend.exception.CustomerException;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.repository.CustomerRepository;
 
@@ -17,23 +18,40 @@ public class CustomerServiceImpl implements CustomerService {
 	private CustomerRepository customerRepository;
 	
 	
-	public String addCustomer(Customer customer) {
+
+	public String addCustomer(Customer customer) throws CustomerException {
+		if (customer == null) {
+            throw new CustomerException("Customer object cannot be null.");
+        }
+
 		customerRepository.save(customer);
 		return "customer added successfully";
 	}
 	
-//	@Transactional(readOnly = true)
-	public Customer getCustomer(Integer customerId) {
-		return customerRepository.findById(customerId).get();
-	}
+	@Transactional(readOnly = true)
+	public Customer getCustomer(Integer customerId) throws CustomerException {
+		if (customerId == null) {
+            throw new CustomerException("Customer ID cannot be null.");
+        }
+
+        return customerRepository.findById(customerId)
+                .orElseThrow(() -> new CustomerException("Customer not found with ID: " + customerId));	}
 	
-	public List<Customer> getAllCustomers(){
-		return customerRepository.findAll();
-	}
+	@Transactional(readOnly = true)
+	public List<Customer> getAllCustomers() throws CustomerException{
+		 List<Customer> customers = customerRepository.findAll();
+	        if (customers.isEmpty()) {
+	            throw new CustomerException("No customers found.");
+	        }
+	        return customers;	}
 	
- 	  public String updateCustomer(Integer customerId, Customer customer) {
-        if (customerRepository.existsById(customerId)) {
-            Customer existingCustomer = customerRepository.findById(customerId).get();
+	@Transactional
+	  public String updateCustomer(Integer customerId, Customer customer) throws CustomerException{
+		if (customerId == null || customer == null) {
+            throw new CustomerException("Customer ID and customer data cannot be null.");
+        }
+		Customer existingCustomer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new CustomerException("Customer not found with ID: " + customerId));
 
             // Update only non-null fields
             if (customer.getCustomerFirstName() != null) {
@@ -60,10 +78,8 @@ public class CustomerServiceImpl implements CustomerService {
 
             customerRepository.save(existingCustomer);
             return "Customer updated successfully";
-        } else {
-            return "Customer not found";
-        }
+        } 
     }
-}
+
 
 
