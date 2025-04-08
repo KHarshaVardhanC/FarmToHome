@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+
 
 @Configuration
 public class CloudinaryConfig {
@@ -30,4 +32,20 @@ public class CloudinaryConfig {
         );
         return new Cloudinary(config);
     }
+    
+    
+//    @Bean
+//    public Cloudinary cloudinary() {
+//        return new Cloudinary(ObjectUtils.asMap(
+//            "cloud_name", your_cloud_name,
+//            "api_key", your_api_key,
+//            "api_secret", your_api_secret,
+//            "secure", true));
+//    }
 }
+
+
+//dqarxeygt
+//995583833121231
+//dL2BK4p1qKd2odkjZGtyjzlpv_c
+//CLOUDINARY_URL=cloudinary://995583833121231:dL2BK4p1qKd2odkjZGtyjzlpv_c@dqarxeygt

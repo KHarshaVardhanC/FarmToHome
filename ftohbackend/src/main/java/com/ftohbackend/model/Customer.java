@@ -30,6 +30,8 @@ public class Customer {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders=new ArrayList<>();
     
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Rating> ratings=new ArrayList<>();
     
     public Customer() {
         super();

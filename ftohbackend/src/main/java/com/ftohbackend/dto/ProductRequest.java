@@ -1,77 +1,96 @@
 package com.ftohbackend.dto;
 
-public class ProductDTO {
-	Integer productId;
+import org.springframework.web.multipart.MultipartFile;
+
+public class ProductRequest {
+    
+    
+    
+    Integer productId;
 	Integer sellerId;
 	Double productPrice;
 	String productName;
 	Double productQuantity;
-	String ImageUrl;
+	MultipartFile image;
 	String ProductDescription;
 	
-	public ProductDTO() {
+	
+	public ProductRequest() {
+		super();
 		// TODO Auto-generated constructor stub
 	}
-	
-	
-	
-	public ProductDTO(Integer productId, Integer sellerId, Double productPrice, String productName,
-			Double productQuantity, String imageUrl, String productDescription) {
+
+
+	public ProductRequest(Integer productId, Integer sellerId, Double productPrice, String productName,
+			Double productQuantity, MultipartFile image, String productDescription) {
 		super();
 		this.productId = productId;
 		this.sellerId = sellerId;
 		this.productPrice = productPrice;
 		this.productName = productName;
 		this.productQuantity = productQuantity;
-		ImageUrl = imageUrl;
-		ProductDescription = productDescription;
+		this.image = image;
+		this.ProductDescription = productDescription;
 	}
-
 
 
 	public Integer getProductId() {
 		return productId;
 	}
+
+
 	public void setProductId(Integer productId) {
 		this.productId = productId;
 	}
+
+
 	public Integer getSellerId() {
 		return sellerId;
 	}
+
+
 	public void setSellerId(Integer sellerId) {
 		this.sellerId = sellerId;
 	}
+
+
 	public Double getProductPrice() {
 		return productPrice;
 	}
+
+
 	public void setProductPrice(Double productPrice) {
 		this.productPrice = productPrice;
 	}
+
+
 	public String getProductName() {
 		return productName;
 	}
+
+
 	public void setProductName(String productName) {
 		this.productName = productName;
 	}
+
+
 	public Double getProductQuantity() {
 		return productQuantity;
 	}
+
+
 	public void setProductQuantity(Double productQuantity) {
 		this.productQuantity = productQuantity;
 	}
 
 
-
-	public String getImageUrl() {
-		return ImageUrl;
+	public MultipartFile getImage() {
+		return image;
 	}
 
 
-
-	public void setImageUrl(String imageUrl) {
-		ImageUrl = imageUrl;
-	}
-
+	
+	 
 
 
 	public String getProductDescription() {
@@ -79,21 +98,20 @@ public class ProductDTO {
 	}
 
 
-
 	public void setProductDescription(String productDescription) {
 		ProductDescription = productDescription;
 	}
 
 
-
 	@Override
 	public String toString() {
-		return "ProductDTO [productId=" + productId + ", sellerId=" + sellerId + ", productPrice=" + productPrice
-				+ ", productName=" + productName + ", productQuantity=" + productQuantity + ", ImageUrl=" + ImageUrl
+		return "ProductRequest [productId=" + productId + ", sellerId=" + sellerId + ", productPrice=" + productPrice
+				+ ", productName=" + productName + ", productQuantity=" + productQuantity + ", image=" + image
 				+ ", ProductDescription=" + ProductDescription + "]";
 	}
 	
-
 	
-
+	
+    
+    
 }

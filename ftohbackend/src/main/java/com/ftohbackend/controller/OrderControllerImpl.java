@@ -41,13 +41,13 @@ public class OrderControllerImpl implements OrderController {
 
 	@GetMapping("")
     @Override
-    public List<Order> getAllOrders() {
+    public List<Order> getAllOrders() throws Exception{
         return orderService.getAllOrders();
     }
 
 	  @GetMapping("/{orderId}")
     @Override
-    public Order getOrderById(@PathVariable Integer orderId) {
+    public Order getOrderById(@PathVariable Integer orderId) throws Exception{
         return orderService.getOrderById(orderId);
     }
 	  
@@ -56,7 +56,7 @@ public class OrderControllerImpl implements OrderController {
 	  
     @GetMapping("/customer/{customerId}")
     @Override
-    public List<CustomerOrderDTO> getOrdersByCustomerId(@PathVariable Integer customerId) {
+    public List<CustomerOrderDTO> getOrdersByCustomerId(@PathVariable Integer customerId)  throws Exception {
         List<Order> orders = orderService.getOrderByCustomerId(customerId);
         List<CustomerOrderDTO> customerorders=new ArrayList<>();
         
@@ -79,7 +79,7 @@ public class OrderControllerImpl implements OrderController {
 
     @GetMapping("/seller/{sellerId}")
     @Override
-    public List<SellerOrderDTO> getOrdersBySellerId(@PathVariable Integer sellerId) {
+    public List<SellerOrderDTO> getOrdersBySellerId(@PathVariable Integer sellerId) throws Exception {
         List<SellerOrderDTO> sellerorders=new ArrayList<>(); 
         
         List<Order> orders= orderService.getOrdersBySellerId(sellerId);
@@ -107,7 +107,7 @@ public class OrderControllerImpl implements OrderController {
 
     @PostMapping("/add")
     @Override
-    public String addOrder(@RequestBody OrderDTO orderDTO) {
+    public String addOrder(@RequestBody OrderDTO orderDTO) throws Exception{
    	 Order order=new Order();
      order.setOrderId(orderDTO.getOrderId());
         order.setOrderQuantity(orderDTO.getOrderQuantity());

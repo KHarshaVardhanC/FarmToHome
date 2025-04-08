@@ -11,15 +11,15 @@ import com.ftohbackend.model.Order;
 
 public interface OrderController {
 
-	List<Order> getAllOrders();
+	List<Order> getAllOrders() throws Exception;
 
-	Order getOrderById(Integer orderId);
+	Order getOrderById(Integer orderId) throws Exception;
 
-	List<CustomerOrderDTO> getOrdersByCustomerId(Integer customerId);
+	List<CustomerOrderDTO> getOrdersByCustomerId(Integer customerId) throws Exception;
 
-	public String addOrder(OrderDTO orderDTO);
+	public String addOrder(OrderDTO orderDTO) throws Exception;
 
-	List<SellerOrderDTO> getOrdersBySellerId(Integer sellerId);
+	List<SellerOrderDTO> getOrdersBySellerId(Integer sellerId) throws Exception;
 
 	
 }

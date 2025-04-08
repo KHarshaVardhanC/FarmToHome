@@ -1,6 +1,5 @@
 package com.ftohbackend.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,16 +17,13 @@ public class RatingServiceImpl implements RatingService {
     RatingRepository ratingRepository;
 
     @Override
-    public Rating addRating(Rating rating)throws RatingException {
+    public String addRating(Rating rating)throws RatingException {
     	 if (rating == null) {
              throw new RatingException("Rating object cannot be null");
          }
-         if (rating.getCustomerId() == null || rating.getProductId() == null || rating.getRating() == null) {
-             throw new RatingException("Customer ID, Product ID, and Rating value must not be null");
-         }
-    	rating.setCreatedAt(LocalDateTime.now());
-        rating.setUpdatedAt(LocalDateTime.now());
-        return ratingRepository.save(rating);
+        
+        		ratingRepository.save(rating);
+        		return "Rating Added Successfully";
     }
 
     @Override
@@ -43,7 +39,7 @@ public class RatingServiceImpl implements RatingService {
     	 if (productId == null) {
              throw new RatingException("Product ID cannot be null");
          }
-         List<Rating> ratings = ratingRepository.findByProductId(productId);
+         List<Rating> ratings = ratingRepository.findByProductProductId(productId);
          if (ratings.isEmpty()) {
              throw new RatingException("No ratings found for product ID: " + productId);
          }
@@ -55,7 +51,7 @@ public class RatingServiceImpl implements RatingService {
         if (customerId == null) {
             throw new RatingException("Customer ID cannot be null");
         }
-        List<Rating> ratings = ratingRepository.findByCustomerId(customerId);
+        List<Rating> ratings = ratingRepository.findByCustomerCustomerId(customerId);
         if (ratings.isEmpty()) {
             throw new RatingException("No ratings found for customer ID: " + customerId);
         }

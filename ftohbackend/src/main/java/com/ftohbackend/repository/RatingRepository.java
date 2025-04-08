@@ -10,7 +10,7 @@ import com.ftohbackend.model.Rating;
 
 @Repository
 public interface RatingRepository extends JpaRepository<Rating, Integer> {
-    List<Rating> findByProductId(Integer productId) throws RatingException;
+    List<Rating> findByProductProductId(Integer productId) throws RatingException;
 
-    List<Rating> findByCustomerId(Integer customerId) throws RatingException;
+    List<Rating> findByCustomerCustomerId(Integer customerId) throws RatingException;
 }

@@ -40,6 +40,13 @@ public class Product {
 	@Size(max = 100, message = "Product name cannot exceed 100 characters")
 	@Column(name = "productName")
 	String productName;
+	
+	
+	@Column(name = "ImageUrl", nullable = false)
+	String ImageUrl;
+	
+	@Column(name = "productDescription", nullable = false)
+	String productDescription;
 
 	@NotNull(message = "Product quantity cannot be null")
 	@PositiveOrZero(message = "Product quantity must be zero or positive")
@@ -51,6 +58,9 @@ public class Product {
 	@OneToMany(mappedBy = "product" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	public List<Order> orders=new ArrayList<>();
 	
+	
+	@OneToMany(mappedBy = "product" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	public List<Rating> ratings=new ArrayList<>();
 	
 //	@NotNull(message = "Product Description cannot be null")
 //	@Column(name = "productDescription")
@@ -65,15 +75,27 @@ public class Product {
 		super();
 	}
 
-	public Product(Integer productId, Seller seller, Double productPrice, String productName, Double productQuantity) {
-		super();
-		this.productId = productId;
-		this.seller = seller;
-		this.productPrice = productPrice;
-		this.productName = productName;
-		this.productQuantity = productQuantity;
-//		this.productDescription=productDescription;
-	}
+
+
+	public Product(Integer productId, Seller seller,
+		@NotNull(message = "Product price cannot be null") @Positive(message = "Product price must be positive") Double productPrice,
+		@NotBlank(message = "Product name cannot be blank") @Size(max = 100, message = "Product name cannot exceed 100 characters") String productName,
+		String imageUrl, String productDescription,
+		@NotNull(message = "Product quantity cannot be null") @PositiveOrZero(message = "Product quantity must be zero or positive") Double productQuantity,
+		List<Order> orders, List<Rating> ratings) {
+	super();
+	this.productId = productId;
+	this.seller = seller;
+	this.productPrice = productPrice;
+	this.productName = productName;
+	ImageUrl = imageUrl;
+	this.productDescription = productDescription;
+	this.productQuantity = productQuantity;
+	this.orders = orders;
+	this.ratings = ratings;
+}
+
+
 
 	public Integer getProductId() {
 		return productId;
@@ -115,10 +137,66 @@ public class Product {
 		this.productQuantity = productQuantity;
 	}
 
+
+
+	public String getImageUrl() {
+		return ImageUrl;
+	}
+
+
+
+	public void setImageUrl(String imageUrl) {
+		ImageUrl = imageUrl;
+	}
+
+
+
+	public String getProductDescription() {
+		return productDescription;
+	}
+
+
+
+	public void setProductDescription(String productDescription) {
+		this.productDescription = productDescription;
+	}
+
+
+
+	public List<Order> getOrders() {
+		return orders;
+	}
+
+
+
+	public void setOrders(List<Order> orders) {
+		this.orders = orders;
+	}
+
+
+
+	public List<Rating> getRatings() {
+		return ratings;
+	}
+
+
+
+	public void setRatings(List<Rating> ratings) {
+		this.ratings = ratings;
+	}
+
+
+
 	@Override
 	public String toString() {
 		return "Product [productId=" + productId + ", seller=" + seller + ", productPrice=" + productPrice
-				+ ", productName=" + productName + ", productQuantity=" + productQuantity + "]";
+				+ ", productName=" + productName + ", ImageUrl=" + ImageUrl + ", productDescription="
+				+ productDescription + ", productQuantity=" + productQuantity + ", orders=" + orders + ", ratings="
+				+ ratings + "]";
 	}
+	
+	
+
+	
 
 }

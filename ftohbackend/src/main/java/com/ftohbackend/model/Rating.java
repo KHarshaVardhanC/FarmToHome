@@ -12,94 +12,90 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "rating")
 public class Rating {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer ratingId;
+	@Id
+//	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer ratingId;
 
-    private Integer customerId;
-    private Integer productId;
-    private Integer rating;
-    private String feedback;
+	@ManyToOne
+	@JoinColumn(name = "customerId", nullable = false)
+	private Customer customer;
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-    
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
+	@ManyToOne
+	@JoinColumn(name = "productId", nullable = false)
+	private Product product;
+	private Integer ratingValue;
+	private String feedback;
 
-    public Rating() {
-    }
+	@CreationTimestamp
+	private LocalDateTime createdAt;
 
-    public Rating(Integer ratingId, Integer customerId, Integer productId, Integer rating, String feedback,
-                  LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.ratingId = ratingId;
-        this.customerId = customerId;
-        this.productId = productId;
-        this.rating = rating;
-        this.feedback = feedback;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
+	public Rating() {
+	}
 
-    public Integer getRatingId() {
-        return ratingId;
-    }
+	public Rating(Integer ratingId, Customer customer, Product product, Integer ratingValue, String feedback) {
+		super();
+		this.ratingId = ratingId;
+		this.customer = customer;
+		this.product = product;
+		this.ratingValue = ratingValue;
+		this.feedback = feedback;
+		this.createdAt = LocalDateTime.now();
+	}
 
-    public void setRatingId(Integer ratingId) {
-        this.ratingId = ratingId;
-    }
+	public Integer getRatingId() {
+		return ratingId;
+	}
 
-    public Integer getCustomerId() {
-        return customerId;
-    }
+	public void setRatingId(Integer ratingId) {
+		this.ratingId = ratingId;
+	}
 
-    public void setCustomerId(Integer customerId) {
-        this.customerId = customerId;
-    }
+	public Customer getCustomer() {
+		return customer;
+	}
 
-    public Integer getProductId() {
-        return productId;
-    }
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
+	}
 
-    public void setProductId(Integer productId) {
-        this.productId = productId;
-    }
+	public Product getProduct() {
+		return product;
+	}
 
-    public Integer getRating() {
-        return rating;
-    }
+	public void setProduct(Product product) {
+		this.product = product;
+	}
 
-    public void setRating(Integer rating) {
-        this.rating = rating;
-    }
+	public Integer getRatingValue() {
+		return ratingValue;
+	}
 
-    public String getFeedback() {
-        return feedback;
-    }
+	public void setRatingValue(Integer ratingValue) {
+		this.ratingValue = ratingValue;
+	}
 
-    public void setFeedback(String feedback) {
-        this.feedback = feedback;
-    }
+	public String getFeedback() {
+		return feedback;
+	}
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+	public void setFeedback(String feedback) {
+		this.feedback = feedback;
+	}
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
+	public void setCreatedAt() {
+		this.createdAt = LocalDateTime.now();
+	}
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+	
 
-    @Override
-    public String toString() {
-        return "Rating [ratingId=" + ratingId + ", customerId=" + customerId + ", productId=" + productId +
-                ", rating=" + rating + ", feedback=" + feedback + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
-    }
+	@Override
+	public String toString() {
+		return "Rating [ratingId=" + ratingId + ", customer=" + customer + ", product=" + product + ", rating=" + ratingValue
+				+ ", feedback=" + feedback + ", createdAt=" + createdAt +  "]";
+	}
+
 }

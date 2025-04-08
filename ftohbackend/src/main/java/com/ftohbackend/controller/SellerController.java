@@ -9,21 +9,21 @@ import com.ftohbackend.dto.SellerDTO;
 
 public interface SellerController {
 
-	public String addSeller(SellerDTO sellerdto);
+	public String addSeller(SellerDTO sellerdto) throws Exception;
 	
-	public SellerDTO getSeller(Integer sellerId);
+	public SellerDTO getSeller(Integer sellerId) throws Exception;
 	
-	public List<SellerDTO> getSeller();
+	public List<SellerDTO> getSeller() throws Exception;
 	
-	public String deleteSeller(Integer sellerId);
+	public String deleteSeller(Integer sellerId) throws Exception;
 	
-	public String deleteSeller();
+	public String deleteSeller() throws Exception;
 
-	public String updateSeller(Integer sellerId, SellerDTO sellerdto);
+	public String updateSeller(Integer sellerId, SellerDTO sellerdto) throws Exception;
 
-	public String updateSeller(Integer sellerId, String sellerStatus);
+	public String updateSeller(Integer sellerId, String sellerStatus) throws Exception;
 
-	public ResponseEntity<?> loginSeller(LoginRequest loginRequest);
+	public ResponseEntity<?> loginSeller(LoginRequest loginRequest) throws Exception;
 
 }
 

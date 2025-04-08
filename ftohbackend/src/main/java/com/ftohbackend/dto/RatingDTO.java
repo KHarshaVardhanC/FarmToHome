@@ -5,17 +5,17 @@ public class RatingDTO {
     private Integer ratingId;
     private Integer customerId;
     private Integer productId;
-    private Integer rating;
+    private Integer ratingValue;
     private String feedback;
 
     public RatingDTO() {
     }
 
-    public RatingDTO(Integer ratingId, Integer customerId, Integer productId, Integer rating, String feedback) {
+    public RatingDTO(Integer ratingId, Integer customerId, Integer productId, Integer ratingValue, String feedback) {
         this.ratingId = ratingId;
         this.customerId = customerId;
         this.productId = productId;
-        this.rating = rating;
+        this.ratingValue = ratingValue;
         this.feedback = feedback;
     }
 
@@ -43,12 +43,12 @@ public class RatingDTO {
         this.productId = productId;
     }
 
-    public Integer getRating() {
-        return rating;
+    public Integer getRatingValue() {
+        return ratingValue;
     }
 
-    public void setRating(Integer rating) {
-        this.rating = rating;
+    public void setRatingValue(Integer ratingValue) {
+        this.ratingValue = ratingValue;
     }
 
     public String getFeedback() {
@@ -62,6 +62,6 @@ public class RatingDTO {
     @Override
     public String toString() {
         return "RatingDTO [ratingId=" + ratingId + ", customerId=" + customerId + ", productId=" + productId +
-                ", rating=" + rating + ", feedback=" + feedback + "]";
+                ", rating=" + ratingValue + ", feedback=" + feedback + "]";
     }
 }
