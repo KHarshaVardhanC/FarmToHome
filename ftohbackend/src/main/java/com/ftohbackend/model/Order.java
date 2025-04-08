@@ -24,23 +24,27 @@ public class Order {
     @JoinColumn(name = "customerId", nullable = false)
     public Customer customer;
     
-
+    
+    // this will be a { In cart, Ordered, Success, Deleted, Failed }
+    @Column(nullable =false)
+    public String orderStatus;
+    
     @Column(nullable = false)
     public Double orderQuantity;
-//    @Column(nullable = false)
-//    public Double productPrice;
     
 
-	public Order(Integer orderId, Product product, Customer customer, Double orderQuantity) {
+	public Order(Integer orderId, Product product, String orderStatus, Customer customer, Double orderQuantity) {
 		super();
 		this.orderId = orderId;
 		this.product = product;
 		this.customer = customer;
 		this.orderQuantity=orderQuantity;
+		this.orderStatus="Incart";
 //		this.productPrice=productPrice;
 	}
 
 	public Order() {
+		
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -79,10 +83,18 @@ public class Order {
 
 	
 
+	public String getOrderStatus() {
+		return orderStatus;
+	}
+
+	public void setOrderStatus(String orderStatus) {
+		this.orderStatus = orderStatus;
+	}
+
 	@Override
 	public String toString() {
-		return "Order [orderId=" + orderId + ", product=" + product + ", customer=" + customer + ", orderQuantity="
-				+ orderQuantity + "]";
+		return "Order [orderId=" + orderId + ", product=" + product + ", customer=" + customer + ", orderStatus="
+				+ orderStatus + ", orderQuantity=" + orderQuantity + "]";
 	}
 
 	

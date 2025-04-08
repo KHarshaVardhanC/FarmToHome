@@ -8,6 +8,8 @@ public class OrderDTO {
     private Integer productId;
     private Double orderQuantity;
     private Integer customerId;
+ // this will be a { In cart, Ordered, Success, Deleted, Failed }
+    public String orderStatus;
 	public OrderDTO() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -18,6 +20,7 @@ public class OrderDTO {
 		this.productId = productId;
 		this.orderQuantity = orderQuantity;
 		this.customerId = customerId;
+		this.orderStatus="In cart";
 	}
 	public Integer getOrderId() {
 		return orderId;
@@ -43,12 +46,23 @@ public class OrderDTO {
 	public void setCustomerId(Integer customerId) {
 		this.customerId = customerId;
 	}
+	
+	
+	
+	public String getOrderStatus() {
+		return orderStatus;
+	}
+	public void setOrderStatus() {
+		this.orderStatus = "In Cart1";
+	}
+	public void setOrderStatus(String orderStatus) {
+		this.orderStatus = orderStatus;
+	}
 	@Override
 	public String toString() {
 		return "OrderDTO [orderId=" + orderId + ", productId=" + productId + ", orderQuantity=" + orderQuantity
-				+ ", customerId=" + customerId + "]";
+				+ ", customerId=" + customerId + ", orderStatus=" + orderStatus + "]";
 	}
-	
 	
 	
     

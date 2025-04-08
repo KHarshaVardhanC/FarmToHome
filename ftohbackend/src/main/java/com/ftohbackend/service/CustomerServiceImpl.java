@@ -66,8 +66,17 @@ public class CustomerServiceImpl implements CustomerService {
             if (customer.getCustomerPassword() != null) {
                 existingCustomer.setCustomerPassword(customer.getCustomerPassword());
             }
-            if (customer.getCustomerLocation() != null) {
-                existingCustomer.setCustomerLocation(customer.getCustomerLocation());
+            if (customer.getCustomerCity() != null) {
+                existingCustomer.setCustomerCity(customer.getCustomerCity());
+            }
+            if (customer.getCustomerPlace() != null) {
+            	existingCustomer.setCustomerPlace(customer.getCustomerPlace());
+            }
+            if (customer.getCustomerPincode() != null) {
+            	existingCustomer.setCustomerPincode(customer.getCustomerPincode());
+            }
+            if (customer.getCustomerState() != null) {
+            	existingCustomer.setCustomerState(customer.getCustomerState());
             }
             if (customer.getCustomerPhoneNumber() != null) {
                 existingCustomer.setCustomerPhoneNumber(customer.getCustomerPhoneNumber());

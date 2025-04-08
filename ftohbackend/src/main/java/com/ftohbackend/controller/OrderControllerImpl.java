@@ -107,16 +107,12 @@ public class OrderControllerImpl implements OrderController {
 	@PostMapping("/add")
 	@Override
 	public String addOrder(@RequestBody OrderDTO orderDTO) throws Exception {
-		Order order = new Order();
-		order.setOrderId(orderDTO.getOrderId());
-		order.setOrderQuantity(orderDTO.getOrderQuantity());
 
-		Product product = productService.getProduct(orderDTO.getProductId());
-		order.setProduct(product);
-
-		Customer customer = customerService.getCustomer(orderDTO.getCustomerId());
-		order.setCustomer(customer);
-
+		
+		
+		Order order = modelMapper.map(orderDTO, Order.class);
+		order.setOrderStatus("In Cart");
+		
 		return orderService.addOrder(order);
 	}
 

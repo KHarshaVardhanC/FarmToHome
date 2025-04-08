@@ -21,7 +21,6 @@ import jakarta.persistence.Table;
 public class Seller {
 
 	@Id
-	@Column(nullable = false)
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Integer sellerId;
 	@Column(nullable = false, unique = true)
@@ -52,11 +51,11 @@ public class Seller {
 	@OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Product> products = new ArrayList<>();
 
-	public Seller(Integer sellerId, String sellerEmail, String sellerFirstName, String sellerLastName, Date sellerDOB,
+	public Seller( String sellerEmail, String sellerFirstName, String sellerLastName, Date sellerDOB,
 			String sellerMobileNumber, String sellerPlace, String sellerCity, String sellerState, String sellerPincode,
 			String sellerPassword, String sellerStatus) {
 		super();
-		this.sellerId = sellerId;
+//		this.sellerId = sellerId;
 		this.sellerEmail = sellerEmail;
 		this.sellerFirstName = sellerFirstName;
 		this.sellerLastName = sellerLastName;
@@ -140,9 +139,6 @@ public class Seller {
 		this.sellerStatus = sellerStatus;
 	}
 
-	public void setSellerId(Integer sellerId) {
-		this.sellerId = sellerId;
-	}
 
 	public String getSellerPlace() {
 		return sellerPlace;
