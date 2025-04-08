@@ -65,19 +65,15 @@ public class ProductControllerImpl implements ProductController {
 //	
 //	
 //	
-	
-	
+
 	@PostMapping(value = "/product", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ProductDTO> addProduct(
-            @Valid @ModelAttribute ProductRequest productRequest) throws Exception {
-        
-        ProductDTO productDTO = productService.addProduct(productRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(productDTO);
-    }
-	
-	
-	
-	
+	public ResponseEntity<ProductDTO> addProduct( @Valid @ModelAttribute ProductRequest productRequest)
+			throws Exception {
+
+		ProductDTO productDTO = productService.addProduct(productRequest);
+		return ResponseEntity.status(HttpStatus.CREATED).body(productDTO);
+	}
+
 //	@GetMapping("/product/{productName}")
 //	@Override
 //	public List<ProductWithSellerDetailsDTO> getProduct(@PathVariable String productName) {
@@ -105,6 +101,14 @@ public class ProductControllerImpl implements ProductController {
 		return productService.deleteProduct(productId);
 	}
 
+	@GetMapping("")
+	@Override
+	public List<ProductDTO> getAllProducts() throws Exception{
+		return productService.getAllProduct().stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
+		
+	}
+	
+	
 	@GetMapping("/product/{sellerId}")
 	@Override
 	public List<SellerProductDTO> getProducts(@PathVariable Integer sellerId) throws Exception {

@@ -102,7 +102,7 @@ public class ProductServiceImpl implements ProductService {
 	private String uploadImage(MultipartFile file) throws IOException {
 		try {
 			Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-			return uploadResult.get("cloudinary://995583833121231:dL2BK4p1qKd2odkjZGtyjzlpv_c@dqarxeygt").toString();
+			return uploadResult.get("url").toString();
 		} catch (IOException e) {
 			throw new IOException("Failed to upload image to Cloudinary", e);
 		}

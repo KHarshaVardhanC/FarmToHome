@@ -37,6 +37,11 @@ public class ProductRequest {
 	public Integer getProductId() {
 		return productId;
 	}
+	
+	public void setImage(MultipartFile image)
+	{
+		this.image=image;
+	}
 
 
 	public void setProductId(Integer productId) {

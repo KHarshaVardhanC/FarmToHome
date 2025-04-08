@@ -27,5 +27,7 @@ public interface ProductController {
 
 	ResponseEntity<ProductDTO> addProduct(@Valid ProductRequest productRequest) throws Exception;
 
+	List<ProductDTO> getAllProducts() throws Exception;
+
 	
 }
