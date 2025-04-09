@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import com.ftohbackend.dto.RatingDTO;
 import com.ftohbackend.model.Rating;
 import com.ftohbackend.service.CustomerService;
 import com.ftohbackend.service.RatingService;
+@CrossOrigin(origins = "*")
 
 @RestController
 @RequestMapping("/rating")
