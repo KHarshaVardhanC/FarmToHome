@@ -68,6 +68,7 @@ public class Seller {
 		this.setSellerPassword(sellerPassword);
 		this.sellerStatus = sellerStatus;
 	}
+	
 
 	public Seller() {
 		super();
