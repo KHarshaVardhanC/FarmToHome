@@ -22,6 +22,7 @@ import com.ftohbackend.dto.CustomerProductDTO;
 import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
 import com.ftohbackend.dto.SellerProductDTO;
+import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Product;
 import com.ftohbackend.service.ProductService;
 import com.ftohbackend.service.ProductServiceImpl;
@@ -84,7 +85,7 @@ public class ProductControllerImpl implements ProductController {
 
 	@GetMapping("/product1/{productName}")
 	@Override
-	public List<CustomerProductDTO> getProductByName(@PathVariable String productName) throws Exception {
+	public List<CustomerProductDTO> getProductByName(@PathVariable String productName) throws Exception,ProductException {
 		List<CustomerProductDTO> products = productService.searchProductsWithSellerDetails(productName);
 		return products;
 	}
@@ -92,20 +93,20 @@ public class ProductControllerImpl implements ProductController {
 	@PutMapping("/product/{productId}")
 	@Override
 	public String updateProduct(@PathVariable Integer productId, @RequestBody ProductDTO updatedDetails)
-			throws Exception {
+			throws ProductException {
 		Product prod = modelMapper.map(updatedDetails, Product.class);
 		return productService.updateProduct(productId, prod);
 	}
 
 	@DeleteMapping("/product/{productId}")
 	@Override
-	public String deleteProduct(@PathVariable Integer productId) throws Exception {
+	public String deleteProduct(@PathVariable Integer productId) throws ProductException {
 		return productService.deleteProduct(productId);
 	}
 
 	@GetMapping("")
 	@Override
-	public List<ProductDTO> getAllProducts() throws Exception{
+	public List<ProductDTO> getAllProducts() throws ProductException{
 		return productService.getAllProduct().stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
 		
 	}
@@ -113,7 +114,7 @@ public class ProductControllerImpl implements ProductController {
 	
 	@GetMapping("/product/{sellerId}")
 	@Override
-	public List<SellerProductDTO> getProducts(@PathVariable Integer sellerId) throws Exception {
+	public List<SellerProductDTO> getProducts(@PathVariable Integer sellerId) throws ProductException {
 		// TODO Auto-generated method stub
 
 		List<Product> products = productService.getAllProduct(sellerId);
@@ -136,7 +137,7 @@ public class ProductControllerImpl implements ProductController {
 
 	@GetMapping("/{productId}")
 	@Override
-	public ProductDTO getProduct(@PathVariable Integer productId) throws Exception {
+	public ProductDTO getProduct(@PathVariable Integer productId) throws ProductException {
 		return modelMapper.map(productService.getProduct(productId), ProductDTO.class);
 	}
 
