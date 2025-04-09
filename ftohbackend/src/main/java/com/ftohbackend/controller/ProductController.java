@@ -1,5 +1,6 @@
  package com.ftohbackend.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,7 @@ import com.ftohbackend.dto.CustomerProductDTO;
 import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
 import com.ftohbackend.dto.SellerProductDTO;
+import com.ftohbackend.exception.ProductException;
 
 import jakarta.validation.Valid;
 
@@ -15,19 +17,19 @@ public interface ProductController {
 
 //	String addProduct(@Valid ProductDTO productDto) throws Exception;
 
-	String updateProduct(Integer productId, ProductDTO updatedDetails) throws Exception;
+	String updateProduct(Integer productId, ProductDTO updatedDetails) throws ProductException;
 
-	String deleteProduct(Integer productId) throws Exception;
+	String deleteProduct(Integer productId) throws ProductException;
 
-	ProductDTO getProduct(Integer productId) throws Exception;
+	ProductDTO getProduct(Integer productId) throws ProductException;
 
-	List<CustomerProductDTO> getProductByName(String productName) throws Exception;
+	List<CustomerProductDTO> getProductByName(String productName) throws ProductException, Exception;
 
-	List<SellerProductDTO> getProducts(Integer sellerId) throws Exception;
+	List<SellerProductDTO> getProducts(Integer sellerId) throws ProductException;
 
-	ResponseEntity<ProductDTO> addProduct(@Valid ProductRequest productRequest) throws Exception;
+	ResponseEntity<ProductDTO> addProduct(@Valid ProductRequest productRequest) throws ProductException, IOException, Exception;
 
-	List<ProductDTO> getAllProducts() throws Exception;
+	List<ProductDTO> getAllProducts() throws ProductException;
 
 	
 }

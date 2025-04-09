@@ -1,7 +1,5 @@
 package com.ftohbackend.servicetesting;
 
-package com.ftohbackend.service;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,20 +45,36 @@ public class RatingServiceTest {
 
     @BeforeEach
     public void setUp() {
+        // Setup Customer based on CustomerDTO
         customer = new Customer();
         customer.setCustomerId(1);
-        customer.setCustomerName("Test Customer");
+        customer.setCustomerFirstName("John");
+        customer.setCustomerLastName("Doe");
+        customer.setCustomerEmail("john.doe@example.com");
+        customer.setCustomerPassword("password1234");
+        customer.setCustomerPlace("SamplePlace");
+        customer.setCustomerCity("SampleCity");
+        customer.setCustomerPincode("123456");
+        customer.setCustomerState("SampleState");
+        customer.setCustomerPhoneNumber("9876543210");
+        customer.setCustomerIsActive(true);
 
+        // Setup Product based on ProductDTO
         product = new Product();
         product.setProductId(1);
         product.setProductName("Test Product");
-
+        product.setProductPrice(100.0);
+        product.setProductQuantity(10.0);
+        product.setImageUrl("http://example.com/image.jpg");
+        product.setProductDescription("Test product description");
+        
+        // Now setup the Rating
         rating = new Rating();
         rating.setRatingId(1);
         rating.setCustomer(customer);
         rating.setProduct(product);
         rating.setRatingValue(5);
-        rating.setFeedback("Great product!");
+        rating.setFeedback("Great product, would recommend!");
     }
 
     @AfterEach
@@ -105,8 +119,10 @@ public class RatingServiceTest {
         // given - precondition or setup
         Rating rating2 = new Rating();
         rating2.setRatingId(2);
+        rating2.setCustomer(customer);
+        rating2.setProduct(product);
         rating2.setRatingValue(4);
-        rating2.setFeedback("Good product");
+        rating2.setFeedback("Good product but could be better");
 
         given(ratingRepository.findAll()).willReturn(List.of(rating, rating2));
 
@@ -116,6 +132,8 @@ public class RatingServiceTest {
         // then - verify the output
         assertThat(ratings).isNotNull();
         assertThat(ratings.size()).isEqualTo(2);
+        assertThat(ratings.get(0).getRatingValue()).isEqualTo(5);
+        assertThat(ratings.get(1).getRatingValue()).isEqualTo(4);
         verify(ratingRepository, times(1)).findAll();
     }
 
@@ -139,8 +157,10 @@ public class RatingServiceTest {
         // given - precondition or setup
         Rating rating2 = new Rating();
         rating2.setRatingId(2);
+        rating2.setCustomer(customer);
         rating2.setProduct(product);
         rating2.setRatingValue(4);
+        rating2.setFeedback("Product meets expectations");
 
         given(ratingRepository.findByProductProductId(anyInt())).willReturn(List.of(rating, rating2));
 
@@ -150,12 +170,14 @@ public class RatingServiceTest {
         // then - verify the output
         assertThat(ratings).isNotNull();
         assertThat(ratings.size()).isEqualTo(2);
+        assertThat(ratings.get(0).getProduct().getProductId()).isEqualTo(1);
+        assertThat(ratings.get(1).getProduct().getProductId()).isEqualTo(1);
         verify(ratingRepository, times(1)).findByProductProductId(1);
     }
 
     @Test
     @DisplayName("JUnit test for getRatingsByProductId operation - Empty List")
-    public void givenProductId_whenGetRatingsByProductIdWithNoResults_thenThrowsRatingException() {
+    public void givenProductId_whenGetRatingsByProductIdWithNoResults_thenThrowsRatingException() throws RatingException {
         // given - precondition or setup
         given(ratingRepository.findByProductProductId(anyInt())).willReturn(Collections.emptyList());
 
@@ -169,7 +191,7 @@ public class RatingServiceTest {
 
     @Test
     @DisplayName("JUnit test for getRatingsByProductId operation - Null ProductId")
-    public void givenNullProductId_whenGetRatingsByProductId_thenThrowsRatingException() {
+    public void givenNullProductId_whenGetRatingsByProductId_thenThrowsRatingException() throws RatingException {
         // when - action or behavior & then - verify the output
         assertThrows(RatingException.class, () -> {
             ratingService.getRatingsByProductId(null);
@@ -185,7 +207,9 @@ public class RatingServiceTest {
         Rating rating2 = new Rating();
         rating2.setRatingId(2);
         rating2.setCustomer(customer);
+        rating2.setProduct(product);
         rating2.setRatingValue(3);
+        rating2.setFeedback("Average product");
 
         given(ratingRepository.findByCustomerCustomerId(anyInt())).willReturn(List.of(rating, rating2));
 
@@ -195,12 +219,14 @@ public class RatingServiceTest {
         // then - verify the output
         assertThat(ratings).isNotNull();
         assertThat(ratings.size()).isEqualTo(2);
+        assertThat(ratings.get(0).getCustomer().getCustomerId()).isEqualTo(1);
+        assertThat(ratings.get(1).getCustomer().getCustomerId()).isEqualTo(1);
         verify(ratingRepository, times(1)).findByCustomerCustomerId(1);
     }
 
     @Test
     @DisplayName("JUnit test for getRatingsByCustomerId operation - Empty List")
-    public void givenCustomerId_whenGetRatingsByCustomerIdWithNoResults_thenThrowsRatingException() {
+    public void givenCustomerId_whenGetRatingsByCustomerIdWithNoResults_thenThrowsRatingException() throws RatingException {
         // given - precondition or setup
         given(ratingRepository.findByCustomerCustomerId(anyInt())).willReturn(Collections.emptyList());
 
@@ -214,7 +240,7 @@ public class RatingServiceTest {
 
     @Test
     @DisplayName("JUnit test for getRatingsByCustomerId operation - Null CustomerId")
-    public void givenNullCustomerId_whenGetRatingsByCustomerId_thenThrowsRatingException() {
+    public void givenNullCustomerId_whenGetRatingsByCustomerId_thenThrowsRatingException() throws RatingException {
         // when - action or behavior & then - verify the output
         assertThrows(RatingException.class, () -> {
             ratingService.getRatingsByCustomerId(null);
@@ -235,6 +261,10 @@ public class RatingServiceTest {
         // then - verify the output
         assertThat(foundRating).isNotNull();
         assertThat(foundRating.getRatingId()).isEqualTo(1);
+        assertThat(foundRating.getRatingValue()).isEqualTo(5);
+        assertThat(foundRating.getFeedback()).isEqualTo("Great product, would recommend!");
+        assertThat(foundRating.getCustomer().getCustomerId()).isEqualTo(1);
+        assertThat(foundRating.getProduct().getProductId()).isEqualTo(1);
         verify(ratingRepository, times(1)).findById(1);
     }
 
@@ -274,6 +304,7 @@ public class RatingServiceTest {
         ratingService.deleteRating(1);
 
         // then - verify the output
+        verify(ratingRepository, times(1)).existsById(1);
         verify(ratingRepository, times(1)).deleteById(1);
     }
 
@@ -288,6 +319,7 @@ public class RatingServiceTest {
             ratingService.deleteRating(999);
         });
 
+        verify(ratingRepository, times(1)).existsById(999);
         verify(ratingRepository, never()).deleteById(anyInt());
     }
 

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ftohbackend.dto.SellerDTO;
+import com.ftohbackend.exception.SellerException;
 import com.ftohbackend.model.Seller;
 import com.ftohbackend.service.SellerService;
 
@@ -35,7 +36,7 @@ public class SellerControllerImpl implements SellerController {
 
 	@Override
 	@PostMapping("")
-	public String addSeller(@Valid @RequestBody SellerDTO sellerdto) throws Exception {
+	public String addSeller(@Valid @RequestBody SellerDTO sellerdto) throws SellerException {
 		// TODO Auto-generated method stub
 		Seller seller = modelMapper.map(sellerdto, Seller.class);
 		return sellerService.addSeller(seller);
@@ -44,7 +45,7 @@ public class SellerControllerImpl implements SellerController {
 
 	@Override
 	@GetMapping("/{sellerId}")
-	public SellerDTO getSeller(@PathVariable Integer sellerId) throws Exception {
+	public SellerDTO getSeller(@PathVariable Integer sellerId) throws SellerException {
 		// TODO Auto-generated method stub
 
 		return modelMapper.map(sellerService.getSeller(sellerId), SellerDTO.class);
@@ -52,7 +53,7 @@ public class SellerControllerImpl implements SellerController {
 
 	@Override
 	@GetMapping("")
-	public List<SellerDTO> getSeller() throws Exception {
+	public List<SellerDTO> getSeller() throws SellerException {
 
 		return sellerService.getSeller().stream().map(DTO -> modelMapper.map(DTO, SellerDTO.class))
 				.collect(Collectors.toList());
@@ -60,33 +61,33 @@ public class SellerControllerImpl implements SellerController {
 
 	@Override
 	@DeleteMapping("/{sellerId}")
-	public String deleteSeller(@PathVariable Integer sellerId) throws Exception {
+	public String deleteSeller(@PathVariable Integer sellerId) throws SellerException {
 		return sellerService.deleteSeller(sellerId);
 	}
 
 	@Override
 	@DeleteMapping("")
-	public String deleteSeller() throws Exception {
+	public String deleteSeller() throws SellerException {
 //		return sellerService.deleteSeller();
 		return "delete";
 	}
 
 	@Override
 	@PutMapping("/{sellerId}")
-	public String updateSeller(@PathVariable Integer sellerId, @RequestBody SellerDTO sellerdto) throws Exception {
+	public String updateSeller(@PathVariable Integer sellerId, @RequestBody SellerDTO sellerdto) throws SellerException {
 		Seller seller = modelMapper.map(sellerdto, Seller.class);
 		return sellerService.updateSeller(sellerId, seller);
 	}
 
 	@Override
 	@PutMapping("/{sellerId}/{sellerStatus}")
-	public String updateSeller(@PathVariable Integer sellerId, @PathVariable String sellerStatus) throws Exception {
+	public String updateSeller(@PathVariable Integer sellerId, @PathVariable String sellerStatus) throws SellerException {
 		return sellerService.updateSeller(sellerId, sellerStatus);
 	}
 
 	@Override
 	@PostMapping("/login")
-	public ResponseEntity<?> loginSeller(@RequestBody LoginRequest loginRequest) throws Exception {
+	public ResponseEntity<?> loginSeller(@RequestBody LoginRequest loginRequest) throws SellerException {
 		Seller seller = sellerService.authenticateSeller(loginRequest.getEmail(), loginRequest.getPassword());
 
 		if (seller != null) {
