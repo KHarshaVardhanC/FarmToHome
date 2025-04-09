@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ftohbackend.dto.CustomerDTO;
+import com.ftohbackend.exception.CustomerException;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.service.CustomerService;
 
@@ -36,7 +37,7 @@ public class CustomerControllerImpl implements CustomerController{
 	private CustomerService customerservice;
 	
 	@PostMapping("")
-	public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerdto) throws Exception {
+	public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerdto) throws CustomerException {
 	    Customer customer = modelmapper.map(customerdto, Customer.class);
 	    String result = customerservice.addCustomer(customer);
 
@@ -44,14 +45,14 @@ public class CustomerControllerImpl implements CustomerController{
 	}
 
 	@GetMapping("/{customerId}")
-	public ResponseEntity<CustomerDTO> getCustomer(@PathVariable Integer customerId) throws Exception {
+	public ResponseEntity<CustomerDTO> getCustomer(@PathVariable Integer customerId) throws CustomerException {
 	    Customer customer = customerservice.getCustomer(customerId);
 	    CustomerDTO customerDTO=modelmapper.map(customer,CustomerDTO.class);
 	    return ResponseEntity.ok(customerDTO); // Return HTTP 200 with customer data
 	}
 
 	@GetMapping("/")
-	public ResponseEntity<List<CustomerDTO>> getAllCustomers() throws Exception {
+	public ResponseEntity<List<CustomerDTO>> getAllCustomers() throws CustomerException {
 	    List<Customer> customers= customerservice.getAllCustomers(); 
 	    
 	    List<CustomerDTO> customerDTOs = customers.stream().map(customer -> modelmapper.map(customer, CustomerDTO.class)).collect(Collectors.toList()); // ✅ Using Collectors.toList() for Java 8+
@@ -71,7 +72,7 @@ public class CustomerControllerImpl implements CustomerController{
 	*/
 	
 	@PutMapping("/{customerId}")
-    public ResponseEntity<String> updateCustomer(@PathVariable Integer customerId, @RequestBody CustomerDTO customerDTO) throws Exception {
+    public ResponseEntity<String> updateCustomer(@PathVariable Integer customerId, @RequestBody CustomerDTO customerDTO) throws CustomerException {
         // Convert DTO to Entity using ModelMapper
         Customer customer = modelmapper.map(customerDTO, Customer.class);
 

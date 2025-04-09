@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ftohbackend.dto.CustomerOrderDTO;
 import com.ftohbackend.dto.OrderDTO;
 import com.ftohbackend.dto.SellerOrderDTO;
+import com.ftohbackend.exception.OrderException;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.model.Order;
 import com.ftohbackend.model.Product;
@@ -56,7 +57,7 @@ public class OrderControllerImpl implements OrderController {
 
 	@GetMapping("/customer/{customerId}")
 	@Override
-	public List<CustomerOrderDTO> getOrdersByCustomerId(@PathVariable Integer customerId) throws Exception {
+	public List<CustomerOrderDTO> getOrdersByCustomerId(@PathVariable Integer customerId) throws OrderException {
 		List<Order> orders = orderService.getOrderByCustomerId(customerId);
 		List<CustomerOrderDTO> customerorders = new ArrayList<>();
 
@@ -80,7 +81,7 @@ public class OrderControllerImpl implements OrderController {
 	
 	@Override
 	@PutMapping("/order/{orderId}/{orderStatus}")
-	public Order updateOrderStatus(@PathVariable Integer orderId,@PathVariable String orderStatus) throws Exception
+	public Order updateOrderStatus(@PathVariable Integer orderId,@PathVariable String orderStatus) throws Exception,OrderException
 	{
 		
 		return orderService.updateOrderStatus(orderId,  orderStatus);
@@ -88,7 +89,7 @@ public class OrderControllerImpl implements OrderController {
 
 	@GetMapping("/seller/{sellerId}")
 	@Override
-	public List<SellerOrderDTO> getOrdersBySellerId(@PathVariable Integer sellerId) throws Exception {
+	public List<SellerOrderDTO> getOrdersBySellerId(@PathVariable Integer sellerId) throws Exception ,OrderException{
 		List<SellerOrderDTO> sellerorders = new ArrayList<>();
 
 		List<Order> orders = orderService.getOrdersBySellerId(sellerId);
@@ -116,7 +117,7 @@ public class OrderControllerImpl implements OrderController {
 
 	@PostMapping("/add")
 	@Override
-	public String addOrder(@RequestBody OrderDTO orderDTO) throws Exception {
+	public String addOrder(@RequestBody OrderDTO orderDTO) throws Exception,OrderException {
 
 		
 		
@@ -128,7 +129,7 @@ public class OrderControllerImpl implements OrderController {
 
     @DeleteMapping("/delete/{orderId}")
     @Override
-    public String deleteOrder(@PathVariable Integer orderId) throws Exception{
+    public String deleteOrder(@PathVariable Integer orderId) throws Exception,OrderException{
         orderService.deleteOrder(orderId);
         return "Order with ID " + orderId + " deleted successfully!";
     }

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ftohbackend.dto.ProductRatingDTO;
 import com.ftohbackend.dto.RatingDTO;
+import com.ftohbackend.exception.RatingException;
 import com.ftohbackend.model.Rating;
 import com.ftohbackend.service.CustomerService;
 import com.ftohbackend.service.RatingService;
@@ -37,7 +38,7 @@ public class RatingControllerImpl implements RatingController {
 	
 	@Override
 	@PostMapping("")
-	public String addRating(@RequestBody RatingDTO ratingDTO) throws Exception {
+	public String addRating(@RequestBody RatingDTO ratingDTO) throws RatingException {
 		
 		Rating rating = modelMapper.map(ratingDTO, Rating.class);
 		
@@ -48,14 +49,14 @@ public class RatingControllerImpl implements RatingController {
 	
 	@Override
 	@GetMapping("")
-	public List<RatingDTO> getAllRatings() throws Exception {
+	public List<RatingDTO> getAllRatings() throws RatingException {
 		return ratingService.getAllRatings().stream().map(rating -> modelMapper.map(rating, RatingDTO.class)).collect(Collectors.toList());
 				
 	}
 	
 	@Override
 	@GetMapping("/{ratingId}")
-	public RatingDTO getRatingById(@PathVariable Integer ratingId) throws Exception {
+	public RatingDTO getRatingById(@PathVariable Integer ratingId) throws RatingException {
 		Rating rating = ratingService.getRatingById(ratingId);
 		return modelMapper.map(rating, RatingDTO.class);
 		
@@ -63,7 +64,7 @@ public class RatingControllerImpl implements RatingController {
 	
 	@Override
 	@GetMapping("/product/{productId}")
-	public List<ProductRatingDTO> getRatingsByProductId(@PathVariable Integer productId) throws Exception{
+	public List<ProductRatingDTO> getRatingsByProductId(@PathVariable Integer productId) throws RatingException{
 		
 		List<Rating> ratings=ratingService.getRatingsByProductId(productId);
 		List<ProductRatingDTO> productratings=new ArrayList<>();
@@ -88,14 +89,14 @@ public class RatingControllerImpl implements RatingController {
 	
 	@Override
 	@GetMapping("/customer/{customerId}")
-	public List<RatingDTO> getRatingsByCustomerId(@PathVariable Integer customerId) throws Exception {
+	public List<RatingDTO> getRatingsByCustomerId(@PathVariable Integer customerId) throws RatingException {
 		return ratingService.getRatingsByCustomerId(customerId).stream().map(r -> modelMapper.map(r, RatingDTO.class)).collect(Collectors.toList());
 		
 	}
 	
 	@Override
 	@DeleteMapping("/{ratingId}")
-	public String deleteRating(@PathVariable Integer ratingId) throws Exception {
+	public String deleteRating(@PathVariable Integer ratingId) throws RatingException {
 		ratingService.deleteRating(ratingId);
 		return "Rating deleted successfully";
 	}
