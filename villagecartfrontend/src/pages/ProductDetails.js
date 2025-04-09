@@ -16,12 +16,12 @@ const ProductDetails = () => {
     productName: '',
     productPrice: 0,
     productQuantity: 0,
-    sellerPlace: '',
-    sellerArea: '',
+    // sellerPlace: '',
+    // sellerArea: '',
     productDescription: ''
   });
   
-  const sellerId = 1;
+  const sellerId = 2;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -34,8 +34,8 @@ const ProductDetails = () => {
           productName: productData.productName,
           productPrice: productData.productPrice,
           productQuantity: productData.productQuantity,
-          sellerPlace: productData.sellerPlace,
-          sellerArea: productData.sellerArea,
+          // sellerPlace: productData.sellerPlace,
+          // sellerArea: productData.sellerArea,
           productDescription: productData.productDescription,
           sellerId: sellerId
         });
@@ -184,7 +184,7 @@ const ProductDetails = () => {
                       />
                     </div>
 
-                    <div className="mb-3">
+                    {/* <div className="mb-3">
                       <label className="form-label fw-bold">Location</label>
                       <input
                         type="text"
@@ -204,7 +204,7 @@ const ProductDetails = () => {
                         placeholder="Area"
                         required
                       />
-                    </div>
+                    </div> */}
 
                     <div className="d-flex gap-2 mt-4">
                       <button type="submit" className="btn btn-primary">
@@ -248,12 +248,12 @@ const ProductDetails = () => {
                     <p>₹{product.productPrice}</p>
                   </div>
 
-                  <div className="mb-3">
+                  {/* <div className="mb-3">
                     <h5 className="mb-1">Location</h5>
                     <p>
                     {product.sellerPlace}, {product.sellerArea}
                     </p>
-                  </div>
+                  </div> */}
 
                   <button
                     className="btn btn-primary"

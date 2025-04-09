@@ -13,14 +13,14 @@ const AddProduct = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   
   // Replace with actual seller ID from authentication
-  const sellerId = 1; // This should come from your auth context
+  const sellerId = 2; // This should come from your auth context
 
   const [productData, setProductData] = useState({
     productName: '',
     productPrice: '',
     productQuantity: '',
-    sellerPlace: '',
-    sellerArea: '',
+    // sellerPlace: '',
+    // sellerArea: '',
     sellerId: sellerId,
     productDescription: '',
   });
@@ -204,7 +204,7 @@ const AddProduct = () => {
                       </div>
                     )}
                   </div>
-
+{/* 
                   <div className="mb-3">
                     <label className="form-label">Seller Place</label>
                     <input
@@ -215,8 +215,8 @@ const AddProduct = () => {
                       onChange={handleChange}
                       required
                     />
-                  </div>
-
+                  </div> */}
+{/* 
                   <div className="mb-3">
                     <label className="form-label">Seller Area</label>
                     <input
@@ -227,7 +227,7 @@ const AddProduct = () => {
                       onChange={handleChange}
                       required
                     />
-                  </div>
+                  </div> */}
 
                   <div className="d-grid gap-2">
                     <button
