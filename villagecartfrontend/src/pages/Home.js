@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { productApi, ordersApi, ratingsApi } from '../utils/api';
-import ProfileDropdown from '../components/ProfileDropdown';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import ProfileDropdown from '../components/ProfileDropdown';
+import { ordersApi, productApi } from '../utils/api';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -71,9 +71,9 @@ const Home = () => {
 
         // Fetch ratings for all products
         console.log('Fetching ratings for seller:', sellerId);
-        const ratingsResponse = await ratingsApi.getSellerRatings(sellerId);
-        console.log('Ratings response:', ratingsResponse);
-        setRatings(ratingsResponse.data);
+        // const ratingsResponse = await ratingsApi.getSellerRatings(sellerId);
+        // console.log('Ratings response:', ratingsResponse);
+        // setRatings(ratingsResponse.data);
       } catch (err) {
         console.error('Error details:', {
           message: err.message,

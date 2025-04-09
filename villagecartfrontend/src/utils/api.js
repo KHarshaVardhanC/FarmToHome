@@ -69,7 +69,7 @@ export const ordersApi = {
 // Ratings API endpoints
 export const ratingsApi = {
   getProductRatings: (productId) => api.get(`/rating/product/${productId}`),
-  getSellerRatings: (sellerId) => api.get(`/rating/seller/${sellerId}`),
+  // getSellerRatings: (sellerId) => api.get(`/rating/seller/${sellerId}`),
   deleteRating: (ratingId) => api.delete(`/rating/${ratingId}`)
 };
 
