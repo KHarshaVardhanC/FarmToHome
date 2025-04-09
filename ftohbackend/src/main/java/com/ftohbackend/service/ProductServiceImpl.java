@@ -76,7 +76,6 @@ public class ProductServiceImpl implements ProductService {
 		// Convert ProductRequest to Product entity
 		Product product = new Product();
 		
-		product.setProductId(productRequest.getProductId());
 		product.setProductName(productRequest.getProductName());
 		product.setProductPrice(productRequest.getProductPrice());
 		product.setProductQuantity(productRequest.getProductQuantity());
