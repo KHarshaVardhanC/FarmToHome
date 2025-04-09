@@ -6,7 +6,6 @@ public class ProductRequest {
     
     
     
-    Integer productId;
 	Integer sellerId;
 	Double productPrice;
 	String productName;
@@ -21,10 +20,10 @@ public class ProductRequest {
 	}
 
 
-	public ProductRequest(Integer productId, Integer sellerId, Double productPrice, String productName,
+	public ProductRequest(Integer sellerId, Double productPrice, String productName,
 			Double productQuantity, MultipartFile image, String productDescription) {
 		super();
-		this.productId = productId;
+//		this.productId = productId;
 		this.sellerId = sellerId;
 		this.productPrice = productPrice;
 		this.productName = productName;
@@ -34,19 +33,12 @@ public class ProductRequest {
 	}
 
 
-	public Integer getProductId() {
-		return productId;
-	}
 	
 	public void setImage(MultipartFile image)
 	{
 		this.image=image;
 	}
 
-
-	public void setProductId(Integer productId) {
-		this.productId = productId;
-	}
 
 
 	public Integer getSellerId() {
@@ -110,7 +102,7 @@ public class ProductRequest {
 
 	@Override
 	public String toString() {
-		return "ProductRequest [productId=" + productId + ", sellerId=" + sellerId + ", productPrice=" + productPrice
+		return "ProductRequest [ sellerId=" + sellerId + ", productPrice=" + productPrice
 				+ ", productName=" + productName + ", productQuantity=" + productQuantity + ", image=" + image
 				+ ", ProductDescription=" + ProductDescription + "]";
 	}
