@@ -1,0 +1,446 @@
+/* Custom styles for the seller dashboard */
+
+/* Add some padding to the main content area */
+.App main {
+  min-height: calc(100vh - 56px);
+  background-color: #f8f9fa;
+}
+
+/* Card hover effects */
+.card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Stats cards */
+.card.bg-primary {
+  background: linear-gradient(45deg, #4e73df, #224abe) !important;
+}
+
+.card.bg-success {
+  background: linear-gradient(45deg, #1cc88a, #169a6b) !important;
+}
+
+.card.bg-warning {
+  background: linear-gradient(45deg, #f6c23e, #dfa408) !important;
+}
+
+.card.bg-info {
+  background: linear-gradient(45deg, #36b9cc, #258391) !important;
+}
+
+/* Table styles */
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Badge styles */
+.badge {
+  font-weight: 500;
+  padding: 0.5em 0.75em;
+}
+
+/* Responsive font sizes */
+@media (max-width: 768px) {
+  h2 {
+    font-size: 1.75rem;
+  }
+  
+  .card h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Navigation active state */
+.nav-link.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0.25rem;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Base styles */
+body {
+  background-color: #fff;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Navbar styles */
+.navbar {
+  background-color: #fff !important;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #000;
+}
+
+.form-control {
+  border: 1px solid #dee2e6 !important;
+  padding: 0.5rem 1rem;
+}
+
+.form-control:focus {
+  box-shadow: none !important;
+  border-color: #0d6efd !important;
+}
+
+.input-group .form-control:focus {
+  border-color: #3498db;
+  box-shadow: none;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  border-color: #3498db;
+  padding: 0.5rem 1.5rem;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+.btn-outline-secondary {
+  color: #6c757d;
+  border-color: #dee2e6;
+  background-color: #fff;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  color: #6c757d;
+}
+
+/* Content styles */
+.container-fluid {
+  padding: 1.5rem !important;
+}
+
+h5 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #000;
+  margin-bottom: 1.5rem;
+}
+
+/* Product cards */
+.card {
+  border: 1px solid #dee2e6 !important;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.card-body {
+  padding: 1rem !important;
+}
+
+.card strong {
+  font-weight: 500;
+}
+
+/* Table styles */
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  background-color: #fff;
+  border-bottom: 2px solid #dee2e6;
+  color: #000;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+}
+
+.table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #dee2e6;
+  color: #000;
+}
+
+/* Add Product Page Styles */
+.add-product-page {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.upload-area {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.upload-button {
+  display: block;
+  width: 150px;
+  height: 150px;
+  border: 2px dashed #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-button:hover {
+  border-color: #0d6efd;
+}
+
+.upload-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-placeholder i {
+  font-size: 2rem;
+  color: #6c757d;
+}
+
+.img-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 1rem !important;
+  }
+  
+  .navbar {
+    padding: 0.75rem !important;
+  }
+  
+  .form-control {
+    width: 100%;
+  }
+}
+
+/* Profile Dropdown Styles */
+.profile-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.profile-icon:hover {
+  background-color: #f8f9fa;
+}
+
+.profile-icon i {
+  font-size: 1.5rem;
+  color: #6c757d;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  min-width: 200px;
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: none;
+}
+
+.dropdown-menu.show {
+  display: block;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.dropdown-item {
+  padding: 0.75rem 1rem;
+  color: #212529;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #0d6efd;
+}
+
+.dropdown-item i {
+  width: 1.25rem;
+  margin-right: 0.75rem;
+  font-size: 1rem;
+}
+
+.dropdown-divider {
+  margin: 0.5rem 0;
+  border-top: 1px solid #dee2e6;
+}
+
+.dropdown-item.text-danger {
+  color: #dc3545 !important;
+}
+
+.dropdown-item.text-danger:hover {
+  background-color: #dc354511;
+  color: #dc3545 !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* View Products Page */
+.view-products-page .product-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.view-products-page .product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.view-products-page .card-img-container {
+  height: 200px;
+  overflow: hidden;
+}
+
+.view-products-page .card-img-top {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Product Details Page */
+.product-details-page .product-image-container {
+  height: 300px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.product-details-page .product-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-details-page .product-info label {
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.product-details-page .product-info > div {
+  margin-bottom: 20px;
+}
+
+.product-details-page .btn {
+  min-width: 120px;
+}
+
+/* Common Styles */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Home Page */
+.home-page .card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.home-page .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.home-page .table th {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.home-page .badge {
+  font-weight: 500;
+  padding: 0.5em 0.75em;
+}
+
+/* Profile Page Styles */
+.profile-page .card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none !important;
+}
+
+.profile-page .form-control:disabled {
+  background-color: #f8f9fa;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.profile-page .form-label {
+  font-weight: 500;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.profile-page textarea.form-control {
+  resize: none;
+}
+
+.profile-page .btn i {
+  font-size: 0.9rem;
+}
+
+.profile-page .card-title {
+  color: #2c3e50;
+  font-weight: 600;
+} 
