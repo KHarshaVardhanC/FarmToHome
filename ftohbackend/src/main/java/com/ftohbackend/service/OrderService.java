@@ -19,5 +19,7 @@ public interface OrderService {
 
 	String deleteOrder(Integer orderId) throws OrderException;
 
+	Order updateOrderStatus(Integer orderId, String orderStatus) throws Exception;
+
 
 }

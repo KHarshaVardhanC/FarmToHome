@@ -23,5 +23,7 @@ public interface OrderController {
 
 	String deleteOrder(Integer orderId) throws Exception;
 
+	Order updateOrderStatus(Integer orderId, String orderStatus) throws Exception;
+
 	
 }
