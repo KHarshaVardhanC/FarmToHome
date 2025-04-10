@@ -81,10 +81,9 @@ public class ProductControllerImpl implements ProductController {
 //	}
 
 	@GetMapping("/product1/{productName}")
-	@Override
-	public List<CustomerProductDTO> getProductByName(@PathVariable String productName) throws Exception {
-		List<CustomerProductDTO> products = productService.searchProductsWithSellerDetails(productName);
-		return products;
+	public ResponseEntity<Product> getProductById(@PathVariable Long productId) {
+	    Product product = productService.getProductByTitle(productId);
+	    return ResponseEntity.ok(product);
 	}
 
 	@PutMapping("/product/{productId}")
@@ -101,7 +100,7 @@ public class ProductControllerImpl implements ProductController {
 		return productService.deleteProduct(productId);
 	}
 
-	@GetMapping("")
+	@GetMapping("/allproducts")
 	@Override
 	public List<ProductDTO> getAllProducts() throws Exception{
 		return productService.getAllProduct().stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
