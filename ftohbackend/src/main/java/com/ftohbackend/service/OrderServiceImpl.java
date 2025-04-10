@@ -89,4 +89,33 @@ public class OrderServiceImpl implements OrderService {
            orderRepository.deleteById(orderId);
            return "Order Deletion Successful";
     }
+
+    @Override
+    public Order updateOrderStatus(Integer orderId, String newStatus) throws OrderException {
+        if (orderId == null) {
+            throw new OrderException("Order ID cannot be null");
+        }
+        
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderException("Order not found with ID: " + orderId));
+        
+        // Validate the new status
+        if (!isValidOrderStatus(newStatus)) {
+            throw new OrderException("Invalid order status: " + newStatus);
+        }
+        
+        order.setOrderStatus(newStatus);
+        return orderRepository.save(order);
+    }
+
+    private boolean isValidOrderStatus(String status) {
+        return status != null && (
+            status.equals("In cart") ||
+            status.equals("Ordered") ||
+            status.equals("Success") ||
+            status.equals("Deleted") ||
+            status.equals("Failed")
+        );
+    }
 }
+

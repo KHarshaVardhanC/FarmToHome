@@ -72,31 +72,40 @@ public class ProductServiceImpl implements ProductService {
 //	}
 
 	@Override
-	public ProductDTO addProduct(ProductRequest productRequest) throws Exception {
-		// Convert ProductRequest to Product entity
-		Product product = new Product();
-		
-		product.setProductName(productRequest.getProductName());
-		product.setProductPrice(productRequest.getProductPrice());
-		product.setProductQuantity(productRequest.getProductQuantity());
-		product.setProductDescription(productRequest.getProductDescription());
-		product.setSeller( sellerService.getSeller( productRequest.getSellerId()));
-//		product.setRatings(null);
+	  public ProductDTO addProduct(ProductRequest productRequest) throws ProductException {
+        try {
+            if (productRequest == null) {
+                throw new ProductException("Product request cannot be null.");
+            }
 
-		// Handle image upload
-//		if (productRequest.getImage() != null && !productRequest.getImage().isEmpty()) {
-			String imageUrl = uploadImage(productRequest.getImage());
-			product.setImageUrl(imageUrl);
-//		}
-		
-//		product.setImageUrl("localhost");
+            Product product = new Product();
+            product.setProductName(productRequest.getProductName());
+            product.setProductPrice(productRequest.getProductPrice());
+            product.setProductQuantity(productRequest.getProductQuantity());
+            product.setProductDescription(productRequest.getProductDescription());
 
-		// Save to database
-		Product savedProduct = productRepository.save(product);
+            try {
+                product.setSeller(sellerService.getSeller(productRequest.getSellerId()));
+            } catch (Exception e) {
+                throw new ProductException("Invalid seller ID: " + productRequest.getSellerId());
+            }
 
-		// Convert to DTO for response
-		return modelMapper.map(savedProduct, ProductDTO.class);
-	}
+            if (productRequest.getImage() == null || productRequest.getImage().isEmpty()) {
+                throw new ProductException("Product image is required.");
+            }
+
+            String imageUrl = uploadImage(productRequest.getImage());
+            product.setImageUrl(imageUrl);
+
+            Product savedProduct = productRepository.save(product);
+            return modelMapper.map(savedProduct, ProductDTO.class);
+
+        } catch (IOException e) {
+            throw new ProductException("Error while uploading image.");
+        } catch (Exception e) {
+            throw new ProductException("Failed to add product.");
+        }
+    }
 
 	private String uploadImage(MultipartFile file) throws IOException {
 		try {
@@ -212,11 +221,18 @@ public class ProductServiceImpl implements ProductService {
 //	}
 
 	@Override
-	public List<CustomerProductDTO> searchProductsWithSellerDetails(String productName) throws Exception {
-		List<Product> products = productRepository.findProductsByNameWithSeller(productName);
-		return products.stream().map(CustomerProductDTO::new).collect(Collectors.toList());
-	}
+	 public List<CustomerProductDTO> searchProductsWithSellerDetails(String productName) throws ProductException {
+        if (productName == null || productName.trim().isEmpty()) {
+            throw new ProductException("Product name cannot be null or empty.");
+        }
 
+        List<Product> products = productRepository.findProductsByNameWithSeller(productName.trim());
+        if (products == null || products.isEmpty()) {
+            throw new ProductException("No products found with name: " + productName);
+        }
+
+        return products.stream().map(CustomerProductDTO::new).collect(Collectors.toList());
+    }
 //	@Override
 //	public List<ProductWithSellerDetailsDTO> searchProductsWithSellerDetails(String productName)throws ProductException  {
 //		// Input validation

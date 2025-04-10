@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -21,11 +22,13 @@ import com.ftohbackend.dto.CustomerProductDTO;
 import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
 import com.ftohbackend.dto.SellerProductDTO;
+import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Product;
 import com.ftohbackend.service.ProductService;
 import com.ftohbackend.service.ProductServiceImpl;
 
 import jakarta.validation.Valid;
+@CrossOrigin(origins = "*")
 
 @RestController
 public class ProductControllerImpl implements ProductController {
@@ -81,28 +84,29 @@ public class ProductControllerImpl implements ProductController {
 //	}
 
 	@GetMapping("/product1/{productName}")
-	public ResponseEntity<Product> getProductById(@PathVariable Long productId) {
-	    Product product = productService.getProductByTitle(productId);
-	    return ResponseEntity.ok(product);
+	@Override
+	public List<CustomerProductDTO> getProductByName(@PathVariable String productName) throws Exception,ProductException {
+		List<CustomerProductDTO> products = productService.searchProductsWithSellerDetails(productName);
+		return products;
 	}
 
 	@PutMapping("/product/{productId}")
 	@Override
 	public String updateProduct(@PathVariable Integer productId, @RequestBody ProductDTO updatedDetails)
-			throws Exception {
+			throws ProductException {
 		Product prod = modelMapper.map(updatedDetails, Product.class);
 		return productService.updateProduct(productId, prod);
 	}
 
 	@DeleteMapping("/product/{productId}")
 	@Override
-	public String deleteProduct(@PathVariable Integer productId) throws Exception {
+	public String deleteProduct(@PathVariable Integer productId) throws ProductException {
 		return productService.deleteProduct(productId);
 	}
 
 	@GetMapping("/allproducts")
 	@Override
-	public List<ProductDTO> getAllProducts() throws Exception{
+	public List<ProductDTO> getAllProducts() throws ProductException{
 		return productService.getAllProduct().stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
 		
 	}
@@ -110,7 +114,7 @@ public class ProductControllerImpl implements ProductController {
 	
 	@GetMapping("/product/{sellerId}")
 	@Override
-	public List<SellerProductDTO> getProducts(@PathVariable Integer sellerId) throws Exception {
+	public List<SellerProductDTO> getProducts(@PathVariable Integer sellerId) throws ProductException {
 		// TODO Auto-generated method stub
 
 		List<Product> products = productService.getAllProduct(sellerId);
@@ -133,7 +137,7 @@ public class ProductControllerImpl implements ProductController {
 
 	@GetMapping("/{productId}")
 	@Override
-	public ProductDTO getProduct(@PathVariable Integer productId) throws Exception {
+	public ProductDTO getProduct(@PathVariable Integer productId) throws ProductException {
 		return modelMapper.map(productService.getProduct(productId), ProductDTO.class);
 	}
 

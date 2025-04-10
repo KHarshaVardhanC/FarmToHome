@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Navbar from './Navbar';
+import Navbar from './CustomerNavbar';
 import '../styles/MyOrdersPage.css';
 
 function MyOrdersPage() {

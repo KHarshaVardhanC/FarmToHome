@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
+import Navbar from './CustomerNavbar';
 import '../styles/CartPage.css';
 
 function CartPage() {
