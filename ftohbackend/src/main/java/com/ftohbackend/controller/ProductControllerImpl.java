@@ -110,8 +110,7 @@ public class ProductControllerImpl implements ProductController {
 		return productService.getAllProduct().stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
 		
 	}
-	@GetMapping("/product")
-	publi void getcategory(){}
+
 	
 	@GetMapping("/product/{sellerId}")
 	@Override
