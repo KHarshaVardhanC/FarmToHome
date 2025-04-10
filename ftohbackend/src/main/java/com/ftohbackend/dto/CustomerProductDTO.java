@@ -48,6 +48,10 @@ public class CustomerProductDTO {
         this.sellerCity = seller.getSellerCity();
     }
 
+	public CustomerProductDTO() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public Integer getProductId() {
 		return productId;
 	}
