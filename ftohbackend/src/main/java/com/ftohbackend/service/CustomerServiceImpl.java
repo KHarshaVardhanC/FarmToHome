@@ -8,87 +8,89 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ftohbackend.exception.CustomerException;
 import com.ftohbackend.model.Customer;
+import com.ftohbackend.model.Mails;
 import com.ftohbackend.repository.CustomerRepository;
+
+import jakarta.validation.Valid;
 
 //service
 @Service
 public class CustomerServiceImpl implements CustomerService {
-	
+
 	@Autowired
 	private CustomerRepository customerRepository;
-	
-	
 
 	public String addCustomer(Customer customer) throws CustomerException {
 		if (customer == null) {
-            throw new CustomerException("Customer object cannot be null.");
-        }
+			throw new CustomerException("Customer object cannot be null.");
+		}
 
 		customerRepository.save(customer);
 		return "customer added successfully";
 	}
-	
+
 	@Transactional(readOnly = true)
 	public Customer getCustomer(Integer customerId) throws CustomerException {
 		if (customerId == null) {
-            throw new CustomerException("Customer ID cannot be null.");
-        }
+			throw new CustomerException("Customer ID cannot be null.");
+		}
 
-        return customerRepository.findById(customerId)
-                .orElseThrow(() -> new CustomerException("Customer not found with ID: " + customerId));	}
-	
+		return customerRepository.findById(customerId)
+				.orElseThrow(() -> new CustomerException("Customer not found with ID: " + customerId));
+	}
+
 	@Transactional(readOnly = true)
-	public List<Customer> getAllCustomers() throws CustomerException{
-		 List<Customer> customers = customerRepository.findAll();
-	        if (customers.isEmpty()) {
-	            throw new CustomerException("No customers found.");
-	        }
-	        return customers;	}
-	
+	public List<Customer> getAllCustomers() throws CustomerException {
+		List<Customer> customers = customerRepository.findAll();
+		if (customers.isEmpty()) {
+			throw new CustomerException("No customers found.");
+		}
+		return customers;
+	}
+
 	@Transactional
-	  public String updateCustomer(Integer customerId, Customer customer) throws CustomerException{
+	public String updateCustomer(Integer customerId, Customer customer) throws CustomerException {
 		if (customerId == null || customer == null) {
-            throw new CustomerException("Customer ID and customer data cannot be null.");
-        }
+			throw new CustomerException("Customer ID and customer data cannot be null.");
+		}
 		Customer existingCustomer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new CustomerException("Customer not found with ID: " + customerId));
+				.orElseThrow(() -> new CustomerException("Customer not found with ID: " + customerId));
 
-            // Update only non-null fields
-            if (customer.getCustomerFirstName() != null) {
-                existingCustomer.setCustomerFirstName(customer.getCustomerFirstName());
-            }
-            if (customer.getCustomerLastName() != null) {
-                existingCustomer.setCustomerLastName(customer.getCustomerLastName());
-            }
-            if (customer.getCustomerEmail() != null) {
-                existingCustomer.setCustomerEmail(customer.getCustomerEmail());
-            }
-            if (customer.getCustomerPassword() != null) {
-                existingCustomer.setCustomerPassword(customer.getCustomerPassword());
-            }
-            if (customer.getCustomerCity() != null) {
-                existingCustomer.setCustomerCity(customer.getCustomerCity());
-            }
-            if (customer.getCustomerPlace() != null) {
-            	existingCustomer.setCustomerPlace(customer.getCustomerPlace());
-            }
-            if (customer.getCustomerPincode() != null) {
-            	existingCustomer.setCustomerPincode(customer.getCustomerPincode());
-            }
-            if (customer.getCustomerState() != null) {
-            	existingCustomer.setCustomerState(customer.getCustomerState());
-            }
-            if (customer.getCustomerPhoneNumber() != null) {
-                existingCustomer.setCustomerPhoneNumber(customer.getCustomerPhoneNumber());
-            }
-            if (customer.getCustomerIsActive() != null) {
-                existingCustomer.setCustomerIsActive(customer.getCustomerIsActive());
-            }
+		// Update only non-null fields
+		if (customer.getCustomerFirstName() != null) {
+			existingCustomer.setCustomerFirstName(customer.getCustomerFirstName());
+		}
+		if (customer.getCustomerLastName() != null) {
+			existingCustomer.setCustomerLastName(customer.getCustomerLastName());
+		}
+		if (customer.getCustomerEmail() != null) {
+			existingCustomer.setCustomerEmail(customer.getCustomerEmail());
+		}
+		if (customer.getCustomerPassword() != null) {
+			existingCustomer.setCustomerPassword(customer.getCustomerPassword());
+		}
+		if (customer.getCustomerCity() != null) {
+			existingCustomer.setCustomerCity(customer.getCustomerCity());
+		}
+		if (customer.getCustomerPlace() != null) {
+			existingCustomer.setCustomerPlace(customer.getCustomerPlace());
+		}
+		if (customer.getCustomerPincode() != null) {
+			existingCustomer.setCustomerPincode(customer.getCustomerPincode());
+		}
+		if (customer.getCustomerState() != null) {
+			existingCustomer.setCustomerState(customer.getCustomerState());
+		}
+		if (customer.getCustomerPhoneNumber() != null) {
+			existingCustomer.setCustomerPhoneNumber(customer.getCustomerPhoneNumber());
+		}
+		if (customer.getCustomerIsActive() != null) {
+			existingCustomer.setCustomerIsActive(customer.getCustomerIsActive());
+		}
 
-            customerRepository.save(existingCustomer);
-            return "Customer updated successfully";
-        } 
-    }
-
-
-
+		customerRepository.save(existingCustomer);
+		return "Customer updated successfully";
+	}
+	
+	
+}

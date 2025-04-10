@@ -24,6 +24,8 @@ public interface ProductRepository extends JpaRepository<Product,Integer>{
     // Alternative method to search products with partial matching
     List<Product> findByProductNameContainingIgnoreCase(String name) throws ProductException;
 
+	List<Product> findByProductCategory(String productCategory);
+
 
     
     

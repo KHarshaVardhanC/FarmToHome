@@ -41,35 +41,7 @@ public class ProductServiceImpl implements ProductService {
 	@Autowired
 	ModelMapper modelMapper;
 
-//	@Override
-//	public String addProduct(Product product) throws ProductException {
-//		if (product == null) {
-//			throw new ProductException("Product object is null.");
-//		}
-//		productRepository.save(product);
-//		return "Product added successfully";
-//	}
 
-//	public String addProduct(ProductRequest productRequest) throws IOException {
-//		Product product = new Product();
-//		product.setProductName(productRequest.getName());
-//		product.setProductPrice(productRequest.getPrice());
-//		product.setProductQuantity((double) productRequest.getQuantity());
-//
-//		if (productRequest.getImage() != null && !productRequest.getImage().isEmpty()) {
-//			String imageUrl = uploadImage(productRequest.getImage());
-//			product.setImageUrl(imageUrl);
-//		}
-//
-//		Product savedProduct = productRepository.save(product);
-//		return "Product Added Successfull";
-//	}
-//
-//	
-//	public String uploadImage(MultipartFile file) throws IOException {
-//		Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-//		return uploadResult.get("url").toString();
-//	}
 
 	@Override
 	  public ProductDTO addProduct(ProductRequest productRequest) throws ProductException {
@@ -83,6 +55,7 @@ public class ProductServiceImpl implements ProductService {
             product.setProductPrice(productRequest.getProductPrice());
             product.setProductQuantity(productRequest.getProductQuantity());
             product.setProductDescription(productRequest.getProductDescription());
+            product.setProductCategory(productRequest.getProductCategory());
 
             try {
                 product.setSeller(sellerService.getSeller(productRequest.getSellerId()));
@@ -186,6 +159,17 @@ public class ProductServiceImpl implements ProductService {
 			product.setProductQuantity(updatedDetails.getProductQuantity());
 		}
 
+		if(updatedDetails.getProductDescription() != null)
+		{
+			product.setProductDescription(updatedDetails.getProductDescription());
+		}
+
+		
+		if(updatedDetails.getProductCategory() != null)
+		{
+			product.setProductCategory(updatedDetails.getProductCategory());
+		}
+
 		productRepository.save(product);
 		return "Product updated successfully";
 	}
@@ -213,12 +197,6 @@ public class ProductServiceImpl implements ProductService {
 		return products;
 	}
 
-//	@Override
-//	public Product createProduct(Integer sellerId, Product product)throws ProductException  {
-//		Seller seller = sellerRepository.findById(sellerId).orElseThrow(() -> new RuntimeException("Seller not found"));
-//		product.setSeller(seller);
-//		return productRepository.save(product);
-//	}
 
 	@Override
 	 public List<CustomerProductDTO> searchProductsWithSellerDetails(String productName) throws ProductException {
@@ -233,31 +211,7 @@ public class ProductServiceImpl implements ProductService {
 
         return products.stream().map(CustomerProductDTO::new).collect(Collectors.toList());
     }
-//	@Override
-//	public List<ProductWithSellerDetailsDTO> searchProductsWithSellerDetails(String productName)throws ProductException  {
-//		// Input validation
-//		if (productName == null || productName.trim().isEmpty()) {
-//			throw new IllegalArgumentException("Product name cannot be null or empty");
-//		}
-//
-//		// Search products with seller details
-//		List<Product> products = productRepository.findProductsByNameWithSeller(productName.trim());
-//
-//		// Handle null case
-//		if (products == null) {
-//			return Collections.emptyList();
-//		}
-//
-//		// Convert to DTOs
-//		return products.stream().filter(Objects::nonNull) // Filter out null products
-//				.map(product -> {
-//					ProductWithSellerDetailsDTO dto = new ProductWithSellerDetailsDTO(product);
-//
-//					// Set seller details
-//
-//					return dto;
-//				}).collect(Collectors.toList());
-//	}
+
 
 	@Override
 	public Product getProduct(Integer productId) throws ProductException {
@@ -267,4 +221,14 @@ public class ProductServiceImpl implements ProductService {
 		return productRepository.findById(productId)
 				.orElseThrow(() -> new ProductException("Product not found with ID: " + productId));
 	}
+	
+	@Override
+	public List<Product> getCategoryProducts(String productCategory) throws ProductException
+	{
+		
+		return productRepository.findByProductCategory(productCategory);
+		
+	}
+
+	
 }

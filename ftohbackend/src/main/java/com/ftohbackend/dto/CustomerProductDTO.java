@@ -18,14 +18,14 @@ public class CustomerProductDTO {
     
     
     
-    public CustomerProductDTO(Integer productId, String productName, Double productPrice, String imageUrl,
+    public CustomerProductDTO(Integer productId, String productName, Double productPrice, String ImageUrl,
 			String productDescription, Double productQuantity, String sellerName, String sellerPlace,
 			String sellerCity) {
 		super();
 		this.productId = productId;
 		this.productName = productName;
 		this.productPrice = productPrice;
-		ImageUrl = imageUrl;
+		this.ImageUrl = ImageUrl;
 		this.productDescription = productDescription;
 		this.productQuantity = productQuantity;
 		this.sellerName = sellerName;
@@ -47,6 +47,10 @@ public class CustomerProductDTO {
         this.sellerPlace = seller.getSellerPlace();
         this.sellerCity = seller.getSellerCity();
     }
+
+	public CustomerProductDTO() {
+		// TODO Auto-generated constructor stub
+	}
 
 	public Integer getProductId() {
 		return productId;
@@ -109,8 +113,8 @@ public class CustomerProductDTO {
 		return ImageUrl;
 	}
 
-	public void setImageUrl(String imageUrl) {
-		ImageUrl = imageUrl;
+	public void setImageUrl(String ImageUrl) {
+		this.ImageUrl = ImageUrl;
 	}
 
 	public String getProductDescription() {

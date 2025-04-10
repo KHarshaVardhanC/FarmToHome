@@ -28,8 +28,9 @@ import com.ftohbackend.service.ProductService;
 import com.ftohbackend.service.ProductServiceImpl;
 
 import jakarta.validation.Valid;
-@CrossOrigin(origins = "*")
 
+
+@CrossOrigin(origins = "*")
 @RestController
 public class ProductControllerImpl implements ProductController {
 
@@ -41,33 +42,7 @@ public class ProductControllerImpl implements ProductController {
 
 	@Autowired
 	ProductServiceImpl productServiceImpl;
-//	@PostMapping("/product")
-//	@Override
-//	public String addProduct(@Valid @RequestBody ProductDTO productDTO) throws Exception {
-//		Product product = modelMapper.map(productDTO, Product.class);
-//		return productService.addProduct(product);
-//	}
 
-//	@PostMapping(value = "/product", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//	@Override
-//	public String addProduct(@Valid @ModelAttribute ProductRequest productRequest) throws Exception {
-//	    
-//	    // Convert DTO to Entity
-//	    Product product = modelMapper.map(productRequest, Product.class);
-//	    
-//	    // Handle image upload if present
-//	    if (productRequest.getImage() != null && !productRequest.getImage().isEmpty()) {
-//	        String imageUrl = productServiceImpl.uploadImage(productRequest.getImage());
-//	        product.setImageUrl(imageUrl);
-//	    }
-//	    
-//	    // Save product
-//	    return productService.addProduct(productRequest);
-//	    
-//	}
-//	
-//	
-//	
 
 	@PostMapping(value = "/product", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<ProductDTO> addProduct( @Valid @ModelAttribute ProductRequest productRequest)
@@ -77,11 +52,26 @@ public class ProductControllerImpl implements ProductController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(productDTO);
 	}
 
-//	@GetMapping("/product/{productName}")
-//	@Override
-//	public List<ProductWithSellerDetailsDTO> getProduct(@PathVariable String productName) {
-//		return modelMapper.map(productService.searchProductsWithSellerDetails(productName), ProductWithSellerDetailsDTO.class);
-//	}
+
+	@Override
+	@GetMapping("/product2/{productId}")
+	public CustomerProductDTO getCustomerProductByProductId(@PathVariable Integer productId) throws ProductException
+	{
+		Product product=productService.getProduct(productId);
+		CustomerProductDTO customerProductDTO=new CustomerProductDTO();
+		
+		customerProductDTO.setProductId(productId);
+		customerProductDTO.setProductName(product.getProductName());
+		customerProductDTO.setProductPrice(product.getProductPrice());
+		customerProductDTO.setProductDescription(product.getProductDescription());
+		customerProductDTO.setProductQuantity(product.getProductQuantity());
+		customerProductDTO.setImageUrl(product.getImageUrl());
+		
+		customerProductDTO.setSellerPlace(product.getSeller().getSellerPlace());
+		customerProductDTO.setSellerCity(product.getSeller().getSellerCity());
+		customerProductDTO.setSellerName(product.getSeller().getSellerFirstName() + " "+product.getSeller().getSellerLastName());
+		return customerProductDTO;
+	}
 
 	@GetMapping("/product1/{productName}")
 	@Override
@@ -111,6 +101,11 @@ public class ProductControllerImpl implements ProductController {
 		
 	}
 	
+	@GetMapping("products/{productCategory}")
+	public List<ProductDTO> getCategoryProducts(@PathVariable String productCategory) throws ProductException
+	{
+		return productService.getCategoryProducts(productCategory).stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
+	}
 	
 	@GetMapping("/product/{sellerId}")
 	@Override

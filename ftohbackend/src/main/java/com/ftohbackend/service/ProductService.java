@@ -16,7 +16,6 @@ import jakarta.transaction.Transactional;
 @Service
 @Transactional
 public interface ProductService {
-//	public String addProduct(Product product) throws ProductException ;
 
 	public List<Product> getAllProduct()throws ProductException;
 
@@ -29,16 +28,15 @@ public interface ProductService {
 	public Product getProduct(Integer productId)throws ProductException;
 	
 	public List<Product> getProductsBySellerId(Integer sellerId)throws ProductException;
-	
-//	public Product createProduct(Integer sellerId, Product product)throws ProductException;
-
-//	public	List<ProductWithSellerDetailsDTO> searchProductsWithSellerDetails(String productName)throws ProductException;
 
 	List<Product> getAllProduct(Integer sellerId) throws ProductException;
 
 	List<CustomerProductDTO> searchProductsWithSellerDetails(String productName) throws Exception;
 
 	public ProductDTO addProduct(ProductRequest productRequest) throws IOException, Exception;
+
+	List<Product> getCategoryProducts(String productCategory) throws ProductException;
+
 
 
 

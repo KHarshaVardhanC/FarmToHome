@@ -49,7 +49,7 @@ public class OrderControllerImpl implements OrderController {
 		return orderService.getAllOrders();
 	}
 
-	@GetMapping("/{orderId}")
+//	@GetMapping("/{orderId}")
 	@Override
 	public Order getOrderById(@PathVariable Integer orderId) throws Exception {
 		return orderService.getOrderById(orderId);
@@ -81,10 +81,12 @@ public class OrderControllerImpl implements OrderController {
 	
 	@Override
 	@PutMapping("/order/{orderId}/{orderStatus}")
-	public Order updateOrderStatus(@PathVariable Integer orderId,@PathVariable String orderStatus) throws Exception,OrderException
+	public String updateOrderStatus(@PathVariable Integer orderId,@PathVariable String orderStatus) throws Exception,OrderException
 	{
 		
 		return orderService.updateOrderStatus(orderId,  orderStatus);
+		
+		
 	}
 
 	@GetMapping("/seller/{sellerId}")
@@ -134,4 +136,10 @@ public class OrderControllerImpl implements OrderController {
         return "Order with ID " + orderId + " deleted successfully!";
     }
 
+    @Override
+    @GetMapping("/invoice/{orderId}")
+    public CustomerOrderDTO getOrderInvoice(Integer orderId) throws Exception, OrderException
+    {
+    	return orderService.getOrderInvoice(orderId);
+    }
 }

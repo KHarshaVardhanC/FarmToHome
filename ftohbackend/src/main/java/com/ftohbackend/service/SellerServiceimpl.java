@@ -50,6 +50,7 @@ public class SellerServiceimpl implements SellerService{
 	        if (!sellerRepository.existsById(sellerId)) {
 	            throw new SellerException("Seller not found with ID: " + sellerId);
 	        }		
+	        sellerRepository.deleteById(sellerId);
 		return "Seller Deleted Successfully";
 	}
 //	public String deleteSeller() throws SellerException{
