@@ -54,6 +54,7 @@ public class ProductControllerImpl implements ProductController {
 
 
 	@Override
+	@GetMapping("/product2/{productId}")
 	public CustomerProductDTO getCustomerProductByProductId(@PathVariable Integer productId) throws ProductException
 	{
 		Product product=productService.getProduct(productId);
