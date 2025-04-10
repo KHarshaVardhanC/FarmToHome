@@ -1,14 +1,12 @@
-// components/Navbar.js
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
 import ProfileModal from './ProfileModal';
-import { FaShoppingCart, FaUser, FaSearch } from 'react-icons/fa';
+import { FaShoppingCart, FaUser } from 'react-icons/fa'; // Removed FaSearch import
 
-function Navbar({ cartCount }) {
+function CustomerNavbar({ cartCount, searchTerm, onSearch }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const profileMenuRef = useRef(null);
 
@@ -27,8 +25,7 @@ function Navbar({ cartCount }) {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log("Searching for:", searchTerm);
-    // Call search API if needed
+    onSearch(searchTerm); // Call the search handler passed from the parent component
   };
 
   const handleLogout = () => {
@@ -50,11 +47,8 @@ function Navbar({ cartCount }) {
             type="text" 
             placeholder="Search for farm fresh products..." 
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => onSearch(e.target.value)} // Update the search term dynamically
           />
-          <button type="submit" className="search-button">
-            <FaSearch />
-          </button>
         </form>
       </div>
 
@@ -90,4 +84,4 @@ function Navbar({ cartCount }) {
   );
 }
 
-export default Navbar;
+export default CustomerNavbar;
