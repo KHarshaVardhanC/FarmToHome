@@ -6,7 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const ProductDetails = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // 'id' is actually productId
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,12 +16,9 @@ const ProductDetails = () => {
     productName: '',
     productPrice: 0,
     productQuantity: 0,
-    // sellerPlace: '',
-    // sellerArea: '',
-    productDescription: ''
+    productDescription: '',
+    sellerId: 2, // assuming static sellerId
   });
-  
-  const sellerId = 2;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -34,10 +31,8 @@ const ProductDetails = () => {
           productName: productData.productName,
           productPrice: productData.productPrice,
           productQuantity: productData.productQuantity,
-          // sellerPlace: productData.sellerPlace,
-          // sellerArea: productData.sellerArea,
-          productDescription: productData.productDescription,
-          sellerId: sellerId
+          productDescription: productData.productDescription || '',
+          sellerId: productData.sellerId || 2,
         });
       } catch (err) {
         console.error('Error fetching product:', err);
@@ -54,7 +49,7 @@ const ProductDetails = () => {
     const { name, value } = e.target;
     setEditedProduct(prev => ({
       ...prev,
-      [name]: name === 'productPrice' || name === 'productQuantity' ? parseFloat(value) : value
+      [name]: name === 'productPrice' || name === 'productQuantity' ? parseFloat(value) : value,
     }));
   };
 
@@ -63,15 +58,27 @@ const ProductDetails = () => {
     try {
       setLoading(true);
       await productApi.updateProduct(id, editedProduct);
-      setProduct(editedProduct);
+      setProduct({ ...product, ...editedProduct }); // Update displayed product too
       setIsEditing(false);
       alert('Product updated successfully!');
-      navigate('/');
     } catch (err) {
       console.error('Error updating product:', err);
       setError('Failed to update product. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await productApi.deleteProduct(id);
+        alert('Product deleted successfully!');
+        navigate('/view-products');
+      } catch (err) {
+        console.error('Error deleting product:', err);
+        alert('Failed to delete product. Please try again.');
+      }
     }
   };
 
@@ -96,7 +103,7 @@ const ProductDetails = () => {
   if (!product) {
     return (
       <div className="alert alert-warning m-4" role="alert">
-        Product not found
+        Product not found.
       </div>
     );
   }
@@ -114,7 +121,6 @@ const ProductDetails = () => {
               </div>
             </Link>
           </div>
-
           <div className="d-flex align-items-center gap-3">
             <Link to="/" className="btn btn-outline-primary">
               <i className="fas fa-arrow-left me-2"></i>Back to Products
@@ -127,7 +133,7 @@ const ProductDetails = () => {
       {/* Main Content */}
       <div className="container-fluid px-4 py-4">
         <h4 className="mb-4">Product Details</h4>
-        
+
         {isEditing ? (
           <div className="card">
             <div className="card-body">
@@ -184,28 +190,6 @@ const ProductDetails = () => {
                       />
                     </div>
 
-                    {/* <div className="mb-3">
-                      <label className="form-label fw-bold">Location</label>
-                      <input
-                        type="text"
-                        className="form-control mb-2"
-                        name="sellerPlace"
-                        value={editedProduct.sellerPlace}
-                        onChange={handleChange}
-                        placeholder="City"
-                        required
-                      />
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="sellerArea"
-                        value={editedProduct.sellerArea}
-                        onChange={handleChange}
-                        placeholder="Area"
-                        required
-                      />
-                    </div> */}
-
                     <div className="d-flex gap-2 mt-4">
                       <button type="submit" className="btn btn-primary">
                         Save Changes
@@ -248,21 +232,25 @@ const ProductDetails = () => {
                     <p>₹{product.productPrice}</p>
                   </div>
 
-                  {/* <div className="mb-3">
-                    <h5 className="mb-1">Location</h5>
-                    <p>
-                    {product.sellerPlace}, {product.sellerArea}
-                    </p>
-                  </div> */}
+                  <div className="d-flex gap-2">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      <i className="fas fa-edit me-2"></i>
+                      Edit Product
+                    </button>
 
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <i className="fas fa-edit me-2"></i>
-                    Edit Product
-                  </button>
+                    <button
+                      className="btn btn-danger"
+                      onClick={handleDelete}
+                    >
+                      <i className="fas fa-trash-alt me-2"></i>
+                      Delete Product
+                    </button>
+                  </div>
                 </div>
+
                 {product.imageUrl && (
                   <div className="col-md-4">
                     <img
@@ -282,4 +270,4 @@ const ProductDetails = () => {
   );
 };
 
-export default ProductDetails; 
+export default ProductDetails;

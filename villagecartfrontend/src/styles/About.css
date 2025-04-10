@@ -1,0 +1,26 @@
+/* About.css */
+.about-page .section-title {
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .about-page .list-group-item {
+    background-color: transparent;
+    border: none;
+    font-size: 1rem;
+  }
+  
+  .about-page p {
+    font-size: 1.05rem;
+  }
+  
+  .about-page .navbar .nav-link {
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .about-page .navbar .nav-link:hover {
+    color: #198754; /* Bootstrap success color */
+  }
+  
