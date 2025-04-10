@@ -52,11 +52,26 @@ public class ProductControllerImpl implements ProductController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(productDTO);
 	}
 
-//	@GetMapping("/product/{productName}")
-//	@Override
-//	public List<ProductWithSellerDetailsDTO> getProduct(@PathVariable String productName) {
-//		return modelMapper.map(productService.searchProductsWithSellerDetails(productName), ProductWithSellerDetailsDTO.class);
-//	}
+
+	@Override
+	@GetMapping("/product2/{productId}")
+	public CustomerProductDTO getCustomerProductByProductId(@PathVariable Integer productId) throws ProductException
+	{
+		Product product=productService.getProduct(productId);
+		CustomerProductDTO customerProductDTO=new CustomerProductDTO();
+		
+		customerProductDTO.setProductId(productId);
+		customerProductDTO.setProductName(product.getProductName());
+		customerProductDTO.setProductPrice(product.getProductPrice());
+		customerProductDTO.setProductDescription(product.getProductDescription());
+		customerProductDTO.setProductQuantity(product.getProductQuantity());
+		customerProductDTO.setImageUrl(product.getImageUrl());
+		
+		customerProductDTO.setSellerPlace(product.getSeller().getSellerPlace());
+		customerProductDTO.setSellerCity(product.getSeller().getSellerCity());
+		customerProductDTO.setSellerName(product.getSeller().getSellerFirstName() + " "+product.getSeller().getSellerLastName());
+		return customerProductDTO;
+	}
 
 	@GetMapping("/product1/{productName}")
 	@Override

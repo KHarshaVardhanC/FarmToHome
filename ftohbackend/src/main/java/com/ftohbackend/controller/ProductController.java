@@ -31,5 +31,7 @@ public interface ProductController {
 
 	List<ProductDTO> getAllProducts() throws ProductException;
 
+	CustomerProductDTO getCustomerProductByProductId(Integer productId) throws ProductException;
+
 	
 }
