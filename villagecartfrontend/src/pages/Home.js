@@ -1,119 +1,114 @@
+import { ordersApi, productApi, ratingsApi } from '../utils/api';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ProfileDropdown from '../components/ProfileDropdown';
-import { ordersApi, productApi } from '../utils/api';
 
 const Home = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  
-  // Replace with actual seller ID from authentication
-  const sellerId = 1;
+  const [productRatings, setProductRatings] = useState({});
 
-  // Calculate total revenue from orders
+
+  const sellerId = 2; // Replace with actual seller ID from authentication
+
   const calculateTotalRevenue = (orders) => {
-    console.log('Calculating revenue for orders:', orders);
     return orders.reduce((total, order) => {
-      console.log('Processing order:', order);
-      // Find the corresponding product
       const product = products.find(p => p.productId === order.productId);
-      console.log('Found product:', product);
-      
-      // Check if order status exists and is 'Success'
       const isSuccessOrder = order.orderStatus === 'Success' || order.orderStatus === 'success';
-      console.log('Order status:', order.orderStatus, 'Is success:', isSuccessOrder);
-
-      if (!product || !isSuccessOrder) {
-        console.log('Skipping order - Product exists:', !!product, 'Is success:', isSuccessOrder);
-        return total;
-      }
-
+      if (!product || !isSuccessOrder) return total;
       const orderRevenue = product.productPrice * order.orderQuantity;
-      console.log('Order revenue:', orderRevenue);
       return total + orderRevenue;
     }, 0);
   };
 
-  // Calculate average rating
-  const calculateAverageRating = (ratings) => {
-    if (!ratings.length) return 0;
-    const sum = ratings.reduce((total, rating) => total + rating.ratingValue, 0);
-    return (sum / ratings.length).toFixed(1);
-  };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const productsResponse = await productApi.getProducts(sellerId);
+  //       setProducts(productsResponse.data);
 
+  //       const ordersResponse = await ordersApi.getSellerOrders(sellerId);
+  //       const sortedOrders = ordersResponse.data.sort((a, b) => b.orderId - a.orderId);
+  //       setOrders(sortedOrders);
+  //     } catch (err) {
+  //       setError(
+  //         `Failed to load data: ${err.response?.data?.message || err.message}. 
+  //          Please try again later.`
+  //       );
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, [sellerId]);
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch products
-        console.log('Fetching products for seller:', sellerId);
-        const productsResponse = await productApi.getProducts(sellerId);
-        console.log('Products response:', productsResponse);
-        setProducts(productsResponse.data);
-
-        // Fetch orders
-        console.log('Fetching orders for seller:', sellerId);
-        const ordersResponse = await ordersApi.getSellerOrders(sellerId);
-        console.log('Orders response:', ordersResponse);
-        // Add debug log for order status
-        console.log('Order statuses:', ordersResponse.data.map(order => order.orderStatus));
-        const sortedOrders = ordersResponse.data.sort((a, b) => b.orderId - a.orderId);
+  
+        // 1. Get all products
+        const productsRes = await productApi.getProducts(sellerId);
+        const products = productsRes.data;
+        setProducts(products);
+  
+        // 2. Get all orders
+        const ordersRes = await ordersApi.getSellerOrders(sellerId);
+        const sortedOrders = ordersRes.data.sort((a, b) => b.orderId - a.orderId);
         setOrders(sortedOrders);
-
-        // Fetch ratings for all products
-        console.log('Fetching ratings for seller:', sellerId);
-        // const ratingsResponse = await ratingsApi.getSellerRatings(sellerId);
-        // console.log('Ratings response:', ratingsResponse);
-        // setRatings(ratingsResponse.data);
+  
+        // 3. Get ratings for each product
+        const ratingMap = {};
+        for (let product of products) {
+          try {
+            const res = await ratingsApi.getProductRatings(product.productId);
+            const data = Array.isArray(res.data) ? res.data : [res.data];
+            const avg = data.length ? (data.reduce((sum, r) => sum + r.ratingValue, 0) / data.length).toFixed(1) : null;
+            ratingMap[product.productId] = avg;
+          } catch {
+            ratingMap[product.productId] = null;
+          }
+        }
+        setProductRatings(ratingMap);
+  
       } catch (err) {
-        console.error('Error details:', {
-          message: err.message,
-          response: err.response?.data,
-          status: err.response?.status,
-          endpoint: err.config?.url
-        });
-        setError(
-          `Failed to load data: ${err.response?.data?.message || err.message}. 
-           Please try again later.`
-        );
+        setError('Failed to load products or ratings');
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, [sellerId]);
+  
 
-  // Handle search input change
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    
+
     if (value.trim() === '') {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
     }
 
-    // Filter products based on search term
     const filteredProducts = products.filter(product =>
       product.productName.toLowerCase().includes(value.toLowerCase())
     );
-    
+
     setSuggestions(filteredProducts);
     setShowSuggestions(true);
   };
 
-  // Handle suggestion click
   const handleSuggestionClick = (productId) => {
     setSearchTerm('');
     setSuggestions([]);
@@ -121,7 +116,6 @@ const Home = () => {
     navigate(`/product/${productId}`);
   };
 
-  // Handle search form submit
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (suggestions.length > 0) {
@@ -148,8 +142,19 @@ const Home = () => {
   }
 
   const totalRevenue = calculateTotalRevenue(orders);
-  const averageRating = calculateAverageRating(ratings);
 
+  const renderStars = (rating) => {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating - fullStars >= 0.5;
+    const stars = [];
+  
+    for (let i = 0; i < fullStars; i++) stars.push(<i key={`full-${i}`} className="fas fa-star text-warning"></i>);
+    if (halfStar) stars.push(<i key="half" className="fas fa-star-half-alt text-warning"></i>);
+    while (stars.length < 5) stars.push(<i key={`empty-${stars.length}`} className="far fa-star text-warning"></i>);
+  
+    return stars;
+  };
+  
   return (
     <div className="home-page">
       {/* Top Navigation */}
@@ -172,10 +177,7 @@ const Home = () => {
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                onBlur={() => {
-                  // Delay hiding suggestions to allow click events to fire
-                  setTimeout(() => setShowSuggestions(false), 200);
-                }}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 onFocus={() => {
                   if (searchTerm.trim() !== '') {
                     setShowSuggestions(true);
@@ -194,7 +196,7 @@ const Home = () => {
                     className="p-2 border-bottom cursor-pointer hover-bg-light"
                     style={{ cursor: 'pointer' }}
                     onClick={() => handleSuggestionClick(product.productId)}
-                    onMouseDown={(e) => e.preventDefault()} // Prevent onBlur from firing before click
+                    onMouseDown={(e) => e.preventDefault()}
                   >
                     <div className="d-flex justify-content-between align-items-center">
                       <span>{product.productName}</span>
@@ -217,7 +219,7 @@ const Home = () => {
       <div className="container-fluid px-4 py-4">
         {/* Dashboard Cards */}
         <div className="row g-4 mb-4">
-          <div className="col-md-3">
+          <div className="col-md-4">
             <Link to="/view-orders" className="text-decoration-none">
               <div className="card bg-primary text-white h-100">
                 <div className="card-body d-flex justify-content-between align-items-center">
@@ -230,7 +232,7 @@ const Home = () => {
               </div>
             </Link>
           </div>
-          <div className="col-md-3">
+          <div className="col-md-4">
             <Link to="/view-products" className="text-decoration-none">
               <div className="card bg-success text-white h-100">
                 <div className="card-body d-flex justify-content-between align-items-center">
@@ -243,7 +245,7 @@ const Home = () => {
               </div>
             </Link>
           </div>
-          <div className="col-md-3">
+          <div className="col-md-4">
             <div className="card bg-warning text-white h-100">
               <div className="card-body d-flex justify-content-between align-items-center">
                 <div>
@@ -253,19 +255,6 @@ const Home = () => {
                 <i className="fas fa-rupee-sign fa-2x opacity-50"></i>
               </div>
             </div>
-          </div>
-          <div className="col-md-3">
-            <Link to="/view-ratings" className="text-decoration-none">
-              <div className="card bg-info text-white h-100">
-                <div className="card-body d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="card-title mb-1">Average Rating</h6>
-                    <h2 className="mb-0">{averageRating} <small>/ 5</small></h2>
-                  </div>
-                  <i className="fas fa-star fa-2x opacity-50"></i>
-                </div>
-              </div>
-            </Link>
           </div>
         </div>
 
@@ -282,9 +271,9 @@ const Home = () => {
             <div key={product.productId} className="col-md-4">
               <div className="card h-100">
                 {product.imageUrl && (
-                  <img 
-                    src={product.imageUrl} 
-                    className="card-img-top" 
+                  <img
+                    src={product.imageUrl}
+                    className="card-img-top"
                     alt={product.productName}
                     style={{ height: '200px', objectFit: 'cover' }}
                   />
@@ -297,9 +286,18 @@ const Home = () => {
                   <p className="card-text mb-1">
                     <strong>Price: ₹{product.productPrice}</strong>
                   </p>
-                  <p className="card-text">
+                  {productRatings[product.productId] ? (
+  <p className="card-text mb-1">
+    {renderStars(productRatings[product.productId])}
+    <small className="text-muted ms-2">({productRatings[product.productId]} / 5)</small>
+  </p>
+) : (
+  <p className="card-text text-muted">No Ratings</p>
+)}
+
+                  {/* <p className="card-text">
                     <small className="text-muted">Location: {product.sellerPlace}, {product.sellerArea}</small>
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </div>
@@ -342,6 +340,7 @@ const Home = () => {
       </div>
     </div>
   );
+  
 };
 
-export default Home; 
+export default Home;

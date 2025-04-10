@@ -14,7 +14,7 @@ const ViewOrders = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   
   // Replace with actual seller ID from authentication
-  const sellerId = 1;
+  const sellerId = 2;
 
   const handleViewDetails = (order) => {
     setSelectedOrder(order);

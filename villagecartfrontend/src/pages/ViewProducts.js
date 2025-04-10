@@ -12,7 +12,7 @@ const ViewProducts = () => {
   const [error, setError] = useState(null);
   
   // Replace with actual seller ID from authentication
-  const sellerId = 1; // This should come from your auth context
+  const sellerId = 2; // This should come from your auth context
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -114,9 +114,9 @@ const ViewProducts = () => {
                     <p className="card-text mb-1">
                       <strong>Price: ₹{product.productPrice}</strong>
                     </p>
-                    <p className="card-text">
+                    {/* <p className="card-text">
                       <small className="text-muted">Location: {product.sellerPlace}, {product.sellerArea}</small>
-                    </p>
+                    </p> */}
                     {product.productDescription && (
                       <p className="card-text">
                         <small>{product.productDescription}</small>

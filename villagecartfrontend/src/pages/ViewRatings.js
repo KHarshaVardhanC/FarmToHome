@@ -11,7 +11,7 @@ const ViewRatings = () => {
   const [error, setError] = useState(null);
   
   // Replace with actual seller ID from authentication
-  const sellerId = 1;
+  const sellerId = 2;
 
   useEffect(() => {
     const fetchRatings = async () => {

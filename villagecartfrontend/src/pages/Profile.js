@@ -18,7 +18,7 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   
   // Replace with actual seller ID from authentication
-  const sellerId = 1; // This should come from your auth context
+  const sellerId = 2; // This should come from your auth context
 
   useEffect(() => {
     const fetchProfile = async () => {

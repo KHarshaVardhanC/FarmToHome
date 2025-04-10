@@ -61,9 +61,23 @@ export const productApi = {
 
 // Orders API endpoints
 export const ordersApi = {
-  getSellerOrders: (sellerId) => api.get(`/order/seller/${sellerId}`),
+  getSellerOrders: async (sellerId) => {
+    try {
+      const response = await api.get(`/order/seller/${sellerId}`);
+      return response;
+    } catch (error) {
+      // If it's a 404 or 500 for "no orders", return empty array
+      if (error.response && (error.response.status === 404 || error.response.status === 500)) {
+        return { data: [] }; // return empty orders safely
+      }
+      throw error; // other errors should still bubble up
+    }
+  },
+
   getOrderDetails: (orderId) => api.get(`/order/${orderId}`),
-  updateOrderStatus: (orderId, status) => api.post(`/order/${orderId}/status`, status)
+
+  updateOrderStatus: (orderId, status) =>
+    api.post(`/order/${orderId}/status`, status),
 };
 
 // Ratings API endpoints
@@ -77,4 +91,4 @@ export const customerApi = {
   getCustomer: (customerId) => api.get(`/customer/${customerId}`),
 };
 
-export default api; 
+export default api;
