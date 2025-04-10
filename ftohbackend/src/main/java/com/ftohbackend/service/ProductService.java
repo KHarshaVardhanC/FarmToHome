@@ -40,6 +40,8 @@ public interface ProductService {
 
 	public ProductDTO addProduct(ProductRequest productRequest) throws IOException, Exception;
 
+	List<Product> getCategoryProducts(String productCategory) throws ProductException;
+
 
 
 }

@@ -55,6 +55,10 @@ public class Product {
 	@Column(name = "productQuantity")
 	Double productQuantity;
 	
+	@NotNull(message ="Select Category")
+	@Column(name = "productCategory")
+	String productCategory;
+	
 	
 
 	@OneToMany(mappedBy = "product" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -64,13 +68,7 @@ public class Product {
 	@OneToMany(mappedBy = "product" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	public List<Rating> ratings=new ArrayList<>();
 	
-//	@NotNull(message = "Product Description cannot be null")
-//	@Column(name = "productDescription")
-//	String productDescription;
 
-//    @NotBlank(message = "Seller place cannot be blank")
-//    @Column(name = "sellerPlace")
-//    String sellerPlace;
 
 	// Constructors
 	public Product() {
@@ -84,7 +82,7 @@ public class Product {
 		@NotBlank(message = "Product name cannot be blank") @Size(max = 100, message = "Product name cannot exceed 100 characters") String productName,
 		String imageUrl, String productDescription,
 		@NotNull(message = "Product quantity cannot be null") @PositiveOrZero(message = "Product quantity must be zero or positive") Double productQuantity,
-		List<Order> orders, List<Rating> ratings) {
+		List<Order> orders, List<Rating> ratings, String productCategory) {
 	super();
 	this.productId = productId;
 	this.seller = seller;
@@ -95,6 +93,7 @@ public class Product {
 	this.productQuantity = productQuantity;
 	this.orders = orders;
 	this.ratings = ratings;
+	this.productCategory=productCategory;
 }
 
 
@@ -189,13 +188,29 @@ public class Product {
 
 
 
+	public String getProductCategory() {
+		return productCategory;
+	}
+
+
+
+	public void setProductCategory(String productCategory) {
+		this.productCategory = productCategory;
+	}
+
+
+
 	@Override
 	public String toString() {
 		return "Product [productId=" + productId + ", seller=" + seller + ", productPrice=" + productPrice
 				+ ", productName=" + productName + ", ImageUrl=" + ImageUrl + ", productDescription="
-				+ productDescription + ", productQuantity=" + productQuantity + ", orders=" + orders + ", ratings="
-				+ ratings + "]";
+				+ productDescription + ", productQuantity=" + productQuantity + ", productCategory=" + productCategory
+				+ ", orders=" + orders + ", ratings=" + ratings + "]";
 	}
+
+
+
+	
 	
 	
 
