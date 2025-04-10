@@ -11,7 +11,8 @@ public class ProductRequest {
 	String productName;
 	Double productQuantity;
 	MultipartFile image;
-	String ProductDescription;
+	String productDescription;
+	String productCategory;
 	
 	
 	public ProductRequest() {
@@ -21,7 +22,7 @@ public class ProductRequest {
 
 
 	public ProductRequest(Integer sellerId, Double productPrice, String productName,
-			Double productQuantity, MultipartFile image, String productDescription) {
+			Double productQuantity, MultipartFile image, String productDescription, String productCategory) {
 		super();
 //		this.productId = productId;
 		this.sellerId = sellerId;
@@ -29,7 +30,8 @@ public class ProductRequest {
 		this.productName = productName;
 		this.productQuantity = productQuantity;
 		this.image = image;
-		this.ProductDescription = productDescription;
+		this.productDescription = productDescription;
+		this.productCategory=productCategory;
 	}
 
 
@@ -91,21 +93,34 @@ public class ProductRequest {
 
 
 	public String getProductDescription() {
-		return ProductDescription;
+		return productDescription;
 	}
 
 
 	public void setProductDescription(String productDescription) {
-		ProductDescription = productDescription;
+		this.productDescription = productDescription;
+	}
+
+
+	public String getProductCategory() {
+		return productCategory;
+	}
+
+
+	public void setProductCategory(String productCategory) {
+		this.productCategory = productCategory;
 	}
 
 
 	@Override
 	public String toString() {
-		return "ProductRequest [ sellerId=" + sellerId + ", productPrice=" + productPrice
-				+ ", productName=" + productName + ", productQuantity=" + productQuantity + ", image=" + image
-				+ ", ProductDescription=" + ProductDescription + "]";
+		return "ProductRequest [sellerId=" + sellerId + ", productPrice=" + productPrice + ", productName="
+				+ productName + ", productQuantity=" + productQuantity + ", image=" + image + ", productDescription="
+				+ productDescription + ", productCategory=" + productCategory + "]";
 	}
+
+
+	
 	
 	
 	

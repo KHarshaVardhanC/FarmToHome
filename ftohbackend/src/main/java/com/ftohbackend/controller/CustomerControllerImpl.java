@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ftohbackend.dto.CustomerDTO;
 import com.ftohbackend.exception.CustomerException;
 import com.ftohbackend.model.Customer;
+import com.ftohbackend.model.Mails;
 import com.ftohbackend.service.CustomerService;
+import com.ftohbackend.service.MailServiceImpl;
 
 import jakarta.validation.Valid;
 
@@ -36,10 +38,25 @@ public class CustomerControllerImpl implements CustomerController{
 	@Autowired
 	private CustomerService customerservice;
 	
+	@Autowired
+	MailServiceImpl mailServiceImpl;
+	
 	@PostMapping("")
 	public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerdto) throws CustomerException {
-	    Customer customer = modelmapper.map(customerdto, Customer.class);
-	    String result = customerservice.addCustomer(customer);
+		String result = "";
+
+		if(!mailServiceImpl.isMailExists(customerdto.getCustomerEmail()))
+		{
+			Customer customer = modelmapper.map(customerdto, Customer.class);
+			customerservice.addCustomer(customer);
+			mailServiceImpl.addMail(new Mails(customerdto.getCustomerEmail()));
+			
+			result= "You Registered Successfully";
+		}
+		else
+		{
+			result= "Provided Email All ready Exists";
+		}
 
 	    return ResponseEntity.status(HttpStatus.CREATED).body(result);
 	}

@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ftohbackend.dto.SellerDTO;
 import com.ftohbackend.exception.SellerException;
+import com.ftohbackend.model.Mails;
 import com.ftohbackend.model.Seller;
+import com.ftohbackend.service.MailServiceImpl;
 import com.ftohbackend.service.SellerService;
 
 import jakarta.validation.Valid;
@@ -33,13 +35,29 @@ public class SellerControllerImpl implements SellerController {
 
 	@Autowired
 	SellerService sellerService;
+	
+	@Autowired
+	MailServiceImpl mailServiceImpl;
 
 	@Override
 	@PostMapping("")
 	public String addSeller(@Valid @RequestBody SellerDTO sellerdto) throws SellerException {
 		// TODO Auto-generated method stub
-		Seller seller = modelMapper.map(sellerdto, Seller.class);
-		return sellerService.addSeller(seller);
+		
+		if(!mailServiceImpl.isMailExists(sellerdto.getSellerEmail()))
+		{
+			Seller seller = modelMapper.map(sellerdto, Seller.class);
+			sellerService.addSeller(seller);
+			mailServiceImpl.addMail(new Mails(sellerdto.getSellerEmail()));
+			
+			return "You Registered Successfully";
+		}
+		else
+		{
+			return "Provided Email All ready Exists";
+		}
+//		return sellerService.addSeller(seller);
+		
 
 	}
 
