@@ -60,6 +60,7 @@ public class Product {
 	String productCategory;
 	
 	Double productRatingValue;
+	Integer productRatingCount;
 	
 	
 
@@ -84,7 +85,7 @@ public class Product {
 		@NotBlank(message = "Product name cannot be blank") @Size(max = 100, message = "Product name cannot exceed 100 characters") String productName,
 		String imageUrl, String productDescription,
 		@NotNull(message = "Product quantity cannot be null") @PositiveOrZero(message = "Product quantity must be zero or positive") Double productQuantity,
-		List<Order> orders, List<Rating> ratings, String productCategory) {
+		List<Order> orders, List<Rating> ratings, String productCategory, Integer productRatingCount) {
 	super();
 	this.productId = productId;
 	this.seller = seller;
@@ -97,6 +98,7 @@ public class Product {
 	this.ratings = ratings;
 	this.productCategory=productCategory;
 	this.productRatingValue=0.0;
+	this.productRatingCount=0;
 }
 
 
@@ -217,6 +219,22 @@ public class Product {
 		this.productRatingValue = productRatingValue;
 	}
 
+	
+
+
+	public Integer getProductRatingCount() {
+		return productRatingCount;
+	}
+
+
+
+	public void setProductRatingCount(Integer productRatingCount) {
+		this.productRatingCount = productRatingCount;
+	}
+	public void setProductRatingCount() {
+		this.productRatingCount = 0;
+	}
+
 
 
 	@Override
@@ -224,8 +242,14 @@ public class Product {
 		return "Product [productId=" + productId + ", seller=" + seller + ", productPrice=" + productPrice
 				+ ", productName=" + productName + ", ImageUrl=" + ImageUrl + ", productDescription="
 				+ productDescription + ", productQuantity=" + productQuantity + ", productCategory=" + productCategory
-				+ ", productRatingValue=" + productRatingValue + ", orders=" + orders + ", ratings=" + ratings + "]";
+				+ ", productRatingValue=" + productRatingValue + ", productRatingCount=" + productRatingCount
+				+ ", orders=" + orders + ", ratings=" + ratings + "]";
 	}
+
+
+
+
+	
 
 
 
