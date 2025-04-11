@@ -14,6 +14,7 @@ import MainHome from './pages/MainHome';
 import OrderInvoice from './pages/OrderInvoice';
  import SignIn from './pages/Login/SignIn';
 // import SignUp from './pages/Login/SignUp';
+import CustomerHomePage from './components/CustomerHomePage'; 
 
 // Styles
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -38,7 +39,7 @@ function App() {
           <Route path="/invoice/:orderId" element={<OrderInvoice />} />
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<SignIn />} />
-          
+          <Route path="/customer-home" element={<CustomerHomePage />} /> 
         </Routes>
       </div>
     </Router>

@@ -12,6 +12,8 @@ import seedsImg from '../images/grains.jpg';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]); // Added state for filtered products
+  const [searchTerm, setSearchTerm] = useState(''); // Added state for search term
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -103,6 +105,7 @@ const Home = () => {
       try {
         const all = await getAllProducts();
         setProducts(all);
+        setFilteredProducts(all); // Initialize filtered products with all products
       } catch (err) {
         setError('Failed to load products');
       } finally {
@@ -218,7 +221,7 @@ const Home = () => {
           <div className="container py-5">
             <h2 className="mb-4 fw-bold">All Products</h2>
             <div className="row g-4">
-              {products.map((product, index) => (
+              {filteredProducts.map((product, index) => (
                 <div key={index} className="col-sm-6 col-md-4 col-lg-3">
                   <div className="card h-100 shadow-sm product-card">
                     <div className="product-img-container">

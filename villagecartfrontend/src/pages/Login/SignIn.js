@@ -1,26 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaEnvelope, FaLock } from "react-icons/fa";
-import '../../assets/signin.css';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../../assets/signin.css";
+import VerifyEmailPopup from "./VerifyEmailPopup"; // Import the popup component
 
 const Signin = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [isSellerLogin, setIsSellerLogin] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    userType: "customer",
+    userType: "", // Initially empty, user selects role
   });
-  const [errors, setErrors] = useState({});
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    if (location.state?.message) {
-      setMessage(location.state.message);
-    }
-  }, [location.state]);
+  const [isPopupOpen, setIsPopupOpen] = useState(false); // State for forgot password popup
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,69 +22,59 @@ const Signin = () => {
     }));
   };
 
-  const toggleForm = () => {
-    setIsSellerLogin(!isSellerLogin);
+  const handleRoleSelect = (role) => {
     setFormData((prevState) => ({
       ...prevState,
-      userType: !isSellerLogin ? "seller" : "customer",
+      userType: role,
     }));
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.email.trim()) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email))
-      newErrors.email = "Email is invalid";
-    if (!formData.password) newErrors.password = "Password is required";
-    return newErrors;
-  };
-
-  const loginUser = async (credentials) => {
-    try {
-      const response = await fetch('http://localhost:8080/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed. Please check your credentials.');
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      throw new Error(error.message || 'An error occurred during login.');
-    }
+    setError(""); // Clear any previous errors
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+    if (!formData.userType) {
+      setError("Please select a role.");
       return;
     }
 
     setIsLoading(true);
-    try {
-      const userData = await loginUser(formData);
-      localStorage.setItem("token", userData.token);
-      localStorage.setItem("userType", userData.userType);
-      localStorage.setItem("userId", userData.id);
+    setError("");
 
-      if (userData.userType === "customer") {
-        navigate("/customer-home"); // Navigate to CustomerHomePage
-      } else {
-        navigate("/seller/dashboard"); // Navigate to seller dashboard
+    try {
+      // Determine the backend endpoint based on the selected role
+      let endpoint = "";
+      if (formData.userType === "customer") {
+        endpoint = "http://localhost:8081/customer/login";
+      } else if (formData.userType === "seller") {
+        endpoint = "http://localhost:8081/seller/login";
+      } else if (formData.userType === "admin") {
+        endpoint = "http://localhost:8081/admin/login";
       }
-    } catch (error) {
-      setErrors({
-        general:
-          error.message || "Login failed. Please check your credentials.",
+
+      // Send login request to the backend
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+
+      const data = await response.json();
+      console.log("Login successful:", data);
+
+      // Navigate to the dashboard or home page after successful login
+      navigate("/dashboard", { state: { user: data } });
+    } catch (error) {
+      setError(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -101,72 +83,96 @@ const Signin = () => {
   return (
     <div className="signin-container">
       <div className="signin-box">
-        <h2 className="signin-title">
-          {isSellerLogin ? "Seller" : "Customer"} Login
-        </h2>
-        <p className="signin-subtitle">Welcome back to Village Cart!</p>
+        {formData.userType ? (
+         <h1 className="signin-title">
+         {formData.userType.charAt(0).toUpperCase() + formData.userType.slice(1)} Login
+       </h1>
+       
+        ) : (
+          <h1 className="signin-title">Login</h1>
+        )}
+        <p className="signin-subtitle">Please select your role and login</p>
 
-        {message && <div className="success-message">{message}</div>}
-
-        <div className="toggle-buttons">
-          <button
-            className={!isSellerLogin ? "active" : ""}
-            onClick={() => (!isSellerLogin ? null : toggleForm())}
-          >
-            Customer
-          </button>
-          <button
-            className={isSellerLogin ? "active" : ""}
-            onClick={() => (isSellerLogin ? null : toggleForm())}
-          >
-            Seller
-          </button>
-        </div>
-
-        {errors.general && (
-          <div className="error-message">{errors.general}</div>
+        {!formData.userType && (
+          <div className="toggle-buttons">
+            <button
+              className={formData.userType === "customer" ? "active" : ""}
+              onClick={() => handleRoleSelect("customer")}
+            >
+              Customer
+            </button>
+            <button
+              className={formData.userType === "seller" ? "active" : ""}
+              onClick={() => handleRoleSelect("seller")}
+            >
+              Seller
+            </button>
+            <button
+              className={formData.userType === "admin" ? "active" : ""}
+              onClick={() => handleRoleSelect("admin")}
+            >
+              Admin
+            </button>
+          </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <FaEnvelope className="input-icon" />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </div>
-          {errors.email && <div className="error-message">{errors.email}</div>}
+        {formData.userType && (
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <input
+                type="email"
+                name="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <div className="input-group">
-            <FaLock className="input-icon" />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-            />
-          </div>
-          {errors.password && (
-            <div className="error-message">{errors.password}</div>
-          )}
+            <div className="input-group">
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <div className="forgot-password">
-            <Link to="/forgot-password">Forgot Password?</Link>
-          </div>
+            {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" className="submit-btn" disabled={isLoading}>
-            {isLoading ? "Logging In..." : "Login"}
-          </button>
-        </form>
+            <div className="forgot-password">
+              <button
+                type="button"
+                className="link-button"
+                onClick={() => setIsPopupOpen(true)} // Open the forgot password popup
+              >
+                Forgot Password?
+              </button>
+            </div>
+
+            <button type="submit" className="submit-btn" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Login"}
+            </button>
+          </form>
+        )}
 
         <div className="signup-link">
-          Don’t have an account? <Link to="/signup">Sign Up</Link>
+          <p>
+            Don't have an account?{" "}
+            <a href="/signup" className="signup-link">
+              Sign Up
+            </a>
+          </p>
         </div>
       </div>
+
+      {/* Forgot Password Popup */}
+      <VerifyEmailPopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)} // Close the popup
+      />
     </div>
   );
 };
