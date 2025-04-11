@@ -136,6 +136,7 @@ public class OrderServiceImpl implements OrderService {
 				return "Order Status updated Succesfully " + newStatus;
 			} else {
 				order.setOrderStatus("failed");
+				orderRepository.save(order);
 				return "Quantity Exceeded! \n  Order failed \n try Again";
 			}
 		}
