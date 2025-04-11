@@ -13,6 +13,8 @@ public class CustomerProductDTO {
     private String sellerName;
     private String sellerPlace;
     private String sellerCity;
+    Double productRatingValue;
+    Integer productRatingCount;
     
     
     
@@ -20,7 +22,7 @@ public class CustomerProductDTO {
     
     public CustomerProductDTO(Integer productId, String productName, Double productPrice, String ImageUrl,
 			String productDescription, Double productQuantity, String sellerName, String sellerPlace,
-			String sellerCity) {
+			String sellerCity, Double productRatingValue,Integer productRatingCount) {
 		super();
 		this.productId = productId;
 		this.productName = productName;
@@ -31,6 +33,8 @@ public class CustomerProductDTO {
 		this.sellerName = sellerName;
 		this.sellerPlace = sellerPlace;
 		this.sellerCity = sellerCity;
+		this.productRatingValue=productRatingValue;
+		this.productRatingCount=productRatingCount;
 	}
 
 	// Constructor to map from Product entity
@@ -41,7 +45,10 @@ public class CustomerProductDTO {
         this.ImageUrl=product.getImageUrl();
         this.productDescription=product.getProductDescription();
         this.productQuantity = product.getProductQuantity();
-        
+		this.productRatingValue=product.getProductRatingValue();
+		this.productRatingCount=product.getProductRatingCount();
+
+
         Seller seller = product.getSeller();
         this.sellerName = seller.getSellerFirstName() + " " + seller.getSellerLastName();
         this.sellerPlace = seller.getSellerPlace();
@@ -125,14 +132,35 @@ public class CustomerProductDTO {
 		this.productDescription = productDescription;
 	}
 
+	
+	public Double getProductRatingValue() {
+		return productRatingValue;
+	}
+
+	public void setProductRatingValue(Double productRatingValue) {
+		this.productRatingValue = productRatingValue;
+	}
+	
+	
+
+	public Integer getProductRatingCount() {
+		return productRatingCount;
+	}
+
+	public void setProductRatingCount(Integer productRatingCount) {
+		this.productRatingCount = productRatingCount;
+	}
+
 	@Override
 	public String toString() {
 		return "CustomerProductDTO [productId=" + productId + ", productName=" + productName + ", productPrice="
 				+ productPrice + ", ImageUrl=" + ImageUrl + ", productDescription=" + productDescription
 				+ ", productQuantity=" + productQuantity + ", sellerName=" + sellerName + ", sellerPlace=" + sellerPlace
-				+ ", sellerCity=" + sellerCity + "]";
+				+ ", sellerCity=" + sellerCity + ", productRatingValue=" + productRatingValue + ", productRatingCount="
+				+ productRatingCount + "]";
 	}
 
-	
+
+
 	
 }

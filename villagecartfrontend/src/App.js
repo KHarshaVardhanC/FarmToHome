@@ -11,6 +11,7 @@ import ViewRatings from './pages/ViewRatings';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import MainHome from './pages/MainHome';
+import OrderInvoice from './pages/OrderInvoice';
 // import SignIn from './pages/Login/SignIn';
 // import SignUp from './pages/Login/SignUp';
 
@@ -19,14 +20,13 @@ import MainHome from './pages/MainHome';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './assets/styles.css';
-import { i } from 'framer-motion/client';
 
 function App() {
   return (
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<MainHome/>} />
+          <Route path="/" element={<MainHome />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/view-products" element={<ViewProducts />} />
           <Route path="/view-orders" element={<ViewOrders />} />
@@ -34,10 +34,15 @@ function App() {
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/SellerHome" element={<Home />} />
+
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/add-product" element={<AddProduct />} />
       
+
+          <Route path="/invoice/:orderId" element={<OrderInvoice />} />
+
+
 
           {/* ✅ Auth Routes */}
           {/* <Route path="/login" element={<SignIn />} />

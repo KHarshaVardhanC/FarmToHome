@@ -143,6 +143,7 @@ public class OrderControllerImpl implements OrderController {
 			sellerorderdto.setProductPrice(product.getProductPrice());
 			sellerorderdto.setImageUrl(product.getImageUrl());
 			sellerorderdto.setProductDescription(product.getProductDescription());
+			
 
 			Customer customer = order.getCustomer();
 			sellerorderdto.setCustomerName(customer.getCustomerFirstName() + " " + customer.getCustomerLastName());
@@ -174,7 +175,7 @@ public class OrderControllerImpl implements OrderController {
 
     @Override
     @GetMapping("/invoice/{orderId}")
-    public CustomerOrderDTO getOrderInvoice(Integer orderId) throws Exception, OrderException
+    public CustomerOrderDTO getOrderInvoice(@PathVariable Integer orderId) throws Exception, OrderException
     {
     	return orderService.getOrderInvoice(orderId);
     }
