@@ -14,7 +14,7 @@ const ViewOrders = () => {
   const [showModal, setShowModal] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
-  const sellerId = 2; // Replace with actual logged-in seller ID
+  const sellerId = 1; // Replace with actual logged-in seller ID
 
   const statusOptions = [
     { label: 'In Cart', value: 'Incart' },

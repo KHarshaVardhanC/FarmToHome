@@ -11,9 +11,13 @@ import ViewRatings from './pages/ViewRatings';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import MainHome from './pages/MainHome';
+import SignIn from './pages/Login/SignIn';
+import SignUp from './pages/Login/SignUp';
 import OrderInvoice from './pages/OrderInvoice';
+// import Rating from './pages/Rating'; // Import the Rating component
 // import SignIn from './pages/Login/SignIn';
 // import SignUp from './pages/Login/SignUp';
+
 
 // Styles
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -33,14 +37,21 @@ function App() {
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/SellerHome" element={<Home />} />
+
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/add-product" element={<AddProduct />} />
+
+
           <Route path="/invoice/:orderId" element={<OrderInvoice />} />
 
+          {/* Rating Route */}
+          {/* <Route
+            path="/rate-product/:productId" element={<Rating />}
+          /> */}
 
-          {/* ✅ Auth Routes */}
-          {/* <Route path="/login" element={<SignIn />} />
-          <Route path="/register" element={<SignUp />} /> */}
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<SignIn />} />
         </Routes>
       </div>
     </Router>

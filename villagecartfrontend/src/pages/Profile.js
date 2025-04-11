@@ -20,7 +20,7 @@ const Profile = () => {
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  const sellerId = 2; // Replace with actual authenticated seller ID
+  const sellerId = 1; // Replace with actual authenticated seller ID
 
   useEffect(() => {
     const fetchProfile = async () => {
