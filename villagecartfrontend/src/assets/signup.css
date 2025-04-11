@@ -42,6 +42,11 @@ html {
   margin-bottom: 20px;
 }
 
+.auth-header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
 .auth-header h2 {
   margin: 0;
 }
@@ -70,6 +75,7 @@ textarea {
   color: #f5f0f0;
   outline: none;
   background-clip: padding-box;
+  text-align: center; /* Center the input text */
 }
 
 input.error,
@@ -80,7 +86,7 @@ textarea.error {
 input::placeholder,
 textarea::placeholder {
   color: #a6a6a6;
-  padding-left: 30%;
+  text-align: center; /* Center the placeholder text */
 }
 
 /* Role dropdown */
@@ -92,6 +98,7 @@ textarea::placeholder {
   background-color: #004d4d;
   color: white;
   font-size: medium;
+  text-align: center; /* Center the dropdown text */
 }
 
 /* Button styling */
@@ -134,6 +141,7 @@ textarea::placeholder {
   overflow: hidden;
   transition: all 0.3s ease-in-out;
 }
+
 .navii {
   color: #fff;
   text-decoration: none;

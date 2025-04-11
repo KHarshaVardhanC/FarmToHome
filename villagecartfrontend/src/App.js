@@ -11,8 +11,8 @@ import ViewRatings from './pages/ViewRatings';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import MainHome from './pages/MainHome';
-// import SignIn from './pages/Login/SignIn';
-// import SignUp from './pages/Login/SignUp';
+import SignIn from './pages/Login/SignIn';
+import SignUp from './pages/Login/SignUp';
 
 // Styles
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -38,8 +38,8 @@ function App() {
         <Route path="/add-product" element={<AddProduct />} />
 
           {/* ✅ Auth Routes */}
-          {/* <Route path="/login" element={<SignIn />} />
-          <Route path="/register" element={<SignUp />} /> */}
+        <Route path="/signup" element={<SignUp />} /> 
+        <Route path="/login" element={<SignIn/>}/>
         </Routes>
       </div>
     </Router>
