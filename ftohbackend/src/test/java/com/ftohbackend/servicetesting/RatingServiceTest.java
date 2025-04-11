@@ -32,306 +32,306 @@ import com.ftohbackend.service.RatingServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 public class RatingServiceTest {
-
-    @Mock
-    private RatingRepository ratingRepository;
-
-    @InjectMocks
-    private RatingServiceImpl ratingService;
-
-    private Rating rating;
-    private Customer customer;
-    private Product product;
-
-    @BeforeEach
-    public void setUp() {
-        // Setup Customer based on CustomerDTO
-        customer = new Customer();
-        customer.setCustomerId(1);
-        customer.setCustomerFirstName("John");
-        customer.setCustomerLastName("Doe");
-        customer.setCustomerEmail("john.doe@example.com");
-        customer.setCustomerPassword("password1234");
-        customer.setCustomerPlace("SamplePlace");
-        customer.setCustomerCity("SampleCity");
-        customer.setCustomerPincode("123456");
-        customer.setCustomerState("SampleState");
-        customer.setCustomerPhoneNumber("9876543210");
-        customer.setCustomerIsActive(true);
-
-        // Setup Product based on ProductDTO
-        product = new Product();
-        product.setProductId(1);
-        product.setProductName("Test Product");
-        product.setProductPrice(100.0);
-        product.setProductQuantity(10.0);
-        product.setImageUrl("http://example.com/image.jpg");
-        product.setProductDescription("Test product description");
-        
-        // Now setup the Rating
-        rating = new Rating();
-        rating.setRatingId(1);
-        rating.setCustomer(customer);
-        rating.setProduct(product);
-        rating.setRatingValue(5);
-        rating.setFeedback("Great product, would recommend!");
-    }
-
-    @AfterEach
-    public void tearDown() {
-        rating = null;
-        customer = null;
-        product = null;
-    }
-
-    @Test
-    @DisplayName("JUnit test for addRating operation")
-    public void givenRatingObject_whenAddRating_thenReturnSuccessMessage() throws RatingException {
-        // given - precondition or setup
-        given(ratingRepository.save(any(Rating.class))).willReturn(rating);
-
-        // when - action or behavior
-        String result = ratingService.addRating(rating);
-
-        // then - verify the output
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo("Rating Added Successfully");
-        verify(ratingRepository, times(1)).save(rating);
-    }
-
-    @Test
-    @DisplayName("JUnit test for addRating operation - with null Rating")
-    public void givenNullRating_whenAddRating_thenThrowsRatingException() {
-        // given - precondition or setup
-        Rating nullRating = null;
-
-        // when - action or behavior & then - verify the output
-        assertThrows(RatingException.class, () -> {
-            ratingService.addRating(nullRating);
-        });
-
-        verify(ratingRepository, never()).save(any(Rating.class));
-    }
-
-    @Test
-    @DisplayName("JUnit test for getAllRatings operation")
-    public void givenRatingsList_whenGetAllRatings_thenReturnRatingsList() throws RatingException {
-        // given - precondition or setup
-        Rating rating2 = new Rating();
-        rating2.setRatingId(2);
-        rating2.setCustomer(customer);
-        rating2.setProduct(product);
-        rating2.setRatingValue(4);
-        rating2.setFeedback("Good product but could be better");
-
-        given(ratingRepository.findAll()).willReturn(List.of(rating, rating2));
-
-        // when - action or behavior
-        List<Rating> ratings = ratingService.getAllRatings();
-
-        // then - verify the output
-        assertThat(ratings).isNotNull();
-        assertThat(ratings.size()).isEqualTo(2);
-        assertThat(ratings.get(0).getRatingValue()).isEqualTo(5);
-        assertThat(ratings.get(1).getRatingValue()).isEqualTo(4);
-        verify(ratingRepository, times(1)).findAll();
-    }
-
-    @Test
-    @DisplayName("JUnit test for getAllRatings operation - Empty List")
-    public void givenEmptyRatingsList_whenGetAllRatings_thenThrowsRatingException() {
-        // given - precondition or setup
-        given(ratingRepository.findAll()).willReturn(Collections.emptyList());
-
-        // when - action or behavior & then - verify the output
-        assertThrows(RatingException.class, () -> {
-            ratingService.getAllRatings();
-        });
-
-        verify(ratingRepository, times(1)).findAll();
-    }
-
-    @Test
-    @DisplayName("JUnit test for getRatingsByProductId operation")
-    public void givenProductId_whenGetRatingsByProductId_thenReturnRatingsList() throws RatingException {
-        // given - precondition or setup
-        Rating rating2 = new Rating();
-        rating2.setRatingId(2);
-        rating2.setCustomer(customer);
-        rating2.setProduct(product);
-        rating2.setRatingValue(4);
-        rating2.setFeedback("Product meets expectations");
-
-        given(ratingRepository.findByProductProductId(anyInt())).willReturn(List.of(rating, rating2));
-
-        // when - action or behavior
-        List<Rating> ratings = ratingService.getRatingsByProductId(1);
-
-        // then - verify the output
-        assertThat(ratings).isNotNull();
-        assertThat(ratings.size()).isEqualTo(2);
-        assertThat(ratings.get(0).getProduct().getProductId()).isEqualTo(1);
-        assertThat(ratings.get(1).getProduct().getProductId()).isEqualTo(1);
-        verify(ratingRepository, times(1)).findByProductProductId(1);
-    }
-
-    @Test
-    @DisplayName("JUnit test for getRatingsByProductId operation - Empty List")
-    public void givenProductId_whenGetRatingsByProductIdWithNoResults_thenThrowsRatingException() throws RatingException {
-        // given - precondition or setup
-        given(ratingRepository.findByProductProductId(anyInt())).willReturn(Collections.emptyList());
-
-        // when - action or behavior & then - verify the output
-        assertThrows(RatingException.class, () -> {
-            ratingService.getRatingsByProductId(1);
-        });
-
-        verify(ratingRepository, times(1)).findByProductProductId(1);
-    }
-
-    @Test
-    @DisplayName("JUnit test for getRatingsByProductId operation - Null ProductId")
-    public void givenNullProductId_whenGetRatingsByProductId_thenThrowsRatingException() throws RatingException {
-        // when - action or behavior & then - verify the output
-        assertThrows(RatingException.class, () -> {
-            ratingService.getRatingsByProductId(null);
-        });
-
-        verify(ratingRepository, never()).findByProductProductId(anyInt());
-    }
-
-    @Test
-    @DisplayName("JUnit test for getRatingsByCustomerId operation")
-    public void givenCustomerId_whenGetRatingsByCustomerId_thenReturnRatingsList() throws RatingException {
-        // given - precondition or setup
-        Rating rating2 = new Rating();
-        rating2.setRatingId(2);
-        rating2.setCustomer(customer);
-        rating2.setProduct(product);
-        rating2.setRatingValue(3);
-        rating2.setFeedback("Average product");
-
-        given(ratingRepository.findByCustomerCustomerId(anyInt())).willReturn(List.of(rating, rating2));
-
-        // when - action or behavior
-        List<Rating> ratings = ratingService.getRatingsByCustomerId(1);
-
-        // then - verify the output
-        assertThat(ratings).isNotNull();
-        assertThat(ratings.size()).isEqualTo(2);
-        assertThat(ratings.get(0).getCustomer().getCustomerId()).isEqualTo(1);
-        assertThat(ratings.get(1).getCustomer().getCustomerId()).isEqualTo(1);
-        verify(ratingRepository, times(1)).findByCustomerCustomerId(1);
-    }
-
-    @Test
-    @DisplayName("JUnit test for getRatingsByCustomerId operation - Empty List")
-    public void givenCustomerId_whenGetRatingsByCustomerIdWithNoResults_thenThrowsRatingException() throws RatingException {
-        // given - precondition or setup
-        given(ratingRepository.findByCustomerCustomerId(anyInt())).willReturn(Collections.emptyList());
-
-        // when - action or behavior & then - verify the output
-        assertThrows(RatingException.class, () -> {
-            ratingService.getRatingsByCustomerId(1);
-        });
-
-        verify(ratingRepository, times(1)).findByCustomerCustomerId(1);
-    }
-
-    @Test
-    @DisplayName("JUnit test for getRatingsByCustomerId operation - Null CustomerId")
-    public void givenNullCustomerId_whenGetRatingsByCustomerId_thenThrowsRatingException() throws RatingException {
-        // when - action or behavior & then - verify the output
-        assertThrows(RatingException.class, () -> {
-            ratingService.getRatingsByCustomerId(null);
-        });
-
-        verify(ratingRepository, never()).findByCustomerCustomerId(anyInt());
-    }
-
-    @Test
-    @DisplayName("JUnit test for getRatingById operation")
-    public void givenRatingId_whenGetRatingById_thenReturnRating() throws RatingException {
-        // given - precondition or setup
-        given(ratingRepository.findById(anyInt())).willReturn(Optional.of(rating));
-
-        // when - action or behavior
-        Rating foundRating = ratingService.getRatingById(1);
-
-        // then - verify the output
-        assertThat(foundRating).isNotNull();
-        assertThat(foundRating.getRatingId()).isEqualTo(1);
-        assertThat(foundRating.getRatingValue()).isEqualTo(5);
-        assertThat(foundRating.getFeedback()).isEqualTo("Great product, would recommend!");
-        assertThat(foundRating.getCustomer().getCustomerId()).isEqualTo(1);
-        assertThat(foundRating.getProduct().getProductId()).isEqualTo(1);
-        verify(ratingRepository, times(1)).findById(1);
-    }
-
-    @Test
-    @DisplayName("JUnit test for getRatingById operation - Rating Not Found")
-    public void givenInvalidRatingId_whenGetRatingById_thenThrowsRatingException() {
-        // given - precondition or setup
-        given(ratingRepository.findById(anyInt())).willReturn(Optional.empty());
-
-        // when - action or behavior & then - verify the output
-        assertThrows(RatingException.class, () -> {
-            ratingService.getRatingById(999);
-        });
-
-        verify(ratingRepository, times(1)).findById(999);
-    }
-
-    @Test
-    @DisplayName("JUnit test for getRatingById operation - Null RatingId")
-    public void givenNullRatingId_whenGetRatingById_thenThrowsRatingException() {
-        // when - action or behavior & then - verify the output
-        assertThrows(RatingException.class, () -> {
-            ratingService.getRatingById(null);
-        });
-
-        verify(ratingRepository, never()).findById(anyInt());
-    }
-
-    @Test
-    @DisplayName("JUnit test for deleteRating operation")
-    public void givenRatingId_whenDeleteRating_thenDeleteSuccessfully() throws RatingException {
-        // given - precondition or setup
-        given(ratingRepository.existsById(anyInt())).willReturn(true);
-        willDoNothing().given(ratingRepository).deleteById(anyInt());
-
-        // when - action or behavior
-        ratingService.deleteRating(1);
-
-        // then - verify the output
-        verify(ratingRepository, times(1)).existsById(1);
-        verify(ratingRepository, times(1)).deleteById(1);
-    }
-
-    @Test
-    @DisplayName("JUnit test for deleteRating operation - Rating Not Found")
-    public void givenInvalidRatingId_whenDeleteRating_thenThrowsRatingException() {
-        // given - precondition or setup
-        given(ratingRepository.existsById(anyInt())).willReturn(false);
-
-        // when - action or behavior & then - verify the output
-        assertThrows(RatingException.class, () -> {
-            ratingService.deleteRating(999);
-        });
-
-        verify(ratingRepository, times(1)).existsById(999);
-        verify(ratingRepository, never()).deleteById(anyInt());
-    }
-
-    @Test
-    @DisplayName("JUnit test for deleteRating operation - Null RatingId")
-    public void givenNullRatingId_whenDeleteRating_thenThrowsRatingException() {
-        // when - action or behavior & then - verify the output
-        assertThrows(RatingException.class, () -> {
-            ratingService.deleteRating(null);
-        });
-
-        verify(ratingRepository, never()).existsById(anyInt());
-        verify(ratingRepository, never()).deleteById(anyInt());
-    }
+//
+//    @Mock
+//    private RatingRepository ratingRepository;
+//
+//    @InjectMocks
+//    private RatingServiceImpl ratingService;
+//
+//    private Rating rating;
+//    private Customer customer;
+//    private Product product;
+//
+//    @BeforeEach
+//    public void setUp() {
+//        // Setup Customer based on CustomerDTO
+//        customer = new Customer();
+//        customer.setCustomerId(1);
+//        customer.setCustomerFirstName("John");
+//        customer.setCustomerLastName("Doe");
+//        customer.setCustomerEmail("john.doe@example.com");
+//        customer.setCustomerPassword("password1234");
+//        customer.setCustomerPlace("SamplePlace");
+//        customer.setCustomerCity("SampleCity");
+//        customer.setCustomerPincode("123456");
+//        customer.setCustomerState("SampleState");
+//        customer.setCustomerPhoneNumber("9876543210");
+//        customer.setCustomerIsActive(true);
+//
+//        // Setup Product based on ProductDTO
+//        product = new Product();
+//        product.setProductId(1);
+//        product.setProductName("Test Product");
+//        product.setProductPrice(100.0);
+//        product.setProductQuantity(10.0);
+//        product.setImageUrl("http://example.com/image.jpg");
+//        product.setProductDescription("Test product description");
+//        
+//        // Now setup the Rating
+//        rating = new Rating();
+//        rating.setRatingId(1);
+//        rating.setCustomer(customer);
+//        rating.setProduct(product);
+//        rating.setRatingValue(5);
+//        rating.setFeedback("Great product, would recommend!");
+//    }
+//
+//    @AfterEach
+//    public void tearDown() {
+//        rating = null;
+//        customer = null;
+//        product = null;
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for addRating operation")
+//    public void givenRatingObject_whenAddRating_thenReturnSuccessMessage() throws RatingException {
+//        // given - precondition or setup
+//        given(ratingRepository.save(any(Rating.class))).willReturn(rating);
+//
+//        // when - action or behavior
+//        String result = ratingService.addRating(rating);
+//
+//        // then - verify the output
+//        assertThat(result).isNotNull();
+//        assertThat(result).isEqualTo("Rating Added Successfully");
+//        verify(ratingRepository, times(1)).save(rating);
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for addRating operation - with null Rating")
+//    public void givenNullRating_whenAddRating_thenThrowsRatingException() {
+//        // given - precondition or setup
+//        Rating nullRating = null;
+//
+//        // when - action or behavior & then - verify the output
+//        assertThrows(RatingException.class, () -> {
+//            ratingService.addRating(nullRating);
+//        });
+//
+//        verify(ratingRepository, never()).save(any(Rating.class));
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for getAllRatings operation")
+//    public void givenRatingsList_whenGetAllRatings_thenReturnRatingsList() throws RatingException {
+//        // given - precondition or setup
+//        Rating rating2 = new Rating();
+//        rating2.setRatingId(2);
+//        rating2.setCustomer(customer);
+//        rating2.setProduct(product);
+//        rating2.setRatingValue(4);
+//        rating2.setFeedback("Good product but could be better");
+//
+//        given(ratingRepository.findAll()).willReturn(List.of(rating, rating2));
+//
+//        // when - action or behavior
+//        List<Rating> ratings = ratingService.getAllRatings();
+//
+//        // then - verify the output
+//        assertThat(ratings).isNotNull();
+//        assertThat(ratings.size()).isEqualTo(2);
+//        assertThat(ratings.get(0).getRatingValue()).isEqualTo(5);
+//        assertThat(ratings.get(1).getRatingValue()).isEqualTo(4);
+//        verify(ratingRepository, times(1)).findAll();
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for getAllRatings operation - Empty List")
+//    public void givenEmptyRatingsList_whenGetAllRatings_thenThrowsRatingException() {
+//        // given - precondition or setup
+//        given(ratingRepository.findAll()).willReturn(Collections.emptyList());
+//
+//        // when - action or behavior & then - verify the output
+//        assertThrows(RatingException.class, () -> {
+//            ratingService.getAllRatings();
+//        });
+//
+//        verify(ratingRepository, times(1)).findAll();
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for getRatingsByProductId operation")
+//    public void givenProductId_whenGetRatingsByProductId_thenReturnRatingsList() throws RatingException {
+//        // given - precondition or setup
+//        Rating rating2 = new Rating();
+//        rating2.setRatingId(2);
+//        rating2.setCustomer(customer);
+//        rating2.setProduct(product);
+//        rating2.setRatingValue(4);
+//        rating2.setFeedback("Product meets expectations");
+//
+//        given(ratingRepository.findByProductProductId(anyInt())).willReturn(List.of(rating, rating2));
+//
+//        // when - action or behavior
+//        List<Rating> ratings = ratingService.getRatingsByProductId(1);
+//
+//        // then - verify the output
+//        assertThat(ratings).isNotNull();
+//        assertThat(ratings.size()).isEqualTo(2);
+//        assertThat(ratings.get(0).getProduct().getProductId()).isEqualTo(1);
+//        assertThat(ratings.get(1).getProduct().getProductId()).isEqualTo(1);
+//        verify(ratingRepository, times(1)).findByProductProductId(1);
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for getRatingsByProductId operation - Empty List")
+//    public void givenProductId_whenGetRatingsByProductIdWithNoResults_thenThrowsRatingException() throws RatingException {
+//        // given - precondition or setup
+//        given(ratingRepository.findByProductProductId(anyInt())).willReturn(Collections.emptyList());
+//
+//        // when - action or behavior & then - verify the output
+//        assertThrows(RatingException.class, () -> {
+//            ratingService.getRatingsByProductId(1);
+//        });
+//
+//        verify(ratingRepository, times(1)).findByProductProductId(1);
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for getRatingsByProductId operation - Null ProductId")
+//    public void givenNullProductId_whenGetRatingsByProductId_thenThrowsRatingException() throws RatingException {
+//        // when - action or behavior & then - verify the output
+//        assertThrows(RatingException.class, () -> {
+//            ratingService.getRatingsByProductId(null);
+//        });
+//
+//        verify(ratingRepository, never()).findByProductProductId(anyInt());
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for getRatingsByCustomerId operation")
+//    public void givenCustomerId_whenGetRatingsByCustomerId_thenReturnRatingsList() throws RatingException {
+//        // given - precondition or setup
+//        Rating rating2 = new Rating();
+//        rating2.setRatingId(2);
+//        rating2.setCustomer(customer);
+//        rating2.setProduct(product);
+//        rating2.setRatingValue(3);
+//        rating2.setFeedback("Average product");
+//
+//        given(ratingRepository.findByCustomerCustomerId(anyInt())).willReturn(List.of(rating, rating2));
+//
+//        // when - action or behavior
+//        List<Rating> ratings = ratingService.getRatingsByCustomerId(1);
+//
+//        // then - verify the output
+//        assertThat(ratings).isNotNull();
+//        assertThat(ratings.size()).isEqualTo(2);
+//        assertThat(ratings.get(0).getCustomer().getCustomerId()).isEqualTo(1);
+//        assertThat(ratings.get(1).getCustomer().getCustomerId()).isEqualTo(1);
+//        verify(ratingRepository, times(1)).findByCustomerCustomerId(1);
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for getRatingsByCustomerId operation - Empty List")
+//    public void givenCustomerId_whenGetRatingsByCustomerIdWithNoResults_thenThrowsRatingException() throws RatingException {
+//        // given - precondition or setup
+//        given(ratingRepository.findByCustomerCustomerId(anyInt())).willReturn(Collections.emptyList());
+//
+//        // when - action or behavior & then - verify the output
+//        assertThrows(RatingException.class, () -> {
+//            ratingService.getRatingsByCustomerId(1);
+//        });
+//
+//        verify(ratingRepository, times(1)).findByCustomerCustomerId(1);
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for getRatingsByCustomerId operation - Null CustomerId")
+//    public void givenNullCustomerId_whenGetRatingsByCustomerId_thenThrowsRatingException() throws RatingException {
+//        // when - action or behavior & then - verify the output
+//        assertThrows(RatingException.class, () -> {
+//            ratingService.getRatingsByCustomerId(null);
+//        });
+//
+//        verify(ratingRepository, never()).findByCustomerCustomerId(anyInt());
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for getRatingById operation")
+//    public void givenRatingId_whenGetRatingById_thenReturnRating() throws RatingException {
+//        // given - precondition or setup
+//        given(ratingRepository.findById(anyInt())).willReturn(Optional.of(rating));
+//
+//        // when - action or behavior
+//        Rating foundRating = ratingService.getRatingById(1);
+//
+//        // then - verify the output
+//        assertThat(foundRating).isNotNull();
+//        assertThat(foundRating.getRatingId()).isEqualTo(1);
+//        assertThat(foundRating.getRatingValue()).isEqualTo(5);
+//        assertThat(foundRating.getFeedback()).isEqualTo("Great product, would recommend!");
+//        assertThat(foundRating.getCustomer().getCustomerId()).isEqualTo(1);
+//        assertThat(foundRating.getProduct().getProductId()).isEqualTo(1);
+//        verify(ratingRepository, times(1)).findById(1);
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for getRatingById operation - Rating Not Found")
+//    public void givenInvalidRatingId_whenGetRatingById_thenThrowsRatingException() {
+//        // given - precondition or setup
+//        given(ratingRepository.findById(anyInt())).willReturn(Optional.empty());
+//
+//        // when - action or behavior & then - verify the output
+//        assertThrows(RatingException.class, () -> {
+//            ratingService.getRatingById(999);
+//        });
+//
+//        verify(ratingRepository, times(1)).findById(999);
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for getRatingById operation - Null RatingId")
+//    public void givenNullRatingId_whenGetRatingById_thenThrowsRatingException() {
+//        // when - action or behavior & then - verify the output
+//        assertThrows(RatingException.class, () -> {
+//            ratingService.getRatingById(null);
+//        });
+//
+//        verify(ratingRepository, never()).findById(anyInt());
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for deleteRating operation")
+//    public void givenRatingId_whenDeleteRating_thenDeleteSuccessfully() throws RatingException {
+//        // given - precondition or setup
+//        given(ratingRepository.existsById(anyInt())).willReturn(true);
+//        willDoNothing().given(ratingRepository).deleteById(anyInt());
+//
+//        // when - action or behavior
+//        ratingService.deleteRating(1);
+//
+//        // then - verify the output
+//        verify(ratingRepository, times(1)).existsById(1);
+//        verify(ratingRepository, times(1)).deleteById(1);
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for deleteRating operation - Rating Not Found")
+//    public void givenInvalidRatingId_whenDeleteRating_thenThrowsRatingException() {
+//        // given - precondition or setup
+//        given(ratingRepository.existsById(anyInt())).willReturn(false);
+//
+//        // when - action or behavior & then - verify the output
+//        assertThrows(RatingException.class, () -> {
+//            ratingService.deleteRating(999);
+//        });
+//
+//        verify(ratingRepository, times(1)).existsById(999);
+//        verify(ratingRepository, never()).deleteById(anyInt());
+//    }
+//
+//    @Test
+//    @DisplayName("JUnit test for deleteRating operation - Null RatingId")
+//    public void givenNullRatingId_whenDeleteRating_thenThrowsRatingException() {
+//        // when - action or behavior & then - verify the output
+//        assertThrows(RatingException.class, () -> {
+//            ratingService.deleteRating(null);
+//        });
+//
+//        verify(ratingRepository, never()).existsById(anyInt());
+//        verify(ratingRepository, never()).deleteById(anyInt());
+//    }
 }

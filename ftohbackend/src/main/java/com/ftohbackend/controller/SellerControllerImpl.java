@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,6 +48,8 @@ public class SellerControllerImpl implements SellerController {
 		if(!mailServiceImpl.isMailExists(sellerdto.getSellerEmail()))
 		{
 			Seller seller = modelMapper.map(sellerdto, Seller.class);
+			BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+			seller.setSellerPassword(passwordEncoder.encode(sellerdto.getSellerPassword()));
 			sellerService.addSeller(seller);
 			mailServiceImpl.addMail(new Mails(sellerdto.getSellerEmail()));
 			
