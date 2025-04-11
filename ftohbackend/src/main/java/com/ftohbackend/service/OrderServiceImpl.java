@@ -110,7 +110,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public String updateOrderStatus(Integer orderId, String newStatus) throws OrderException, ProductException {
+	public String updateOrderStatus(Integer orderId, String newStatus) throws Exception, OrderException, ProductException {
 		if (orderId == null) {
 			throw new OrderException("Order ID cannot be null");
 		}

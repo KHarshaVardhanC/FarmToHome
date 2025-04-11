@@ -8,7 +8,7 @@ import com.ftohbackend.exception.RatingException;
 
 public interface RatingController{
 	
-	public String addRating(RatingDTO ratingDTO) throws RatingException;
+	public String addRating(RatingDTO ratingDTO) throws RatingException, Exception;
 	
 	public List<RatingDTO> getAllRatings() throws RatingException;
 	

@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.exception.RatingException;
 import com.ftohbackend.model.Rating;
 import com.ftohbackend.repository.RatingRepository;
@@ -15,12 +16,22 @@ public class RatingServiceImpl implements RatingService {
 
     @Autowired
     RatingRepository ratingRepository;
+    
+    @Autowired
+    ProductService productService;
 
     @Override
-    public String addRating(Rating rating)throws RatingException {
+    public String addRating(Rating rating)throws RatingException, Exception, ProductException {
     	 if (rating == null) {
              throw new RatingException("Rating object cannot be null");
          }
+    	 
+    	 rating.getProduct().setProductRatingValue(rating.getRatingValue());
+    	 productService.updateProduct(rating.getProduct().getProductId(), rating.getProduct());
+    	 
+    	 System.out.print(rating.getProduct().getProductId());
+    	 System.out.print(rating.getProduct().getProductRatingValue());
+    	 
         
         		ratingRepository.save(rating);
         		return "Rating Added Successfully";
@@ -45,6 +56,7 @@ public class RatingServiceImpl implements RatingService {
          }
          return ratings;
          }
+    
 
     @Override
     public List<Rating> getRatingsByCustomerId(Integer customerId)throws RatingException {

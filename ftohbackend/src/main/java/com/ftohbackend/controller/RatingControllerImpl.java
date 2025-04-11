@@ -38,7 +38,11 @@ public class RatingControllerImpl implements RatingController {
 	
 	@Override
 	@PostMapping("")
-	public String addRating(@RequestBody RatingDTO ratingDTO) throws RatingException {
+	public String addRating(@RequestBody RatingDTO ratingDTO) throws Exception {
+		
+		
+		
+		
 		
 		Rating rating = modelMapper.map(ratingDTO, Rating.class);
 		
@@ -61,6 +65,10 @@ public class RatingControllerImpl implements RatingController {
 		return modelMapper.map(rating, RatingDTO.class);
 		
 	}
+	
+	
+	
+	
 	
 	@Override
 	@GetMapping("/product/{productId}")
