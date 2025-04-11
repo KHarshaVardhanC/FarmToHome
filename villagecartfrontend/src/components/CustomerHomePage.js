@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Slider from 'react-slick';
 import Navbar from './CustomerNavbar';
 import '../styles/CustomerHomePage.css';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 function CustomerHomePage() {
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]); // For search functionality
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedProduct, setSelectedProduct] = useState(null); // For the popup
-  const [searchTerm, setSearchTerm] = useState(''); // For search input
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const categories = [
+    {  image: '/images/vegetables.jpg' },
+    {  image: '/images/fruits.jpg' },
+    { image: '/images/dairy.jpg' },
+    {  image: '/images/grains.jpg' },
+  ];
 
   useEffect(() => {
     fetchProducts();
 
-    // Load cart from localStorage safely
     try {
       const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
       setCartItems(savedCart);
@@ -31,7 +40,7 @@ function CustomerHomePage() {
       setLoading(true);
       const response = await axios.get('http://localhost:8080/allproducts');
       setProducts(response.data);
-      setFilteredProducts(response.data); // Initialize filtered products
+      setFilteredProducts(response.data);
     } catch (err) {
       console.error('Error fetching products:', err);
       setError(err.response?.data?.message || err.message);
@@ -40,45 +49,68 @@ function CustomerHomePage() {
     }
   };
 
+  const fetchCategoryProducts = async (category) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`http://localhost:8080/products/${category}`);
+      setFilteredProducts(response.data);
+      setSelectedCategory(category);
+    } catch (err) {
+      console.error('Error fetching category products:', err);
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addToCart = (product) => {
-    const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
+    const existingItemIndex = cartItems.findIndex(
+      (item) => item.productId === product.productId
+    );
 
     let updatedCart;
     if (existingItemIndex !== -1) {
       updatedCart = [...cartItems];
       updatedCart[existingItemIndex].quantity += 1;
     } else {
-      updatedCart = [...cartItems, { ...product, quantity: 1 }];
+      const cartItem = {
+        productId: product.productId,
+        name: product.productName,
+        price: product.productPrice,
+        image: product.imageUrl,
+        quantity: 1,
+      };
+      updatedCart = [...cartItems, cartItem];
     }
 
     setCartItems(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
   };
 
-  const handleProductClick = async (productName) => {
-    try {
-      const response = await axios.get(`http://localhost:8080/product1/${productName}`);
-      if (response.data && response.data.length > 0) {
-        setSelectedProduct(response.data[0]); // Use the first product in the array
-      } else {
-        setError('Product details not found.');
-      }
-    } catch (err) {
-      console.error('Error fetching product details:', err);
-      setError('Failed to fetch product details.');
-    }
-  };
-
-  const closePopup = () => {
-    setSelectedProduct(null); // Close the popup
-  };
-
   const handleSearch = (term) => {
     setSearchTerm(term);
-    const filtered = products.filter(product =>
+    const filtered = products.filter((product) =>
       product.productName.toLowerCase().includes(term.toLowerCase())
     );
     setFilteredProducts(filtered);
+  };
+
+  const carouselSettings = {
+    dots: true,
+    infinite: true,
+    speed: 1000,
+    slidesToShow: 1, // Show only one category at a time
+    slidesToScroll: 1,
+    autoplay: true, // Enable automatic sliding
+    autoplaySpeed: 1500, // Set the interval for sliding
+    responsive: [
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+        },
+      },
+    ],
   };
 
   return (
@@ -86,8 +118,23 @@ function CustomerHomePage() {
       <Navbar
         cartCount={cartItems.reduce((total, item) => total + item.quantity, 0)}
         searchTerm={searchTerm}
-        onSearch={handleSearch} // Pass the search handler to Navbar
+        onSearch={handleSearch}
       />
+
+      <div className="category-carousel">
+        <Slider {...carouselSettings}>
+          {categories.map((category) => (
+            <div
+              key={category.name}
+              className="category-card"
+              onClick={() => fetchCategoryProducts(category.name)}
+            >
+              <img src={category.image} alt={category.name} className="category-image" />
+              <h3 className="category-name">{category.name}</h3>
+            </div>
+          ))}
+        </Slider>
+      </div>
 
       <div className="content-container">
         {loading && <div className="loading">Loading products...</div>}
@@ -95,21 +142,19 @@ function CustomerHomePage() {
         {error && (
           <div className="error-message">
             <p>Error loading products: {error}</p>
-            <button onClick={fetchProducts} className="retry-btn">Try Again</button>
+            <button onClick={fetchProducts} className="retry-btn">
+              Try Again
+            </button>
           </div>
         )}
 
         {!loading && !error && filteredProducts.length === 0 && (
-          <div className="no-products">No products available right now.</div>
+          <div className="no-products">No products available in this category.</div>
         )}
 
         <div className="products-grid">
-          {filteredProducts.map(product => (
-            <div
-              key={product.productId}
-              className="product-card"
-              onClick={() => handleProductClick(product.productName)} // Make the product clickable
-            >
+          {filteredProducts.map((product) => (
+            <div key={product.productId} className="product-card">
               <div className="product-image">
                 <img src={product.imageUrl} alt={product.productName} />
               </div>
@@ -117,10 +162,10 @@ function CustomerHomePage() {
                 <h3>{product.productName}</h3>
                 <p>{product.productDescription}</p>
                 <p>Price: ₹{product.productPrice}/kg</p>
-                <button className="add-to-cart-btn" onClick={(e) => {
-                  e.stopPropagation(); // Prevent triggering the product click
-                  addToCart(product);
-                }}>
+                <button
+                  className="add-to-cart-btn"
+                  onClick={() => addToCart(product)}
+                >
                   Add to Cart
                 </button>
               </div>
@@ -128,22 +173,6 @@ function CustomerHomePage() {
           ))}
         </div>
       </div>
-
-      {selectedProduct && (
-        <div className="popup">
-          <div className="popup-content">
-            <button className="close-btn" onClick={closePopup}>X</button>
-            <h2>{selectedProduct.productName || 'N/A'}</h2>
-            <img src={selectedProduct.imageUrl || ''} alt={selectedProduct.productName || 'Product'} />
-            <p>{selectedProduct.productDescription || 'N/A'}</p>
-            <p>Price:₹ {selectedProduct.productPrice || 'N/A'}</p>
-            <p>Quantity: {selectedProduct.productQuantity || 'N/A'}</p>
-            <h3>Seller Details</h3>
-            <p>Name: {selectedProduct.sellerName || 'N/A'}</p>
-            <p>Location: {selectedProduct.sellerPlace || 'N/A'}, {selectedProduct.sellerCity || 'N/A'}</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -2,13 +2,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
+  padding: 0.01px 15px; /* Adjusted padding */
   background-color: #4CAF50;
   color: white;
   position: sticky;
   top: 0;
   z-index: 1000;
-  min-height: 40%;
+  min-height: 40px;
+  border-radius: 10px; /* Refined edges */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional shadow for a polished look */
 }
 
 .navbar-left .logo img {

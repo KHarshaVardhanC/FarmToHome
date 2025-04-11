@@ -45,13 +45,13 @@ const CartPage = () => {
         cartItems.map(item => (
           <div className="cart-item" key={item.productId}>
             <img
-              src={item.imageUrl || `https://source.unsplash.com/100x100/?${item.productName}`}
-              alt={item.productName}
+              src={item.image|| `https://source.unsplash.com/100x100/?${item.productName}`}
+              alt={item.name}
               className="product-img"
             />
             <div className="product-details">
-            <p><strong>Product Name:</strong> {item.productName}</p>
-            <p><strong>Price:</strong> ₹{item.productPrice}/kg</p>
+            <p><strong>Product Name:</strong> {item.name}</p>
+            <p><strong>Price:</strong> ₹{item.price}/kg</p>
               <div className="quantity-control">
                 <strong>Quantity:</strong>
                 <button onClick={() => handleQuantityChange(item.productId, -1)}>-</button>
