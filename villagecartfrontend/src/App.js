@@ -14,6 +14,7 @@ import MainHome from './pages/MainHome';
 // import SignIn from './pages/Login/SignIn';
 // import SignUp from './pages/Login/SignUp';
 
+
 // Styles
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -36,6 +37,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/add-product" element={<AddProduct />} />
+      
 
           {/* ✅ Auth Routes */}
           {/* <Route path="/login" element={<SignIn />} />
