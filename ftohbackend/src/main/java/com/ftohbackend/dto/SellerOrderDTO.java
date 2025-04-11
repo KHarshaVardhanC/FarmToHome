@@ -8,7 +8,8 @@ public class SellerOrderDTO {
 	String productDescription;
 	Double orderQuantity;
 	Double productPrice;
-	String CustomerName;
+	String customerName;
+	String orderStatus;
 	
 	public SellerOrderDTO() {
 		super();
@@ -17,7 +18,7 @@ public class SellerOrderDTO {
 	
 	
 	public SellerOrderDTO(Integer orderId, String productName, String imageUrl, String productDescription,
-			Double orderQuantity, Double productPrice, String customerName) {
+			Double orderQuantity, Double productPrice, String customerName,String orderStatus) {
 		super();
 		this.orderId = orderId;
 		this.productName = productName;
@@ -25,7 +26,8 @@ public class SellerOrderDTO {
 		this.productDescription = productDescription;
 		this.orderQuantity = orderQuantity;
 		this.productPrice = productPrice;
-		CustomerName = customerName;
+		this.customerName = customerName;
+		this.orderStatus=orderStatus;
 	}
 
 
@@ -53,12 +55,7 @@ public class SellerOrderDTO {
 	public void setProductPrice(Double productPrice) {
 		this.productPrice = productPrice;
 	}
-	public String getCustomerName() {
-		return CustomerName;
-	}
-	public void setCustomerName(String customerName) {
-		CustomerName = customerName;
-	}
+	
 
 
 	public String getImageUrl() {
@@ -81,12 +78,33 @@ public class SellerOrderDTO {
 	}
 
 
+	public String getOrderStatus() {
+		return orderStatus;
+	}
+
+
+	public void setOrderStatus(String orderStatus) {
+		this.orderStatus = orderStatus;
+	}
+
+
+	public String getCustomerName() {
+		return customerName;
+	}
+
+
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
+
+
 	@Override
 	public String toString() {
 		return "SellerOrderDTO [orderId=" + orderId + ", productName=" + productName + ", ImageUrl=" + ImageUrl
 				+ ", productDescription=" + productDescription + ", orderQuantity=" + orderQuantity + ", productPrice="
-				+ productPrice + ", CustomerName=" + CustomerName + "]";
+				+ productPrice + ", customerName=" + customerName + ", orderStatus=" + orderStatus + "]";
 	}
+
 	
 	
 
