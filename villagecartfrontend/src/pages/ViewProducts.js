@@ -1,27 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { productApi } from '../utils/api';
 import ProfileDropdown from '../components/ProfileDropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const ViewProducts = () => {
-  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Replace with actual seller ID from authentication
-  const sellerId = 2; // This should come from your auth context
+
+  const sellerId = 2; // Replace with actual seller ID from authentication
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await productApi.getProducts(sellerId);
         setProducts(response.data);
-        setLoading(false);
       } catch (err) {
         setError('Failed to fetch products');
+      } finally {
         setLoading(false);
       }
     };
@@ -29,24 +27,15 @@ const ViewProducts = () => {
     fetchProducts();
   }, [sellerId]);
 
-  const handleDelete = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await productApi.deleteProduct(productId);
-        setProducts(products.filter(product => product.productId !== productId));
-      } catch (err) {
-        setError('Failed to delete product');
-      }
-    }
-  };
-
-  if (loading) return (
-    <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-      <div className="spinner-border text-primary" role="status">
-        <span className="visually-hidden">Loading...</span>
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="view-products-page">
@@ -102,42 +91,28 @@ const ViewProducts = () => {
           ) : (
             products.map((product) => (
               <div key={product.productId} className="col-md-4 col-lg-3">
-                <div className="card h-100">
-                  {product.imageUrl && (
-                    <img src={product.imageUrl} className="card-img-top" alt={product.productName} style={{ height: '200px', objectFit: 'cover' }} />
-                  )}
-                  <div className="card-body">
-                    <h5 className="card-title">{product.productName}</h5>
-                    <p className="card-text mb-1">
-                      <small className="text-muted">Stock remaining: {product.productQuantity}</small>
-                    </p>
-                    <p className="card-text mb-1">
-                      <strong>Price: ₹{product.productPrice}</strong>
-                    </p>
-                    {/* <p className="card-text">
-                      <small className="text-muted">Location: {product.sellerPlace}, {product.sellerArea}</small>
-                    </p> */}
-                    {product.productDescription && (
-                      <p className="card-text">
-                        <small>{product.productDescription}</small>
-                      </p>
+                {/* ✅ Wrap the card inside Link */}
+                <Link to={`/product/${product.productId}`} className="text-decoration-none text-dark">
+                  <div className="card h-100 hover-shadow">
+                    {product.imageUrl && (
+                      <img
+                        src={product.imageUrl}
+                        className="card-img-top"
+                        alt={product.productName}
+                        style={{ height: '200px', objectFit: 'cover' }}
+                      />
                     )}
-                    <div className="d-flex gap-2 mt-3">
-                      <button
-                        className="btn btn-sm btn-outline-primary flex-grow-1"
-                        onClick={() => navigate(`/product/${product.productId}`)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn btn-sm btn-outline-danger flex-grow-1"
-                        onClick={() => handleDelete(product.productId)}
-                      >
-                        Delete
-                      </button>
+                    <div className="card-body">
+                      <h5 className="card-title">{product.productName}</h5>
+                      <p className="card-text mb-1">
+                        <small className="text-muted">Stock remaining: {product.productQuantity}</small>
+                      </p>
+                      <p className="card-text mb-1">
+                        <strong>Price: ₹{product.productPrice}</strong>
+                      </p>
                     </div>
                   </div>
-                </div>
+                </Link>
               </div>
             ))
           )}
@@ -147,4 +122,4 @@ const ViewProducts = () => {
   );
 };
 
-export default ViewProducts; 
+export default ViewProducts;

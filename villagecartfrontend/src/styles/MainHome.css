@@ -1,0 +1,39 @@
+/* Home.css */
+
+.home-page {
+    background-color: #f8f9fa;
+  }
+  
+  .navbar .nav-link {
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .navbar .nav-link:hover {
+    color: #28a745;
+  }
+  
+  .logo-icon {
+    font-size: 24px;
+  }
+  
+  .product-img {
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .footer {
+    background-color: #28a745;
+  }
+  
+  .loading-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .alert {
+    font-size: 1.2rem;
+  }
+  

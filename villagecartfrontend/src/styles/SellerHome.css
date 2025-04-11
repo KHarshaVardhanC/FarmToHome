@@ -1,0 +1,146 @@
+/* Import third-party CSS files in the main index.js file instead */
+/* These imports have been moved out: 
+   - @fortawesome/fontawesome-free/css/all.min.css
+   - bootstrap/dist/css/bootstrap.min.css
+*/
+
+/* Main layout styles */
+.home-page {
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  /* Loading spinner container */
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  /* Logo styling */
+  .logo-icon {
+    font-size: 24px;
+  }
+  
+  /* Search container and suggestions */
+  .search-container {
+    display: flex;
+    flex-grow: 1;
+    margin: 0 1.5rem;
+    position: relative;
+  }
+  
+  .suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.25rem;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    z-index: 1000;
+  }
+  
+  .suggestion-item {
+    padding: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
+  }
+  
+  .suggestion-item:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* Dashboard cards layout */
+  .dashboard-cards {
+    display: flex;
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  
+  .dashboard-cards > div {
+    flex: 1;
+    padding: 0 0.75rem;
+  }
+  
+  .dashboard-cards > div:first-child {
+    padding-left: 0;
+  }
+  
+  .dashboard-cards > div:last-child {
+    padding-right: 0;
+  }
+  
+  /* Make sure cards have consistent height */
+  .dashboard-cards .card {
+    height: 100%;
+  }
+  
+  /* Section headers */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Products and orders grid layouts */
+  .products-grid, .orders-grid {
+    display: flex;
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  
+  .products-grid > div, .orders-grid > div {
+    flex: 1;
+    padding: 0 0.75rem;
+  }
+  
+  .products-grid > div:first-child, .orders-grid > div:first-child {
+    padding-left: 0;
+  }
+  
+  .products-grid > div:last-child, .orders-grid > div:last-child {
+    padding-right: 0;
+  }
+  
+  /* Card styles for consistent heights */
+  .card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Product image styling */
+  .product-image {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .dashboard-cards,
+    .products-grid,
+    .orders-grid {
+      flex-direction: column;
+    }
+    
+    .dashboard-cards > div,
+    .products-grid > div,
+    .orders-grid > div {
+      width: 100%;
+      padding: 0;
+      margin-bottom: 1rem;
+    }
+    
+    .search-container {
+      margin: 0.5rem 0;
+    }
+  }

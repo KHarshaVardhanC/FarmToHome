@@ -91,4 +91,13 @@ export const customerApi = {
   getCustomer: (customerId) => api.get(`/customer/${customerId}`),
 };
 
+export async function getAllProducts() {
+  const res = await axios.get(`${API_BASE_URL}/products`); // Fixed BASE_URL to API_BASE_URL
+  return res.data;
+}
+
+// export async function getTopProducts() {
+//   const res = await axios.get(`${API_BASE_URL}/products/top`); // Fixed BASE_URL to API_BASE_URL
+//   return res.data;
+// }
 export default api;
