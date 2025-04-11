@@ -38,7 +38,7 @@ function CustomerHomePage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:8080/allproducts');
+      const response = await axios.get('http://localhost:8080/products');
       setProducts(response.data);
       setFilteredProducts(response.data);
     } catch (err) {

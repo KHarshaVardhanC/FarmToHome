@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ftohbackend.exception.OrderException;
+import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.model.Order;
 import com.ftohbackend.model.Product;
@@ -237,7 +238,7 @@ public class OrderServiceTest {
     
     @Test
     @DisplayName("JUnit test for addOrder operation")
-    public void givenOrderObject_whenAddOrder_thenReturnSuccessMessage() throws OrderException {
+    public void givenOrderObject_whenAddOrder_thenReturnSuccessMessage() throws OrderException ,ProductException{
         // given - precondition or setup
         given(orderRepository.save(order)).willReturn(order);
         
