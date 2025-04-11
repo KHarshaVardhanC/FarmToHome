@@ -238,7 +238,11 @@ public class OrderServiceTest {
     
     @Test
     @DisplayName("JUnit test for addOrder operation")
+<<<<<<< HEAD
     public void givenOrderObject_whenAddOrder_thenReturnSuccessMessage() throws OrderException ,ProductException{
+=======
+    public void givenOrderObject_whenAddOrder_thenReturnSuccessMessage() throws OrderException, ProductException {
+>>>>>>> 87bb383b2164ecbed1e94561292e79deb11a2e38
         // given - precondition or setup
         given(orderRepository.save(order)).willReturn(order);
         

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
-// import { loginUser } from "../../services/AuthService";
 import '../../assets/signin.css';
-
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -49,6 +47,27 @@ const Signin = () => {
     return newErrors;
   };
 
+  const loginUser = async (credentials) => {
+    try {
+      const response = await fetch('http://localhost:8080/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed. Please check your credentials.');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      throw new Error(error.message || 'An error occurred during login.');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
@@ -65,9 +84,9 @@ const Signin = () => {
       localStorage.setItem("userId", userData.id);
 
       if (userData.userType === "customer") {
-        navigate("/customer/dashboard");
+        navigate("/customer-home"); // Navigate to CustomerHomePage
       } else {
-        navigate("/seller/dashboard");
+        navigate("/seller/dashboard"); // Navigate to seller dashboard
       }
     } catch (error) {
       setErrors({
