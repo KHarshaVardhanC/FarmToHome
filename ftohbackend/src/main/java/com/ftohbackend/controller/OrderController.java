@@ -27,5 +27,7 @@ public interface OrderController {
 
 	CustomerOrderDTO getOrderInvoice(Integer orderId) throws Exception, OrderException;
 
+	List<CustomerOrderDTO> getCartOrdersByCustomerId(Integer customerId) throws OrderException;
+
 	
 }

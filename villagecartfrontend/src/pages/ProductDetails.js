@@ -4,9 +4,10 @@ import { productApi } from '../utils/api';
 import ProfileDropdown from '../components/ProfileDropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import '../styles/ProductDetails.css';
 
 const ProductDetails = () => {
-  const { id } = useParams(); // 'id' is actually productId
+  const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,7 +18,7 @@ const ProductDetails = () => {
     productPrice: 0,
     productQuantity: 0,
     productDescription: '',
-    sellerId: 2, // assuming static sellerId
+    sellerId: 2,
   });
 
   useEffect(() => {
@@ -58,7 +59,7 @@ const ProductDetails = () => {
     try {
       setLoading(true);
       await productApi.updateProduct(id, editedProduct);
-      setProduct({ ...product, ...editedProduct }); // Update displayed product too
+      setProduct({ ...product, ...editedProduct });
       setIsEditing(false);
       alert('Product updated successfully!');
     } catch (err) {
@@ -84,7 +85,7 @@ const ProductDetails = () => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+      <div className="d-flex justify-content-center align-items-center vh-100">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -93,28 +94,19 @@ const ProductDetails = () => {
   }
 
   if (error) {
-    return (
-      <div className="alert alert-danger m-4" role="alert">
-        {error}
-      </div>
-    );
+    return <div className="alert alert-danger m-4">{error}</div>;
   }
 
   if (!product) {
-    return (
-      <div className="alert alert-warning m-4" role="alert">
-        Product not found.
-      </div>
-    );
+    return <div className="alert alert-warning m-4">Product not found.</div>;
   }
 
   return (
     <div className="product-details-page">
-      {/* Top Navigation */}
       <nav className="navbar navbar-light bg-white">
         <div className="container-fluid px-4">
           <div className="d-flex align-items-center">
-            <Link to="/" className="text-decoration-none">
+            <Link to="/SellerHome" className="text-decoration-none">
               <div className="logo text-dark d-flex align-items-center">
                 <i className="fas fa-leaf text-success me-2" style={{ fontSize: '24px' }}></i>
                 <span className="fw-bold">FarmToHome</span>
@@ -122,7 +114,7 @@ const ProductDetails = () => {
             </Link>
           </div>
           <div className="d-flex align-items-center gap-3">
-            <Link to="/" className="btn btn-outline-primary">
+            <Link to="/view-products" className="btn btn-outline-primary">
               <i className="fas fa-arrow-left me-2"></i>Back to Products
             </Link>
             <ProfileDropdown />
@@ -130,141 +122,31 @@ const ProductDetails = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
       <div className="container-fluid px-4 py-4">
-        <h4 className="mb-4">Product Details</h4>
-
-        {isEditing ? (
-          <div className="card">
-            <div className="card-body">
-              <form onSubmit={handleSubmit}>
-                <div className="row">
-                  <div className="col-md-8">
-                    <div className="mb-3">
-                      <label className="form-label fw-bold">Product Name</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="productName"
-                        value={editedProduct.productName}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label fw-bold">Description</label>
-                      <textarea
-                        className="form-control"
-                        name="productDescription"
-                        value={editedProduct.productDescription}
-                        onChange={handleChange}
-                        rows="3"
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label fw-bold">Quantity</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        name="productQuantity"
-                        value={editedProduct.productQuantity}
-                        onChange={handleChange}
-                        required
-                        min="0"
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label fw-bold">Price (₹)</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        name="productPrice"
-                        value={editedProduct.productPrice}
-                        onChange={handleChange}
-                        required
-                        min="0"
-                        step="0.01"
-                      />
-                    </div>
-
-                    <div className="d-flex gap-2 mt-4">
-                      <button type="submit" className="btn btn-primary">
-                        Save Changes
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={() => setIsEditing(false)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        ) : (
-          <div className="card">
-            <div className="card-body">
-              <div className="row">
-                <div className="col-md-8">
-                  <div className="mb-3">
-                    <h5 className="mb-1">Product Name</h5>
-                    <p>{product.productName}</p>
-                  </div>
-
-                  <div className="mb-3">
-                    <h5 className="mb-1">Description</h5>
-                    <p>{product.productDescription}</p>
-                  </div>
-
-                  <div className="mb-3">
-                    <h5 className="mb-1">Quantity</h5>
-                    <p>{product.productQuantity}</p>
-                  </div>
-
-                  <div className="mb-3">
-                    <h5 className="mb-1">Price</h5>
-                    <p>₹{product.productPrice}</p>
-                  </div>
-
-                  <div className="d-flex gap-2">
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      <i className="fas fa-edit me-2"></i>
-                      Edit Product
-                    </button>
-
-                    <button
-                      className="btn btn-danger"
-                      onClick={handleDelete}
-                    >
-                      <i className="fas fa-trash-alt me-2"></i>
-                      Delete Product
-                    </button>
-                  </div>
-                </div>
-
-                {product.imageUrl && (
-                  <div className="col-md-4">
-                    <img
-                      src={product.imageUrl}
-                      alt={product.productName}
-                      className="img-fluid rounded"
-                      style={{ maxHeight: '300px', objectFit: 'cover' }}
-                    />
-                  </div>
-                )}
+        <h4 className="mb-4 fw-bold">Product Details</h4>
+        <div className="card">
+          <div className="card-body d-flex justify-content-between align-items-start flex-wrap">
+            <div className="product-info">
+              <p><span className="fw-bold">Name:</span> <span className="text-dark fs-5">{product.productName}</span></p>
+              <p><span className="fw-bold">Description:</span> <span className="text-dark fs-5">{product.productDescription}</span></p>
+              <p><span className="fw-bold">Quantity:</span> <span className="text-dark fs-5">{product.productQuantity}</span></p>
+              <p><span className="fw-bold">Price:</span> <span className="text-dark fs-5">₹{product.productPrice}</span></p>
+              <div className="btn-group mt-3">
+                <button className="btn btn-primary" onClick={() => setIsEditing(true)}>
+                  <i className="fas fa-edit me-2"></i>Edit Product
+                </button>
+                <button className="btn btn-danger" onClick={handleDelete}>
+                  <i className="fas fa-trash-alt me-2"></i>Delete Product
+                </button>
               </div>
             </div>
+            {product.imageUrl && (
+              <div className="product-image">
+                <img src={product.imageUrl} alt={product.productName} className="img-fluid rounded shadow-sm" />
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

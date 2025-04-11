@@ -11,18 +11,15 @@ const AddProduct = () => {
   const [error, setError] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  
-  // Replace with actual seller ID from authentication
-  const sellerId = 2; // This should come from your auth context
+  const sellerId = 2;
 
   const [productData, setProductData] = useState({
     productName: '',
     productPrice: '',
     productQuantity: '',
-    // sellerPlace: '',
-    // sellerArea: '',
     sellerId: sellerId,
     productDescription: '',
+    productCategory: '',
   });
 
   const handleChange = (e) => {
@@ -37,7 +34,6 @@ const AddProduct = () => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
-      // Create a preview URL for the selected image
       const fileReader = new FileReader();
       fileReader.onload = () => {
         setPreviewUrl(fileReader.result);
@@ -52,10 +48,7 @@ const AddProduct = () => {
     setError(null);
 
     try {
-      // Create FormData object
       const formData = new FormData();
-      
-      // Add product data
       const formattedData = {
         ...productData,
         productPrice: parseFloat(productData.productPrice),
@@ -63,22 +56,17 @@ const AddProduct = () => {
         sellerId: parseInt(sellerId)
       };
 
-      // Append all product data to FormData
       Object.keys(formattedData).forEach(key => {
         formData.append(key, formattedData[key]);
       });
 
-      // Append the image file if selected
       if (selectedFile) {
         formData.append('image', selectedFile);
       }
 
-      console.log('Submitting product data:', formattedData);
       const response = await productApi.addProduct(formData);
-      console.log('Product added successfully:', response);
       navigate('/view-products');
     } catch (err) {
-      console.error('Error adding product:', err);
       setError(err.response?.data?.message || 'Failed to add product. Please try again.');
     } finally {
       setLoading(false);
@@ -87,31 +75,20 @@ const AddProduct = () => {
 
   return (
     <div className="add-product-page">
-      {/* Top Navigation */}
       <nav className="navbar navbar-light bg-white">
         <div className="container-fluid px-4">
-          <div className="d-flex align-items-center">
-            <Link to="/" className="text-decoration-none">
-              <div className="logo text-dark d-flex align-items-center">
-                <i className="fas fa-leaf text-success me-2" style={{ fontSize: '24px' }}></i>
-                <span className="fw-bold">FarmToHome</span>
-              </div>
-            </Link>
-          </div>
-
+          <Link to="/SellerHome" className="text-decoration-none d-flex align-items-center">
+            <i className="fas fa-leaf text-success me-2" style={{ fontSize: '24px' }}></i>
+            <span className="fw-bold">FarmToHome</span>
+          </Link>
           <div className="d-flex flex-grow-1 mx-4">
             <div className="input-group">
-              <input
-                type="text"
-                className="form-control border-end-0"
-                placeholder="Search products..."
-              />
+              <input type="text" className="form-control border-end-0" placeholder="Search products..." />
               <button className="btn btn-outline-secondary border-start-0">
                 <i className="fas fa-search"></i>
               </button>
             </div>
           </div>
-
           <div className="d-flex align-items-center gap-3">
             <Link to="/view-products" className="btn btn-outline-primary px-4">
               <i className="fas fa-arrow-left me-2"></i>Back to Products
@@ -121,7 +98,6 @@ const AddProduct = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
       <div className="container-fluid px-4 py-4">
         <div className="row justify-content-center">
           <div className="col-md-8">
@@ -131,115 +107,53 @@ const AddProduct = () => {
               </div>
               <div className="card-body">
                 {error && <div className="alert alert-danger">{error}</div>}
-                
                 <form onSubmit={handleSubmit}>
                   <div className="mb-3">
                     <label className="form-label">Product Name</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="productName"
-                      value={productData.productName}
-                      onChange={handleChange}
-                      required
-                    />
+                    <input type="text" className="form-control" name="productName" value={productData.productName} onChange={handleChange} required />
                   </div>
 
                   <div className="mb-3">
                     <label className="form-label">Price (₹)</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="productPrice"
-                      value={productData.productPrice}
-                      onChange={handleChange}
-                      required
-                      min="0"
-                      step="0.01"
-                    />
+                    <input type="number" className="form-control" name="productPrice" value={productData.productPrice} onChange={handleChange} required min="0" step="0.01" />
                   </div>
 
                   <div className="mb-3">
                     <label className="form-label">Quantity</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="productQuantity"
-                      value={productData.productQuantity}
-                      onChange={handleChange}
-                      required
-                      min="0"
-                    />
+                    <input type="number" className="form-control" name="productQuantity" value={productData.productQuantity} onChange={handleChange} required min="0" />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label">Category</label>
+                    <select className="form-select" name="productCategory" value={productData.productCategory} onChange={handleChange} required>
+                      <option value="">Select Category</option>
+                      <option value="Vegetables">Vegetables</option>
+                      <option value="Fruits">Fruits</option>
+                      <option value="Dairy">Dairy</option>
+                      <option value="Grains">Seeds</option>
+                      <option value="seafood">Seafood</option>
+                    </select>
                   </div>
 
                   <div className="mb-3">
                     <label className="form-label">Description</label>
-                    <textarea
-                      className="form-control"
-                      name="productDescription"
-                      value={productData.productDescription}
-                      onChange={handleChange}
-                      required
-                      rows="3"
-                    />
+                    <textarea className="form-control" name="productDescription" value={productData.productDescription} onChange={handleChange} required rows="3" />
                   </div>
 
                   <div className="mb-3">
                     <label className="form-label">Product Image</label>
-                    <input
-                      type="file"
-                      className="form-control"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      required
-                    />
+                    <input type="file" className="form-control" accept="image/*" onChange={handleFileChange} required />
                     {previewUrl && (
                       <div className="mt-2">
-                        <img
-                          src={previewUrl}
-                          alt="Preview"
-                          className="img-thumbnail"
-                          style={{ maxHeight: '200px' }}
-                        />
+                        <img src={previewUrl} alt="Preview" className="img-thumbnail" style={{ maxHeight: '200px' }} />
                       </div>
                     )}
                   </div>
-{/* 
-                  <div className="mb-3">
-                    <label className="form-label">Seller Place</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="sellerPlace"
-                      value={productData.sellerPlace}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div> */}
-{/* 
-                  <div className="mb-3">
-                    <label className="form-label">Seller Area</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="sellerArea"
-                      value={productData.sellerArea}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div> */}
 
                   <div className="d-grid gap-2">
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      disabled={loading}
-                    >
+                    <button type="submit" className="btn btn-primary" disabled={loading}>
                       {loading ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                          Adding Product...
-                        </>
+                        <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Adding Product...</>
                       ) : (
                         'Add Product'
                       )}
@@ -255,4 +169,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct; 
+export default AddProduct;

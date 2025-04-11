@@ -49,10 +49,39 @@ public class OrderControllerImpl implements OrderController {
 		return orderService.getAllOrders();
 	}
 
-//	@GetMapping("/{orderId}")
+//	@GetMapping("/{orderId}") 
 	@Override
 	public Order getOrderById(@PathVariable Integer orderId) throws Exception {
 		return orderService.getOrderById(orderId);
+	}
+	
+	@GetMapping("/orders/incart/{customerId}")
+	@Override
+	public List<CustomerOrderDTO> getCartOrdersByCustomerId(@PathVariable Integer customerId) throws OrderException {
+		List<Order> orders = orderService.getOrderByCustomerId(customerId);
+		List<CustomerOrderDTO> customerorders = new ArrayList<>();
+
+		for (Order order : orders) {
+			
+			if(order.getOrderStatus().equalsIgnoreCase("Incart") || order.getOrderStatus().equalsIgnoreCase("In cart"))
+			{
+				
+				CustomerOrderDTO customerorderdto = new CustomerOrderDTO();
+				customerorderdto.setOrderId(order.getOrderId());
+				customerorderdto.setOrderQuantity(order.getOrderQuantity());
+				
+				Product product = order.getProduct();
+				customerorderdto.setProductName(product.getProductName());
+				customerorderdto.setProductPrice(product.getProductPrice());
+				customerorderdto.setImageUrl(product.getImageUrl());
+				customerorderdto.setProductDescription(product.getProductDescription());
+				
+				Seller seller = product.getSeller();
+				customerorderdto.setSellerName(seller.getSellerFirstName() + " " + seller.getSellerLastName());
+				customerorders.add(customerorderdto);
+			}
+		}
+		return customerorders;
 	}
 
 	@GetMapping("/customer/{customerId}")
@@ -62,6 +91,10 @@ public class OrderControllerImpl implements OrderController {
 		List<CustomerOrderDTO> customerorders = new ArrayList<>();
 
 		for (Order order : orders) {
+			
+			if(!order.getOrderStatus().equalsIgnoreCase("Incart") &&  !order.getOrderStatus().equalsIgnoreCase("In cart"))
+			{
+				
 			CustomerOrderDTO customerorderdto = new CustomerOrderDTO();
 			customerorderdto.setOrderId(order.getOrderId());
 			customerorderdto.setOrderQuantity(order.getOrderQuantity());
@@ -71,10 +104,12 @@ public class OrderControllerImpl implements OrderController {
 			customerorderdto.setProductPrice(product.getProductPrice());
 			customerorderdto.setImageUrl(product.getImageUrl());
 			customerorderdto.setProductDescription(product.getProductDescription());
+			customerorderdto.setOrderStatus(order.getOrderStatus());
 
 			Seller seller = product.getSeller();
 			customerorderdto.setSellerName(seller.getSellerFirstName() + " " + seller.getSellerLastName());
 			customerorders.add(customerorderdto);
+			}
 		}
 		return customerorders;
 	}
@@ -100,6 +135,7 @@ public class OrderControllerImpl implements OrderController {
 			SellerOrderDTO sellerorderdto = new SellerOrderDTO();
 			sellerorderdto.setOrderId(order.getOrderId());
 			sellerorderdto.setOrderQuantity(order.getOrderQuantity());
+			sellerorderdto.setOrderStatus(order.getOrderStatus());
 
 			Product product = order.getProduct();
 

@@ -1,0 +1,67 @@
+.add-product-page {
+    background-color: #f9f9f9;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .card {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  
+  .card-body .form-label {
+    font-weight: 500;
+  }
+  
+  .card-body .form-control,
+  .card-body .form-select {
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  
+  .card-body textarea.form-control {
+    resize: vertical;
+  }
+  
+  .preview-img {
+    max-height: 200px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+  .btn-primary {
+    background-color: #28a745;
+    border: none;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-primary:hover {
+    background-color: #218838;
+  }
+  
+  .alert {
+    font-size: 0.95rem;
+    padding: 10px 15px;
+    border-radius: 6px;
+  }
+  
+  .navbar {
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .navbar .logo span {
+    font-size: 1.5rem;
+  }
+  
+  .input-group input:focus {
+    box-shadow: none;
+    border-color: #28a745;
+  }

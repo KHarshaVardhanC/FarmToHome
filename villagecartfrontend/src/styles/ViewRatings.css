@@ -1,0 +1,37 @@
+.view-ratings-page {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .loader {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .rating-card {
+    transition: transform 0.2s ease-in-out;
+    border-radius: 10px;
+  }
+  
+  .rating-card:hover {
+    transform: translateY(-3px);
+  }
+  
+  .rating-stars {
+    font-size: 1.2rem;
+    color: #ffc107;
+  }
+  
+  .card-title {
+    font-weight: 600;
+  }
+  
+  .card-text {
+    font-size: 0.95rem;
+  }
+  
+  .text-muted {
+    font-size: 0.85rem;
+  }
+  
