@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Slider from 'react-slick';
 import { getAllProducts, getCategoryProducts } from '../utils/api';
@@ -17,15 +17,16 @@ const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [categoryLoading, setCategoryLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState([]);
 
-  // Simplified categories with actual image imports
+  // Reference to the category products section for scrolling
+  const categoryProductsRef = useRef(null);
+
+  // Use capitalized category names to match the database
   const categories = [
-    { id: 1, name: 'Fruits', image: fruitsImg, slug: 'fruits' },
-    { id: 2, name: 'Vegetables', image: vegetablesImg, slug: 'vegetables' },
-    { id: 3, name: 'Dairy', image: dairyImg, slug: 'dairy' },
-    { id: 4, name: 'Seeds', image: seedsImg, slug: 'seeds' }
+    { id: 1, name: 'Fruits', image: fruitsImg, slug: 'Fruits' },
+    { id: 2, name: 'Vegetables', image: vegetablesImg, slug: 'Vegetables' },
+    { id: 3, name: 'Dairy', image: dairyImg, slug: 'Dairy' },
+    { id: 4, name: 'Seeds', image: seedsImg, slug: 'Seeds' }
   ];
 
   // Handle category selection
@@ -36,9 +37,20 @@ const Home = () => {
     try {
       const products = await getCategoryProducts(categorySlug);
       setCategoryProducts(products);
+
+      // After loading products and updating state, scroll down to show them
+      setTimeout(() => {
+        if (categoryProductsRef.current) {
+          categoryProductsRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }, 100); // Small delay to ensure state has updated
     } catch (err) {
       console.error('Error fetching category products:', err);
       setCategoryProducts([]);
+      setError(`Failed to load ${categorySlug} products`);
     } finally {
       setCategoryLoading(false);
     }
@@ -49,10 +61,10 @@ const Home = () => {
     dots: true,
     infinite: true,
     speed: 1000,
-    slidesToShow: 1,
+    slidesToShow: 1, // Show all 4 categories at once
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 1500,
+    autoplaySpeed: 3000,
     responsive: [
       {
         breakpoint: 992,
@@ -75,26 +87,11 @@ const Home = () => {
     ],
   };
 
-  // Handle search
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-    if (!term.trim()) {
-      setFilteredProducts(products);
-      return;
-    }
-
-    const filtered = products.filter((product) =>
-      product.productName.toLowerCase().includes(term.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-  };
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const all = await getAllProducts();
         setProducts(all);
-        setFilteredProducts(all);
       } catch (err) {
         setError('Failed to load products');
       } finally {
@@ -114,7 +111,7 @@ const Home = () => {
     );
   }
 
-  if (error) {
+  if (error && !selectedCategory) {
     return <div className="alert alert-danger text-center m-4">{error}</div>;
   }
 
@@ -127,15 +124,6 @@ const Home = () => {
             <i className="fas fa-leaf text-success me-2 logo-icon"></i>
             <span className="fw-bold fs-4 text-success">Village Cart</span>
           </Link>
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="form-control"
-            />
-          </div>
           <div className="d-flex gap-4">
             <Link className="nav-link" to="/">Home</Link>
             <Link className="nav-link" to="/login">Login</Link>
@@ -154,8 +142,9 @@ const Home = () => {
             {categories.map(category => (
               <div
                 key={category.id}
-                className="category-card"
+                className="category-card cursor-pointer"
                 onClick={() => handleCategorySelect(category.slug)}
+                style={{ cursor: 'pointer' }}
               >
                 <img src={category.image} alt={category.name} className="category-image" />
                 <h5 className="category-name">{category.name}</h5>
@@ -165,67 +154,80 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Category Products */}
-      {selectedCategory && (
-        <div className="container py-4">
-          <h2 className="mb-4 text-capitalize fw-bold">
-            {selectedCategory} Products
-          </h2>
-
-          {categoryLoading ? (
-            <div className="text-center py-5">
-              <div className="spinner-border text-success" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
+      {/* Category Products - Adding ref for scrolling */}
+      <div ref={categoryProductsRef}>
+        {selectedCategory ? (
+          <div className="container py-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h2 className="text-capitalize fw-bold">
+                {selectedCategory} Products
+              </h2>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => setSelectedCategory(null)}
+              >
+                Show All Products
+              </button>
             </div>
-          ) : categoryProducts.length > 0 ? (
+
+            {categoryLoading ? (
+              <div className="text-center py-5">
+                <div className="spinner-border text-success" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            ) : categoryProducts.length > 0 ? (
+              <div className="row g-4">
+                {categoryProducts.map((product, index) => (
+                  <div key={index} className="col-sm-6 col-md-4 col-lg-3">
+                    <div className="card h-100 shadow-sm product-card">
+                      <div className="product-img-container">
+                        <img
+                          src={product.imageUrl}
+                          className="card-img-top product-img"
+                          alt={product.productName}
+                        />
+                      </div>
+                      <div className="card-body d-flex flex-column">
+                        <h5 className="card-title text-center">{product.productName}</h5>
+                        <p className="card-text text-center fw-bold mt-auto">₹{product.productPrice}/kg</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="alert alert-info">
+                No products found in this category.
+              </div>
+            )}
+          </div>
+        ) : (
+          /* All Products */
+          <div className="container py-5">
+            <h2 className="mb-4 fw-bold">All Products</h2>
             <div className="row g-4">
-              {categoryProducts.map((product, index) => (
+              {products.map((product, index) => (
                 <div key={index} className="col-sm-6 col-md-4 col-lg-3">
                   <div className="card h-100 shadow-sm product-card">
-                    <img
-                      src={product.imageUrl}
-                      className="card-img-top product-img"
-                      alt={product.productName}
-                    />
-                    <div className="card-body">
-                      <h5 className="card-title">{product.productName}</h5>
+                    <div className="product-img-container">
+                      <img
+                        src={product.imageUrl}
+                        className="card-img-top product-img"
+                        alt={product.productName}
+                      />
+                    </div>
+                    <div className="card-body d-flex flex-column">
+                      <h5 className="card-title text-center">{product.productName}</h5>
+                      <p className="card-text text-center fw-bold mt-auto">₹{product.productPrice}/kg</p>
 
-                      <p className="card-text fw-bold">₹{product.productPrice}/kg</p>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="alert alert-info">
-              No products found in this category.
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* All Products */}
-      <div className="container py-5">
-        <h2 className="mb-4 fw-bold">All Products</h2>
-        <div className="row g-4">
-          {filteredProducts.map((product, index) => (
-            <div key={index} className="col-sm-6 col-md-4 col-lg-3">
-              <div className="card h-100 shadow-sm product-card">
-                <img
-                  src={product.imageUrl}
-                  className="card-img-top product-img"
-                  alt={product.productName}
-                />
-                <div className="card-body">
-                  <h5 className="card-title">{product.productName}</h5>
-                  <p className="card-text">{product.productDescription}</p>
-                  <p className="card-text fw-bold">₹{product.productPrice}/kg</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Footer */}
