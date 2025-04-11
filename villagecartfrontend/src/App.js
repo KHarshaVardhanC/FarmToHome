@@ -12,6 +12,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import MainHome from './pages/MainHome';
 import OrderInvoice from './pages/OrderInvoice';
+import Rating from './pages/Rating'; // Import the Rating component
 // import SignIn from './pages/Login/SignIn';
 // import SignUp from './pages/Login/SignUp';
 
@@ -37,7 +38,10 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/invoice/:orderId" element={<OrderInvoice />} />
 
-
+          {/* Rating Route */}
+          <Route
+            path="/rate-product/:productId" element={<Rating />}
+          />
           {/* ✅ Auth Routes */}
           {/* <Route path="/login" element={<SignIn />} />
           <Route path="/register" element={<SignUp />} /> */}
