@@ -1,9 +1,8 @@
-import { ordersApi, productApi, ratingsApi } from '../utils/api';
-import '@fortawesome/fontawesome-free/css/all.min.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ProfileDropdown from '../components/ProfileDropdown';
+import { ordersApi, productApi, ratingsApi } from '../utils/api';
+import '../styles/SellerHome.css';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -15,7 +14,6 @@ const Home = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [productRatings, setProductRatings] = useState({});
-
 
   const sellerId = 2; // Replace with actual seller ID from authentication
 
@@ -29,44 +27,30 @@ const Home = () => {
     }, 0);
   };
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const productsResponse = await productApi.getProducts(sellerId);
-  //       setProducts(productsResponse.data);
+  const renderStars = (rating) => {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating - fullStars >= 0.5;
+    const stars = [];
 
-  //       const ordersResponse = await ordersApi.getSellerOrders(sellerId);
-  //       const sortedOrders = ordersResponse.data.sort((a, b) => b.orderId - a.orderId);
-  //       setOrders(sortedOrders);
-  //     } catch (err) {
-  //       setError(
-  //         `Failed to load data: ${err.response?.data?.message || err.message}. 
-  //          Please try again later.`
-  //       );
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+    for (let i = 0; i < fullStars; i++) stars.push(<i key={`full-${i}`} className="fas fa-star text-warning"></i>);
+    if (halfStar) stars.push(<i key="half" className="fas fa-star-half-alt text-warning"></i>);
+    while (stars.length < 5) stars.push(<i key={`empty-${stars.length}`} className="far fa-star text-warning"></i>);
 
-  //   fetchData();
-  // }, [sellerId]);
+    return stars;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-  
-        // 1. Get all products
-        const productsRes = await productApi.getProducts(sellerId);
-        const products = productsRes.data;
+        const productsResponse = await productApi.getProducts(sellerId);
+        const products = productsResponse.data;
         setProducts(products);
-  
-        // 2. Get all orders
-        const ordersRes = await ordersApi.getSellerOrders(sellerId);
-        const sortedOrders = ordersRes.data.sort((a, b) => b.orderId - a.orderId);
+
+        const ordersResponse = await ordersApi.getSellerOrders(sellerId);
+        const sortedOrders = ordersResponse.data.sort((a, b) => b.orderId - a.orderId);
         setOrders(sortedOrders);
-  
-        // 3. Get ratings for each product
+
         const ratingMap = {};
         for (let product of products) {
           try {
@@ -79,17 +63,18 @@ const Home = () => {
           }
         }
         setProductRatings(ratingMap);
-  
+
       } catch (err) {
-        setError('Failed to load products or ratings');
+        setError(
+          `Failed to load data: ${err.response?.data?.message || err.message}. \n Please try again later.`
+        );
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, [sellerId]);
-  
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -125,7 +110,7 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+      <div className="loading-container">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -143,18 +128,6 @@ const Home = () => {
 
   const totalRevenue = calculateTotalRevenue(orders);
 
-  const renderStars = (rating) => {
-    const fullStars = Math.floor(rating);
-    const halfStar = rating - fullStars >= 0.5;
-    const stars = [];
-  
-    for (let i = 0; i < fullStars; i++) stars.push(<i key={`full-${i}`} className="fas fa-star text-warning"></i>);
-    if (halfStar) stars.push(<i key="half" className="fas fa-star-half-alt text-warning"></i>);
-    while (stars.length < 5) stars.push(<i key={`empty-${stars.length}`} className="far fa-star text-warning"></i>);
-  
-    return stars;
-  };
-  
   return (
     <div className="home-page">
       {/* Top Navigation */}
@@ -163,13 +136,13 @@ const Home = () => {
           <div className="d-flex align-items-center">
             <Link to="/" className="text-decoration-none">
               <div className="logo text-dark d-flex align-items-center">
-                <i className="fas fa-leaf text-success me-2" style={{ fontSize: '24px' }}></i>
+                <i className="fas fa-leaf text-success me-2 logo-icon"></i>
                 <span className="fw-bold">FarmToHome</span>
               </div>
             </Link>
           </div>
 
-          <div className="d-flex flex-grow-1 mx-4 position-relative">
+          <div className="search-container">
             <form className="input-group" onSubmit={handleSearchSubmit}>
               <input
                 type="text"
@@ -189,12 +162,11 @@ const Home = () => {
               </button>
             </form>
             {showSuggestions && suggestions.length > 0 && (
-              <div className="position-absolute top-100 start-0 end-0 mt-1 bg-white border rounded shadow-sm" style={{ zIndex: 1000 }}>
+              <div className="suggestions-dropdown">
                 {suggestions.map((product) => (
                   <div
                     key={product.productId}
-                    className="p-2 border-bottom cursor-pointer hover-bg-light"
-                    style={{ cursor: 'pointer' }}
+                    className="suggestion-item"
                     onClick={() => handleSuggestionClick(product.productId)}
                     onMouseDown={(e) => e.preventDefault()}
                   >
@@ -218,7 +190,7 @@ const Home = () => {
       {/* Main Content */}
       <div className="container-fluid px-4 py-4">
         {/* Dashboard Cards */}
-        <div className="row g-4 mb-4">
+        <div className="dashboard-cards">
           <div className="col-md-4">
             <Link to="/view-orders" className="text-decoration-none">
               <div className="card bg-primary text-white h-100">
@@ -257,90 +229,84 @@ const Home = () => {
             </div>
           </div>
         </div>
+      
+{/* My Products Section */}
+<div className="section-header">
+  <h4 className="mb-0">My Products</h4>
+  <Link to="/view-products" className="btn btn-link text-decoration-none">
+    See All Products <i className="fas fa-arrow-right ms-1"></i>
+  </Link>
+</div>
 
-        {/* My Products Section */}
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h4 className="mb-0">My Products</h4>
-          <Link to="/view-products" className="btn btn-link text-decoration-none">
-            See All Products <i className="fas fa-arrow-right ms-1"></i>
-          </Link>
-        </div>
-
-        <div className="row g-4">
-          {products.slice(0, 3).map((product) => (
-            <div key={product.productId} className="col-md-4">
-              <div className="card h-100">
-                {product.imageUrl && (
-                  <img
-                    src={product.imageUrl}
-                    className="card-img-top"
-                    alt={product.productName}
-                    style={{ height: '200px', objectFit: 'cover' }}
-                  />
-                )}
-                <div className="card-body">
-                  <h5 className="card-title">{product.productName}</h5>
-                  <p className="card-text mb-1">
-                    <small className="text-muted">Stock remaining: {product.productQuantity}</small>
-                  </p>
-                  <p className="card-text mb-1">
-                    <strong>Price: ₹{product.productPrice}</strong>
-                  </p>
-                  {productRatings[product.productId] ? (
-  <p className="card-text mb-1">
-    {renderStars(productRatings[product.productId])}
-    <small className="text-muted ms-2">({productRatings[product.productId]} / 5)</small>
-  </p>
-) : (
-  <p className="card-text text-muted">No Ratings</p>
-)}
-
-                  {/* <p className="card-text">
-                    <small className="text-muted">Location: {product.sellerPlace}, {product.sellerArea}</small>
-                  </p> */}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* My Orders Section */}
-        <div className="d-flex justify-content-between align-items-center mb-4 mt-5">
-          <h4 className="mb-0">Recent Orders</h4>
-          <Link to="/view-orders" className="btn btn-link text-decoration-none">
-            See All Orders <i className="fas fa-arrow-right ms-1"></i>
-          </Link>
-        </div>
-
-        <div className="row g-4">
-          {orders.slice(0, 3).map((order) => (
-            <div key={order.orderId} className="col-md-4">
-              <div className="card h-100">
-                <div className="card-body">
-                  <p className="card-text mb-1">
-                    <small className="text-muted">Order ID: {order.orderId}</small>
-                  </p>
-                  <h5 className="card-title">{order.productName || 'Product Name Not Available'}</h5>
-                  <p className="card-text mb-1">
-                    <strong>Quantity: {order.orderQuantity}</strong>
-                  </p>
-                  <p className="card-text mb-1">
-                    <small className="text-muted">Ordered by: {order.customerName}</small>
-                  </p>
-                  <p className="card-text mt-2">
-                    <span className={`badge ${order.orderStatus?.toLowerCase() === 'success' ? 'bg-success' : 'bg-warning'}`}>
-                      Status: {order.orderStatus || 'In Cart'}
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
+<div className="products-grid">
+  {products.slice(0, 3).map((product, index) => (
+    <div key={product.productId}>
+      <div className="card h-100">
+        {product.imageUrl && (
+          <img
+            src={product.imageUrl}
+            className="card-img-top product-image"
+            alt={product.productName}
+          />
+        )}
+        <div className="card-body">
+          <h5 className="card-title">{product.productName}</h5>
+          <p className="card-text mb-1">
+            <small className="text-muted">Stock remaining: {product.productQuantity}</small>
+          </p>
+          <p className="card-text mb-1">
+            <strong>Price: ₹{product.productPrice}</strong>
+          </p>
+          {productRatings[product.productId] ? (
+            <p className="card-text mb-1">
+              {renderStars(productRatings[product.productId])}
+              <small className="text-muted ms-2">({productRatings[product.productId]} / 5)</small>
+            </p>
+          ) : (
+            <p className="card-text text-muted">No Ratings</p>
+          )}
         </div>
       </div>
     </div>
+  ))}
+</div>
+
+{/* My Orders Section */}
+<div className="section-header mt-5">
+  <h4 className="mb-0">Recent Orders</h4>
+  <Link to="/view-orders" className="btn btn-link text-decoration-none">
+    See All Orders <i className="fas fa-arrow-right ms-1"></i>
+  </Link>
+</div>
+
+<div className="orders-grid">
+  {orders.slice(0, 3).map((order) => (
+    <div key={order.orderId}>
+      <div className="card h-100">
+        <div className="card-body">
+          <p className="card-text mb-1">
+            <small className="text-muted">Order ID: {order.orderId}</small>
+          </p>
+          <h5 className="card-title">{order.productName || 'Product Name Not Available'}</h5>
+          <p className="card-text mb-1">
+            <strong>Quantity: {order.orderQuantity}</strong>
+          </p>
+          <p className="card-text mb-1">
+            <small className="text-muted">Ordered by: {order.customerName}</small>
+          </p>
+          <p className="card-text mt-2">
+            <span className={`badge ${order.orderStatus?.toLowerCase() === 'success' ? 'bg-success' : 'bg-warning'}`}>
+              Status: {order.orderStatus || 'In Cart'}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+      </div>
+    </div>
   );
-  
 };
 
 export default Home;

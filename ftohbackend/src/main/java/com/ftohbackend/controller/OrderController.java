@@ -22,7 +22,12 @@ public interface OrderController {
 
 	String deleteOrder(Integer orderId) throws OrderException, Exception;
 
-	Order updateOrderStatus(Integer orderId, String orderStatus) throws OrderException, Exception;
+	String updateOrderStatus(Integer orderId, String orderStatus) throws OrderException, Exception;
+
+
+	CustomerOrderDTO getOrderInvoice(Integer orderId) throws Exception, OrderException;
+
+	List<CustomerOrderDTO> getCartOrdersByCustomerId(Integer customerId) throws OrderException;
 
 	
 }

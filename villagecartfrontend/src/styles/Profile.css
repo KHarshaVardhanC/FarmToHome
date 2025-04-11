@@ -1,0 +1,40 @@
+.profile-page {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+  }
+  
+  .navbar .logo span {
+    font-size: 20px;
+  }
+  
+  .card {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: none;
+    border-radius: 8px;
+  }
+  
+  .card-title {
+    font-weight: bold;
+    font-size: 1.5rem;
+  }
+  
+  .form-label {
+    font-weight: 500;
+  }
+  
+  input[disabled] {
+    background-color: #f1f1f1;
+  }
+  
+  .btn i {
+    margin-right: 5px;
+  }
+  
+  .loading-state,
+  .error-state {
+    padding: 2rem;
+    text-align: center;
+    font-size: 1.25rem;
+  }
+  

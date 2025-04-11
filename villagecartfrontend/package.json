@@ -12,6 +12,7 @@
     "axios": "^1.8.4",
     "bootstrap": "^5.3.5",
     "fortawesome": "^0.0.1-security",
+    "framer-motion": "^12.6.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-icons": "^4.8.0",

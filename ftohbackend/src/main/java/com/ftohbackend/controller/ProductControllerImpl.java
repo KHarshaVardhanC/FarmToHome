@@ -94,7 +94,7 @@ public class ProductControllerImpl implements ProductController {
 		return productService.deleteProduct(productId);
 	}
 
-	@GetMapping("/allproducts")
+	@GetMapping("/products")
 	@Override
 	public List<ProductDTO> getAllProducts() throws ProductException{
 		return productService.getAllProduct().stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
