@@ -5,13 +5,13 @@ public class RatingDTO {
     private Integer ratingId;
     private Integer customerId;
     private Integer productId;
-    private Integer ratingValue;
+    private Double ratingValue;
     private String feedback;
 
     public RatingDTO() {
     }
 
-    public RatingDTO(Integer ratingId, Integer customerId, Integer productId, Integer ratingValue, String feedback) {
+    public RatingDTO(Integer ratingId, Integer customerId, Integer productId, Double ratingValue, String feedback) {
         this.ratingId = ratingId;
         this.customerId = customerId;
         this.productId = productId;
@@ -43,11 +43,11 @@ public class RatingDTO {
         this.productId = productId;
     }
 
-    public Integer getRatingValue() {
+    public Double getRatingValue() {
         return ratingValue;
     }
 
-    public void setRatingValue(Integer ratingValue) {
+    public void setRatingValue(Double ratingValue) {
         this.ratingValue = ratingValue;
     }
 

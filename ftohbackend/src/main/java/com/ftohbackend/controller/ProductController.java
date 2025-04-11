@@ -10,6 +10,7 @@ import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
 import com.ftohbackend.dto.SellerProductDTO;
 import com.ftohbackend.exception.ProductException;
+import com.ftohbackend.exception.RatingException;
 
 import jakarta.validation.Valid;
 
@@ -17,7 +18,7 @@ public interface ProductController {
 
 //	String addProduct(@Valid ProductDTO productDto) throws Exception;
 
-	String updateProduct(Integer productId, ProductDTO updatedDetails) throws ProductException;
+	String updateProduct(Integer productId, ProductDTO updatedDetails) throws ProductException, RatingException, Exception;
 
 	String deleteProduct(Integer productId) throws ProductException;
 

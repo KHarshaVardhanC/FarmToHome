@@ -96,9 +96,51 @@ export async function getAllProducts() {
   const res = await axios.get(`${API_BASE_URL}/products`); // Fixed BASE_URL to API_BASE_URL
   return res.data;
 }
+export const getCategoryProducts = async (category) => {
+  try {
+    const response = await fetch(`http://localhost:8080/products/${category}`);
 
-// export async function getTopProducts() {
-//   const res = await axios.get(`${API_BASE_URL}/products/top`); // Fixed BASE_URL to API_BASE_URL
-//   return res.data;
-// }
+    if (!response.ok) {
+      throw new Error('Failed to fetch category products');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching category products:', error);
+    throw error;
+  }
+};
+
+export const getOrderInvoice = async (orderId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/order/invoice/${orderId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching order invoice:', error);
+
+    // Handle specific error cases
+    if (error.response) {
+      // The request was made and server responded with a status code
+      if (error.response.status === 404) {
+        throw new Error('Invoice not found. Please check the order ID and try again.');
+      } else if (error.response.status === 403) {
+        throw new Error('You do not have permission to view this invoice.');
+      } else {
+        throw new Error(`Server error: ${error.response.data.message || 'Unknown error occurred'}`);
+      }
+    } else if (error.request) {
+      // The request was made but no response was received
+      throw new Error('No response from server. Please check your internet connection.');
+    } else {
+      // Something happened in setting up the request
+      throw new Error('Failed to send request. Please try again later.');
+    }
+  }
+};
+
+
+
+// Get products by category
+
+
 export default api;
