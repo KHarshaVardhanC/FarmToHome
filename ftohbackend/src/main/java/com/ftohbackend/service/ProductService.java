@@ -21,7 +21,7 @@ public interface ProductService {
 
 	public Product getProductByTitle(String name) throws ProductException;
 
-	public String updateProduct(Integer productId, Product updatedDetails)throws ProductException;
+	public String updateProduct(Integer productId, Product updatedDetails)throws ProductException, Exception;
 
 	public String deleteProduct(Integer productId) throws ProductException;
 	

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ftohbackend.dto.CustomerDTO;
 import com.ftohbackend.exception.CustomerException;
+import com.ftohbackend.exception.SellerException;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.model.Mails;
 import com.ftohbackend.service.CustomerService;
@@ -30,73 +31,122 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/customer")
 @Validated
-public class CustomerControllerImpl implements CustomerController{
-	
-	@Autowired 
-	private ModelMapper modelmapper;
-	
+public class CustomerControllerImpl implements CustomerController {
+
 	@Autowired
-	private CustomerService customerservice;
-	
+	private ModelMapper modelmapper;
+
+	@Autowired
+	private CustomerService customerService;
+
 	@Autowired
 	MailServiceImpl mailServiceImpl;
-	
+
 	@PostMapping("")
 	public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerdto) throws CustomerException {
 		String result = "";
 
-		if(!mailServiceImpl.isMailExists(customerdto.getCustomerEmail()))
-		{
+		if (!mailServiceImpl.isMailExists(customerdto.getCustomerEmail())) {
 			Customer customer = modelmapper.map(customerdto, Customer.class);
-			customerservice.addCustomer(customer);
+			customerService.addCustomer(customer);
 			mailServiceImpl.addMail(new Mails(customerdto.getCustomerEmail()));
-			
-			result= "You Registered Successfully";
-		}
-		else
-		{
-			result= "Provided Email All ready Exists";
+
+			result = "You Registered Successfully";
+		} else {
+			result = "Provided Email All ready Exists";
 		}
 
-	    return ResponseEntity.status(HttpStatus.CREATED).body(result);
+		return ResponseEntity.status(HttpStatus.CREATED).body(result);
 	}
 
 	@GetMapping("/{customerId}")
 	public ResponseEntity<CustomerDTO> getCustomer(@PathVariable Integer customerId) throws CustomerException {
-	    Customer customer = customerservice.getCustomer(customerId);
-	    CustomerDTO customerDTO=modelmapper.map(customer,CustomerDTO.class);
-	    return ResponseEntity.ok(customerDTO); // Return HTTP 200 with customer data
+		Customer customer = customerService.getCustomer(customerId);
+		CustomerDTO customerDTO = modelmapper.map(customer, CustomerDTO.class);
+		return ResponseEntity.ok(customerDTO); // Return HTTP 200 with customer data
 	}
 
 	@GetMapping("/")
 	public ResponseEntity<List<CustomerDTO>> getAllCustomers() throws CustomerException {
-	    List<Customer> customers= customerservice.getAllCustomers(); 
-	    
-	    List<CustomerDTO> customerDTOs = customers.stream().map(customer -> modelmapper.map(customer, CustomerDTO.class)).collect(Collectors.toList()); // ✅ Using Collectors.toList() for Java 8+
+		List<Customer> customers = customerService.getAllCustomers();
 
-	    return ResponseEntity.ok(customerDTOs); // Return HTTP 200 with the list of customers
+		List<CustomerDTO> customerDTOs = customers.stream()
+				.map(customer -> modelmapper.map(customer, CustomerDTO.class)).collect(Collectors.toList()); // ✅ Using
+																												// Collectors.toList()
+																												// for
+																												// Java
+																												// 8+
+
+		return ResponseEntity.ok(customerDTOs); // Return HTTP 200 with the list of customers
 	}
 
-	/*@DeleteMapping("/{customerId}")
-	public String deleteCustomer(@PathVariable Integer customerId) {
-		return customerservice.deleteCustomer(customerId);
+	@Override
+	@PostMapping("/login")
+	public ResponseEntity<?> loginCustomer(@RequestBody LoginRequest loginRequest) throws CustomerException, Exception {
+		Customer customer = customerService.authenticateCustomer(loginRequest.getEmail(), loginRequest.getPassword());
+
+		if (customer != null) {
+			// Create and return a response with seller data (excluding password)
+			return ResponseEntity.ok(new CustomerResponse(customer.getCustomerId(), customer.getCustomerEmail()));
+		} else {
+			return ResponseEntity.status(401).body("Invalid email or password");
+		}
 	}
-	
-	@DeleteMapping("/")
-	public String deleteAllCustomer() {
-		return customerservice.deleteCustomer();
+
+	public static class LoginRequest {
+		private String email;
+		private String password;
+
+		// Getters and setters
+		public String getEmail() {
+			return email;
+		}
+
+		public void setEmail(String email) {
+			this.email = email;
+		}
+
+		public String getPassword() {
+			return password;
+		}
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
 	}
-	*/
-	
+
+	// Inner class for seller response (without sensitive data)
+	public static class CustomerResponse {
+		private Integer customerId;
+		private String customerEmail;
+
+		// ... other non-sensitive fields ...
+
+		public CustomerResponse(Integer customerId, String customerEmail) {
+			this.customerId = customerId;
+			this.customerEmail = customerEmail;
+		}
+
+		// Getters
+		public Integer getCustomerId() {
+			return customerId;
+		}
+
+		public String getCustomerEmail() {
+			return customerEmail;
+		}
+
+	}
+
 	@PutMapping("/{customerId}")
-    public ResponseEntity<String> updateCustomer(@PathVariable Integer customerId, @RequestBody CustomerDTO customerDTO) throws CustomerException {
-        // Convert DTO to Entity using ModelMapper
-        Customer customer = modelmapper.map(customerDTO, Customer.class);
+	public ResponseEntity<String> updateCustomer(@PathVariable Integer customerId, @RequestBody CustomerDTO customerDTO)
+			throws CustomerException {
+		// Convert DTO to Entity using ModelMapper
+		Customer customer = modelmapper.map(customerDTO, Customer.class);
 
-        // Pass the entity to the service
-        String response = customerservice.updateCustomer(customerId, customer);
+		// Pass the entity to the service
+		String response = customerService.updateCustomer(customerId, customer);
 
-        return ResponseEntity.ok(response);
-    }
+		return ResponseEntity.ok(response);
+	}
 }
-

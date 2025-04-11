@@ -8,6 +8,8 @@ import com.ftohbackend.model.Customer;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Integer>{
 
+	Customer findByCustomerEmail(String email);
+
 }
 
 

@@ -59,6 +59,8 @@ public class Product {
 	@Column(name = "productCategory")
 	String productCategory;
 	
+	Double productRatingValue;
+	
 	
 
 	@OneToMany(mappedBy = "product" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -94,6 +96,7 @@ public class Product {
 	this.orders = orders;
 	this.ratings = ratings;
 	this.productCategory=productCategory;
+	this.productRatingValue=0.0;
 }
 
 
@@ -199,15 +202,34 @@ public class Product {
 	}
 
 
+	
+
+	public Double getProductRatingValue() {
+		return productRatingValue;
+	}
+
+
+
+	public void setProductRatingValue() {
+		this.productRatingValue = 0.0;
+	}
+	public void setProductRatingValue(Double productRatingValue) {
+		this.productRatingValue = productRatingValue;
+	}
+
+
 
 	@Override
 	public String toString() {
 		return "Product [productId=" + productId + ", seller=" + seller + ", productPrice=" + productPrice
 				+ ", productName=" + productName + ", ImageUrl=" + ImageUrl + ", productDescription="
 				+ productDescription + ", productQuantity=" + productQuantity + ", productCategory=" + productCategory
-				+ ", orders=" + orders + ", ratings=" + ratings + "]";
+				+ ", productRatingValue=" + productRatingValue + ", orders=" + orders + ", ratings=" + ratings + "]";
 	}
 
+
+
+	
 
 
 	 

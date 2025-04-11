@@ -9,6 +9,7 @@ public class ProductDTO {
 	String ImageUrl;
 	String productDescription;
 	String productCategory;
+	Double productRatingValue;
 	
 	public ProductDTO() {
 		// TODO Auto-generated constructor stub
@@ -17,7 +18,7 @@ public class ProductDTO {
 	
 	
 	public ProductDTO(Integer productId, Integer sellerId, Double productPrice, String productName,
-			Double productQuantity, String imageUrl, String productDescription, String productCategory) {
+			Double productQuantity, String imageUrl, String productDescription, String productCategory,Double productRatingValue) {
 		super();
 		this.productId = productId;
 		this.sellerId = sellerId;
@@ -27,6 +28,8 @@ public class ProductDTO {
 		ImageUrl = imageUrl;
 		this.productDescription = productDescription;
 		this.productCategory=productCategory;
+		this.productRatingValue=productRatingValue;
+
 		
 	}
 
@@ -102,11 +105,24 @@ public class ProductDTO {
 
 
 
+	public Double getProductRatingValue() {
+		return productRatingValue;
+	}
+
+
+
+	public void setProductRatingValue(Double productRatingValue) {
+		this.productRatingValue = productRatingValue;
+	}
+
+
+
 	@Override
 	public String toString() {
 		return "ProductDTO [productId=" + productId + ", sellerId=" + sellerId + ", productPrice=" + productPrice
 				+ ", productName=" + productName + ", productQuantity=" + productQuantity + ", ImageUrl=" + ImageUrl
-				+ ", productDescription=" + productDescription + ", productCategory=" + productCategory + "]";
+				+ ", productDescription=" + productDescription + ", productCategory=" + productCategory
+				+ ", productRatingValue=" + productRatingValue + "]";
 	}
 
 

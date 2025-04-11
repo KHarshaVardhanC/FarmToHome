@@ -143,6 +143,7 @@ public class OrderControllerImpl implements OrderController {
 			sellerorderdto.setProductPrice(product.getProductPrice());
 			sellerorderdto.setImageUrl(product.getImageUrl());
 			sellerorderdto.setProductDescription(product.getProductDescription());
+			
 
 			Customer customer = order.getCustomer();
 			sellerorderdto.setCustomerName(customer.getCustomerFirstName() + " " + customer.getCustomerLastName());
