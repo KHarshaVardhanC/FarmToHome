@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ordersApi } from '../utils/api';
 import ProfileDropdown from '../components/ProfileDropdown';
+import '../styles/ViewOrders.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -12,9 +13,28 @@ const ViewOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  
-  // Replace with actual seller ID from authentication
-  const sellerId = 2;
+
+  const sellerId = 2; // Replace with actual logged-in seller ID
+
+  const statusOptions = [
+    { label: 'In Cart', value: 'Incart' },
+    { label: 'Ordered', value: 'Ordered' },
+    { label: 'Delivered', value: 'Delivered' },
+    { label: 'Deleted', value: 'Deleted' },
+    { label: 'Failed', value: 'Failed' }
+  ];
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await ordersApi.getSellerOrders(sellerId);
+      setOrders(response.data.sort((a, b) => b.orderId - a.orderId));
+    } catch (err) {
+      setError('Failed to load orders. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleViewDetails = (order) => {
     setSelectedOrder(order);
@@ -25,61 +45,53 @@ const ViewOrders = () => {
     try {
       setUpdatingStatus(true);
       await ordersApi.updateOrderStatus(orderId, newStatus);
-      
-      // Update the orders list with the new status
-      setOrders(orders.map(order => 
-        order.orderId === orderId 
-          ? { ...order, orderStatus: newStatus }
-          : order
-      ));
 
-      // Update selected order if in modal
-      if (selectedOrder && selectedOrder.orderId === orderId) {
+      setOrders(prev =>
+        prev.map(order =>
+          order.orderId === orderId ? { ...order, orderStatus: newStatus } : order
+        )
+      );
+
+      if (selectedOrder?.orderId === orderId) {
         setSelectedOrder({ ...selectedOrder, orderStatus: newStatus });
       }
     } catch (err) {
-      console.error('Error updating order status:', err);
-      setError('Failed to update order status. Please try again.');
+      let errorMessage = 'Failed to update order status. Try again.';
+
+if (err?.response?.data) {
+  if (typeof err.response.data === 'string') {
+    errorMessage = err.response.data;
+  } else if (err.response.data.message) {
+    errorMessage = err.response.data.message;
+  }
+}
+
+if (errorMessage.includes('Quantity Exceeded')) {
+  window.alert('❌ Quantity exceeds stock! Please update the quantity or restock.');
+} else {
+  window.alert('⚠️ ' + errorMessage);
+}
+
+
+      setError(errorMessage);
     } finally {
       setUpdatingStatus(false);
     }
   };
 
   const getStatusBadgeClass = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'in cart':
-        return 'bg-warning';
-      case 'ordered':
-        return 'bg-info';
-      case 'success':
-        return 'bg-success';
-      case 'failed':
-        return 'bg-danger';
-      case 'deleted':
-        return 'bg-secondary';
-      default:
-        return 'bg-warning';
+    switch ((status || '').toLowerCase()) {
+      case 'ordered': return 'bg-info';
+      case 'delivered': return 'bg-success';
+      case 'failed': return 'bg-danger';
+      case 'deleted': return 'bg-secondary';
+      default: return 'bg-warning'; // incart
     }
   };
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setLoading(true);
-        const response = await ordersApi.getSellerOrders(sellerId);
-        // Sort orders by orderId in descending order (most recent first)
-        const sortedOrders = response.data.sort((a, b) => b.orderId - a.orderId);
-        setOrders(sortedOrders);
-      } catch (err) {
-        console.error('Error fetching orders:', err);
-        setError('Failed to load orders. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOrders();
-  }, [sellerId]);
+  }, []);
 
   if (loading) {
     return (
@@ -91,83 +103,79 @@ const ViewOrders = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="alert alert-danger m-4" role="alert">
-        {error}
-      </div>
-    );
-  }
-
   return (
     <div className="view-orders-page">
-      {/* Top Navigation */}
-      <nav className="navbar navbar-light bg-white">
-        <div className="container-fluid px-4">
-          <div className="d-flex align-items-center">
-            <Link to="/" className="text-decoration-none">
-              <div className="logo text-dark d-flex align-items-center">
-                <i className="fas fa-leaf text-success me-2" style={{ fontSize: '24px' }}></i>
-                <span className="fw-bold">FarmToHome</span>
-              </div>
-            </Link>
-          </div>
-
-          <div className="d-flex align-items-center gap-3">
-            <Link to="/" className="btn btn-outline-primary">
-              <i className="fas fa-arrow-left me-2"></i>Back to Dashboard
+      {/* Navigation */}
+      <nav className="navbar navbar-light bg-white shadow-sm">
+        <div className="container-fluid px-4 py-2 d-flex justify-content-between align-items-center">
+          <Link to="/SellerHome" className="text-decoration-none d-flex align-items-center">
+            <i className="fas fa-leaf text-success me-2 fs-4"></i>
+            <span className="fw-bold fs-4 text-success">FarmToHome</span>
+          </Link>
+          <div className="d-flex gap-3">
+            <Link to="/SellerHome" className="btn btn-outline-primary">
+              <i className="fas fa-arrow-left me-2" />
+              Back to Dashboard
             </Link>
             <ProfileDropdown />
           </div>
         </div>
       </nav>
 
-      {/* Main Content */}
+      {/* Orders Table */}
       <div className="container-fluid px-4 py-4">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h4 className="mb-0">All Orders</h4>
-        </div>
-
+        <h4 className="mb-4">All Orders</h4>
+        {error && <div className="alert alert-danger">{error}</div>}
         {orders.length === 0 ? (
           <div className="alert alert-info">No orders found.</div>
         ) : (
           <div className="card">
             <div className="table-responsive">
-              <table className="table table-hover mb-0">
-                <thead>
+              <table className="table table-hover">
+                <thead className="table-light">
                   <tr>
                     <th>Order ID</th>
-                    <th>Product Name</th>
-                    <th>Customer Name</th>
+                    <th>Product</th>
+                    <th>Customer</th>
                     <th>Quantity</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order) => (
+                  {orders.map(order => (
                     <tr key={order.orderId}>
                       <td>{order.orderId}</td>
                       <td>{order.productName}</td>
                       <td>{order.customerName}</td>
-                      <td>{order.orderQuantity}</td>
+                      <td>
+                        {order.orderQuantity}
+                        {order.availableStock === 0 && (
+                          <span className="badge bg-danger ms-2">Out of Stock</span>
+                        )}
+                      </td>
                       <td>
                         <div className="dropdown">
-                          <button 
+                          <button
                             className={`btn btn-sm badge ${getStatusBadgeClass(order.orderStatus)} dropdown-toggle`}
                             type="button"
-                            id={`statusDropdown${order.orderId}`}
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                             disabled={updatingStatus}
                           >
-                            {order.orderStatus || 'In Cart'}
+                            {statusOptions.find(s => s.value.toLowerCase() === (order.orderStatus || '').toLowerCase())?.label || 'In Cart'}
                           </button>
-                          <ul className="dropdown-menu" aria-labelledby={`statusDropdown${order.orderId}`}>
-                            <li><button className="dropdown-item" onClick={() => handleStatusUpdate(order.orderId, 'In Cart')}>In Cart</button></li>
-                            <li><button className="dropdown-item" onClick={() => handleStatusUpdate(order.orderId, 'Ordered')}>Ordered</button></li>
-                            <li><button className="dropdown-item" onClick={() => handleStatusUpdate(order.orderId, 'Success')}>Success</button></li>
-                            <li><button className="dropdown-item" onClick={() => handleStatusUpdate(order.orderId, 'Failed')}>Failed</button></li>
+                          <ul className="dropdown-menu">
+                            {statusOptions.map((status) => (
+                              <li key={status.value}>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() => handleStatusUpdate(order.orderId, status.value)}
+                                >
+                                  {status.label}
+                                </button>
+                              </li>
+                            ))}
                           </ul>
                         </div>
                       </td>
@@ -176,7 +184,7 @@ const ViewOrders = () => {
                           className="btn btn-sm btn-outline-primary"
                           onClick={() => handleViewDetails(order)}
                         >
-                          <i className="fas fa-eye"></i>
+                          <i className="fas fa-eye" />
                         </button>
                       </td>
                     </tr>
@@ -188,72 +196,42 @@ const ViewOrders = () => {
         )}
       </div>
 
-      {/* Order Details Modal */}
+      {/* Modal */}
       {showModal && selectedOrder && (
-        <div className="modal show d-block" tabIndex="-1">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Order Details</h5>
-                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
-              </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <strong>Order ID:</strong> {selectedOrder.orderId}
+        <>
+          <div className="modal show d-block" tabIndex="-1">
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Order #{selectedOrder.orderId}</h5>
+                  <button className="btn-close" onClick={() => setShowModal(false)} />
                 </div>
-                <div className="mb-3">
-                  <strong>Product:</strong> {selectedOrder.productName}
+                <div className="modal-body">
+                  <p><strong>Product:</strong> {selectedOrder.productName}</p>
+                  <p><strong>Customer:</strong> {selectedOrder.customerName}</p>
+                  <p><strong>Quantity:</strong> {selectedOrder.orderQuantity}</p>
+                  {selectedOrder.availableStock === 0 && (
+                    <p><span className="badge bg-danger">Out of Stock</span></p>
+                  )}
+                  <p><strong>Price:</strong> ₹{selectedOrder.productPrice}</p>
+                  <p><strong>Total:</strong> ₹{selectedOrder.productPrice * selectedOrder.orderQuantity}</p>
+                  <p><strong>Status:</strong>
+                    <span className={`badge ${getStatusBadgeClass(selectedOrder.orderStatus)} ms-2`}>
+                      {selectedOrder.orderStatus}
+                    </span>
+                  </p>
                 </div>
-                <div className="mb-3">
-                  <strong>Customer:</strong> {selectedOrder.customerName}
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Close</button>
                 </div>
-                <div className="mb-3">
-                  <strong>Quantity:</strong> {selectedOrder.orderQuantity}
-                </div>
-                <div className="mb-3">
-                  <strong>Price:</strong> ₹{selectedOrder.productPrice}
-                </div>
-                <div className="mb-3">
-                  <strong>Total:</strong> ₹{selectedOrder.productPrice * selectedOrder.orderQuantity}
-                </div>
-                <div className="mb-3">
-                  <strong>Status:</strong> 
-                  <div className="dropdown d-inline-block ms-2">
-                    <button 
-                      className={`btn btn-sm badge ${getStatusBadgeClass(selectedOrder.orderStatus)} dropdown-toggle`}
-                      type="button"
-                      id="modalStatusDropdown"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                      disabled={updatingStatus}
-                    >
-                      {selectedOrder.orderStatus || 'In Cart'}
-                    </button>
-                    <ul className="dropdown-menu" aria-labelledby="modalStatusDropdown">
-                      <li><button className="dropdown-item" onClick={() => handleStatusUpdate(selectedOrder.orderId, 'In Cart')}>In Cart</button></li>
-                      <li><button className="dropdown-item" onClick={() => handleStatusUpdate(selectedOrder.orderId, 'Ordered')}>Ordered</button></li>
-                      <li><button className="dropdown-item" onClick={() => handleStatusUpdate(selectedOrder.orderId, 'Success')}>Success</button></li>
-                      <li><button className="dropdown-item" onClick={() => handleStatusUpdate(selectedOrder.orderId, 'Failed')}>Failed</button></li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
-                  Close
-                </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Modal Backdrop */}
-      {showModal && (
-        <div className="modal-backdrop show"></div>
+          <div className="modal-backdrop fade show" />
+        </>
       )}
     </div>
   );
 };
 
-export default ViewOrders; 
+export default ViewOrders;

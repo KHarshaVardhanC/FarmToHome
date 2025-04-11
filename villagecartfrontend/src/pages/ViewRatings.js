@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ratingsApi } from '../utils/api';
 import ProfileDropdown from '../components/ProfileDropdown';
+import '../styles/ViewRatings.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -9,9 +10,8 @@ const ViewRatings = () => {
   const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Replace with actual seller ID from authentication
-  const sellerId = 2;
+
+  const sellerId = 2; // Replace with dynamic auth-based ID
 
   useEffect(() => {
     const fetchRatings = async () => {
@@ -36,30 +36,23 @@ const ViewRatings = () => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+      <div className="loader">
+        <div className="spinner-border text-primary" role="status" />
       </div>
     );
   }
 
   return (
     <div className="view-ratings-page">
-      {/* Top Navigation */}
-      <nav className="navbar navbar-light bg-white">
-        <div className="container-fluid px-4">
-          <div className="d-flex align-items-center">
-            <Link to="/" className="text-decoration-none">
-              <div className="logo text-dark d-flex align-items-center">
-                <i className="fas fa-leaf text-success me-2" style={{ fontSize: '24px' }}></i>
-                <span className="fw-bold">FarmToHome</span>
-              </div>
-            </Link>
-          </div>
-
+      {/* Navbar */}
+      <nav className="navbar navbar-light bg-white shadow-sm">
+        <div className="container-fluid px-4 py-2 d-flex justify-content-between align-items-center">
+          <Link to="/seller-home" className="text-decoration-none d-flex align-items-center">
+            <i className="fas fa-leaf text-success me-2 fs-4"></i>
+            <span className="fw-bold fs-4 text-success">FarmToHome</span>
+          </Link>
           <div className="d-flex align-items-center gap-3">
-            <Link to="/" className="btn btn-outline-primary">
+            <Link to="/view-products" className="btn btn-outline-primary">
               <i className="fas fa-arrow-left me-2"></i>Back to Dashboard
             </Link>
             <ProfileDropdown />
@@ -67,11 +60,9 @@ const ViewRatings = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
+      {/* Ratings Section */}
       <div className="container-fluid px-4 py-4">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h4 className="mb-0">Product Ratings</h4>
-        </div>
+        <h4 className="mb-4">Product Ratings</h4>
 
         {error && <div className="alert alert-danger">{error}</div>}
 
@@ -81,29 +72,21 @@ const ViewRatings = () => {
           <div className="row g-4">
             {ratings.map((rating) => (
               <div key={rating.ratingId} className="col-md-6 col-lg-4">
-                <div className="card">
+                <div className="card rating-card h-100 shadow-sm">
                   <div className="card-body">
-                    <h5 className="card-title mb-2">{rating.productName}</h5>
-                    <div className="mb-2">
-                      <span className="text-warning" style={{ fontSize: '1.2rem' }}>
-                        {getRatingStars(rating.ratingValue)}
-                      </span>
+                    <h5 className="card-title">{rating.productName}</h5>
+                    <div className="rating-stars mb-2">
+                      <span className="text-warning fs-5">{getRatingStars(rating.ratingValue)}</span>
                       <span className="ms-2 text-muted">({rating.ratingValue}/5)</span>
                     </div>
                     {rating.feedback && (
-                      <p className="card-text">
-                        <small className="text-muted">{rating.feedback}</small>
-                      </p>
+                      <p className="card-text small text-muted">{rating.feedback}</p>
                     )}
-                    <div className="mt-2">
-                      <small className="text-muted">
-                        By: {rating.customerFirstName} {rating.customerLastName}
-                      </small>
+                    <div className="small text-muted mt-2">
+                      By: {rating.customerFirstName} {rating.customerLastName}
                     </div>
-                    <div>
-                      <small className="text-muted">
-                        Date: {rating.createdAt ? new Date(rating.createdAt).toLocaleDateString() : 'N/A'}
-                      </small>
+                    <div className="small text-muted">
+                      Date: {rating.createdAt ? new Date(rating.createdAt).toLocaleDateString() : 'N/A'}
                     </div>
                   </div>
                 </div>
@@ -116,4 +99,4 @@ const ViewRatings = () => {
   );
 };
 
-export default ViewRatings; 
+export default ViewRatings;

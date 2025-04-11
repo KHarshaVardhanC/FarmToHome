@@ -1,0 +1,40 @@
+.view-orders-page {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .loader {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .table th, .table td {
+    vertical-align: middle;
+  }
+  
+  .btn-sm.badge.dropdown-toggle {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 20px;
+    font-weight: 500;
+    color: #fff;
+  }
+  
+  .modal-content {
+    border-radius: 10px;
+  }
+  
+  .modal-title {
+    font-weight: 600;
+  }
+  
+  .modal-body p {
+    margin-bottom: 10px;
+    font-size: 1rem;
+  }
+  
+  .table td:last-child {
+    text-align: center;
+  }
+  

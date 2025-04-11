@@ -175,7 +175,7 @@ public class OrderControllerImpl implements OrderController {
 
     @Override
     @GetMapping("/invoice/{orderId}")
-    public CustomerOrderDTO getOrderInvoice(Integer orderId) throws Exception, OrderException
+    public CustomerOrderDTO getOrderInvoice(@PathVariable Integer orderId) throws Exception, OrderException
     {
     	return orderService.getOrderInvoice(orderId);
     }

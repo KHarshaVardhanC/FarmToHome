@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { productApi } from '../utils/api';
 import ProfileDropdown from '../components/ProfileDropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import '../styles/ViewProducts.css';
 
 const ViewProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const sellerId = 2; // Replace with actual seller ID from authentication
+  const sellerId = 2; // Replace with actual seller ID
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -29,7 +31,7 @@ const ViewProducts = () => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+      <div className="d-flex justify-content-center align-items-center vh-100">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -40,19 +42,15 @@ const ViewProducts = () => {
   return (
     <div className="view-products-page">
       {/* Top Navigation */}
-      <nav className="navbar navbar-light bg-white">
-        <div className="container-fluid px-4">
-          <div className="d-flex align-items-center">
-            <Link to="/" className="text-decoration-none">
-              <div className="logo text-dark d-flex align-items-center">
-                <i className="fas fa-leaf text-success me-2" style={{ fontSize: '24px' }}></i>
-                <span className="fw-bold">FarmToHome</span>
-              </div>
-            </Link>
-          </div>
+      <nav className="navbar navbar-light bg-white shadow-sm">
+        <div className="container-fluid px-4 py-2 d-flex justify-content-between align-items-center">
+          <Link to="/SellerHome" className="text-decoration-none d-flex align-items-center">
+            <i className="fas fa-leaf text-success me-2" style={{ fontSize: '24px' }}></i>
+            <span className="fw-bold fs-4 text-success">FarmToHome</span>
+          </Link>
 
           <div className="d-flex flex-grow-1 mx-4">
-            <div className="input-group">
+            <div className="input-group w-100">
               <input
                 type="text"
                 className="form-control border-end-0"
@@ -65,7 +63,7 @@ const ViewProducts = () => {
           </div>
 
           <div className="d-flex align-items-center gap-3">
-            <Link to="/add-product" className="btn btn-primary px-4">
+            <Link to="/add-product" className="btn btn-primary px-3">
               <i className="fas fa-plus me-2"></i>Add Product
             </Link>
             <ProfileDropdown />
@@ -91,9 +89,8 @@ const ViewProducts = () => {
           ) : (
             products.map((product) => (
               <div key={product.productId} className="col-md-4 col-lg-3">
-                {/* ✅ Wrap the card inside Link */}
                 <Link to={`/product/${product.productId}`} className="text-decoration-none text-dark">
-                  <div className="card h-100 hover-shadow">
+                  <div className="card h-100 product-card shadow-sm">
                     {product.imageUrl && (
                       <img
                         src={product.imageUrl}
@@ -107,7 +104,7 @@ const ViewProducts = () => {
                       <p className="card-text mb-1">
                         <small className="text-muted">Stock remaining: {product.productQuantity}</small>
                       </p>
-                      <p className="card-text mb-1">
+                      <p className="card-text mb-0">
                         <strong>Price: ₹{product.productPrice}</strong>
                       </p>
                     </div>
