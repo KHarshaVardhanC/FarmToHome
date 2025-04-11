@@ -1,0 +1,53 @@
+/* ProductDetails.css */
+
+.product-details-page {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .product-info {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  .product-info p {
+    margin-bottom: 1rem;
+    font-size: 1.15rem;
+  }
+  
+  .product-info .btn-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .product-info .btn-group .btn {
+    padding: 0.4rem 1rem;
+    font-size: 1rem;
+    border-radius: 0.375rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;         /* ✅ Prevents text wrapping */
+    min-width: auto;             /* ✅ Only as wide as content */
+    max-width: 200px;            /* Optional: limit maximum */
+  }
+  
+  .product-info .btn i {
+    margin-right: 8px;
+  }
+  
+  /* Product image */
+  .product-image {
+    flex-shrink: 0;
+    max-width: 350px;
+    margin-left: 3rem;
+  }
+  
+  .product-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    object-fit: cover;
+  }
+  

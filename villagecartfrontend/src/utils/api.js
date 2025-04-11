@@ -77,7 +77,8 @@ export const ordersApi = {
   getOrderDetails: (orderId) => api.get(`/order/${orderId}`),
 
   updateOrderStatus: (orderId, status) =>
-    api.post(`/order/${orderId}/status`, status),
+    // api.post(`/order/${orderId}/status`, status),
+  api.put(`/order/order/${orderId}/${status}`),
 };
 
 // Ratings API endpoints
