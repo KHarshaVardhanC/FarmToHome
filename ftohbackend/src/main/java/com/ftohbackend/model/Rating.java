@@ -27,7 +27,8 @@ public class Rating {
 	@ManyToOne
 	@JoinColumn(name = "productId", nullable = false)
 	private Product product;
-	private Integer ratingValue;
+
+	Double ratingValue;
 	private String feedback;
 
 	@CreationTimestamp
@@ -36,7 +37,7 @@ public class Rating {
 	public Rating() {
 	}
 
-	public Rating(Integer ratingId, Customer customer, Product product, Integer ratingValue, String feedback) {
+	public Rating(Integer ratingId, Customer customer, Product product, Double ratingValue, String feedback) {
 		super();
 		this.ratingId = ratingId;
 		this.customer = customer;
@@ -70,11 +71,11 @@ public class Rating {
 		this.product = product;
 	}
 
-	public Integer getRatingValue() {
+	public Double getRatingValue() {
 		return ratingValue;
 	}
 
-	public void setRatingValue(Integer ratingValue) {
+	public void setRatingValue(Double ratingValue) {
 		this.ratingValue = ratingValue;
 	}
 

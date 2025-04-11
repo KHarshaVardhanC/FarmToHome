@@ -8,10 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ftohbackend.exception.CustomerException;
 import com.ftohbackend.model.Customer;
-import com.ftohbackend.model.Mails;
 import com.ftohbackend.repository.CustomerRepository;
-
-import jakarta.validation.Valid;
 
 //service
 @Service
@@ -90,6 +87,24 @@ public class CustomerServiceImpl implements CustomerService {
 
 		customerRepository.save(existingCustomer);
 		return "Customer updated successfully";
+	}
+	
+	@Override
+	public Customer authenticateCustomer(String email, String password) throws Exception, CustomerException  {
+		if (email == null || password == null) {
+			throw new CustomerException("Email and password must not be null.");
+		}
+
+		Customer customer = customerRepository.findByCustomerEmail(email);
+		if (customer == null) {
+			throw new CustomerException("Customer not found with email: " + email);
+		}
+
+		if (!customer.verifyPassword(password)) {
+			throw new CustomerException("Incorrect password.");
+		}
+
+		return customer;
 	}
 	
 	

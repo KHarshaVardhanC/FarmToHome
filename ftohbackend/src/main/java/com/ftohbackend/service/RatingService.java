@@ -6,7 +6,7 @@ import com.ftohbackend.exception.RatingException;
 import com.ftohbackend.model.Rating;
 
 public interface RatingService {
-    String addRating(Rating rating) throws RatingException;
+    String addRating(Rating rating) throws RatingException, Exception;
 
     List<Rating> getAllRatings() throws RatingException;
 

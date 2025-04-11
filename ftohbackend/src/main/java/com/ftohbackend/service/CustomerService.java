@@ -17,4 +17,7 @@ public interface CustomerService {
 	
 	
 	public String updateCustomer(Integer customerId, Customer customer)throws CustomerException;
+
+
+	Customer authenticateCustomer(String email, String password) throws CustomerException, Exception;
 }

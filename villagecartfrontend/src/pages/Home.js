@@ -15,7 +15,7 @@ const Home = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [productRatings, setProductRatings] = useState({});
 
-  const sellerId = 2; // Replace with actual seller ID from authentication
+  const sellerId = 1; // Replace with actual seller ID from authentication
 
   const calculateTotalRevenue = (orders) => {
     return orders.reduce((total, order) => {
@@ -189,6 +189,7 @@ const Home = () => {
 
       {/* Main Content */}
       <div className="container-fluid px-4 py-4">
+
         {/* Dashboard Cards */}
         <div className="dashboard-cards">
           <div className="col-md-4">
@@ -229,16 +230,16 @@ const Home = () => {
             </div>
           </div>
         </div>
-      
-{/* My Products Section */}
-<div className="section-header">
-  <h4 className="mb-0">My Products</h4>
-  <Link to="/view-products" className="btn btn-link text-decoration-none">
-    See All Products <i className="fas fa-arrow-right ms-1"></i>
-  </Link>
-</div>
 
-<div className="products-grid">
+        {/* My Products Section */}
+        <div className="section-header">
+          <h4 className="mb-0">My Products</h4>
+          <Link to="/view-products" className="btn btn-link text-decoration-none">
+            See All Products <i className="fas fa-arrow-right ms-1"></i>
+          </Link>
+        </div>
+
+        <div className="products-grid">
   {products.slice(0, 3).map((product, index) => (
     <div key={product.productId}>
       <div className="card h-100">
@@ -251,9 +252,14 @@ const Home = () => {
         )}
         <div className="card-body">
           <h5 className="card-title">{product.productName}</h5>
-          <p className="card-text mb-1">
-            <small className="text-muted">Stock remaining: {product.productQuantity}</small>
+          <p className="card-text mb-1 text-muted">
+            Stock remaining: {product.productQuantity}
           </p>
+          {product.productQuantity === 0 && (
+            <div className="mb-2">
+              <span className="badge bg-danger">Out of Stock</span>
+            </div>
+          )}
           <p className="card-text mb-1">
             <strong>Price: ₹{product.productPrice}</strong>
           </p>
@@ -271,39 +277,41 @@ const Home = () => {
   ))}
 </div>
 
-{/* My Orders Section */}
-<div className="section-header mt-5">
-  <h4 className="mb-0">Recent Orders</h4>
-  <Link to="/view-orders" className="btn btn-link text-decoration-none">
-    See All Orders <i className="fas fa-arrow-right ms-1"></i>
-  </Link>
-</div>
 
-<div className="orders-grid">
-  {orders.slice(0, 3).map((order) => (
-    <div key={order.orderId}>
-      <div className="card h-100">
-        <div className="card-body">
-          <p className="card-text mb-1">
-            <small className="text-muted">Order ID: {order.orderId}</small>
-          </p>
-          <h5 className="card-title">{order.productName || 'Product Name Not Available'}</h5>
-          <p className="card-text mb-1">
-            <strong>Quantity: {order.orderQuantity}</strong>
-          </p>
-          <p className="card-text mb-1">
-            <small className="text-muted">Ordered by: {order.customerName}</small>
-          </p>
-          <p className="card-text mt-2">
-            <span className={`badge ${order.orderStatus?.toLowerCase() === 'success' ? 'bg-success' : 'bg-warning'}`}>
-              Status: {order.orderStatus || 'In Cart'}
-            </span>
-          </p>
+        {/* My Orders Section */}
+        <div className="section-header mt-5">
+          <h4 className="mb-0">Recent Orders</h4>
+          <Link to="/view-orders" className="btn btn-link text-decoration-none">
+            See All Orders <i className="fas fa-arrow-right ms-1"></i>
+          </Link>
         </div>
-      </div>
-    </div>
-  ))}
-</div>
+
+        <div className="orders-grid">
+          {orders.slice(0, 3).map((order) => (
+            <div key={order.orderId}>
+              <div className="card h-100">
+                <div className="card-body">
+                  <p className="card-text mb-1">
+                    <small className="text-muted">Order ID: {order.orderId}</small>
+                  </p>
+                  <h5 className="card-title">{order.productName || 'Product Name Not Available'}</h5>
+                  <p className="card-text mb-1">
+                    <strong>Quantity: {order.orderQuantity}</strong>
+                  </p>
+                  <p className="card-text mb-1">
+                    <small className="text-muted">Ordered by: {order.customerName}</small>
+                  </p>
+                  <p className="card-text mt-2">
+                    <span className={`badge ${order.orderStatus?.toLowerCase() === 'success' ? 'bg-success' : 'bg-warning'}`}>
+                      Status: {order.orderStatus || 'In Cart'}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
       </div>
     </div>
   );

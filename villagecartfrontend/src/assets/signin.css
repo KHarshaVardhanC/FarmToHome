@@ -140,3 +140,33 @@
     text-align: center;
     margin-bottom: 10px;
   }
+
+
+
+  .toggle-buttons {
+    display: flex;
+    justify-content: space-between;
+    border-radius: 12px;
+    padding: 5px;
+    margin-bottom: 20px;
+  }
+  
+  .toggle-buttons button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .toggle-buttons button.active {
+    border: 2px solid #ff4f0f;
+    border-radius: 8px;
+  }
+  
+  .toggle-buttons button:not(.active):hover {
+    background-color: #bee3f8;
+  }

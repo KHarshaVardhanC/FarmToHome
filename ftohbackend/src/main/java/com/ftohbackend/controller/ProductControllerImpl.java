@@ -23,6 +23,7 @@ import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
 import com.ftohbackend.dto.SellerProductDTO;
 import com.ftohbackend.exception.ProductException;
+import com.ftohbackend.exception.RatingException;
 import com.ftohbackend.model.Product;
 import com.ftohbackend.service.ProductService;
 import com.ftohbackend.service.ProductServiceImpl;
@@ -66,6 +67,9 @@ public class ProductControllerImpl implements ProductController {
 		customerProductDTO.setProductDescription(product.getProductDescription());
 		customerProductDTO.setProductQuantity(product.getProductQuantity());
 		customerProductDTO.setImageUrl(product.getImageUrl());
+		customerProductDTO.setProductRatingValue(product.getProductRatingValue());
+		customerProductDTO.setProductRatingCount(product.getProductRatingCount());
+		
 		
 		customerProductDTO.setSellerPlace(product.getSeller().getSellerPlace());
 		customerProductDTO.setSellerCity(product.getSeller().getSellerCity());
@@ -83,7 +87,7 @@ public class ProductControllerImpl implements ProductController {
 	@PutMapping("/product/{productId}")
 	@Override
 	public String updateProduct(@PathVariable Integer productId, @RequestBody ProductDTO updatedDetails)
-			throws ProductException {
+			throws Exception {
 		Product prod = modelMapper.map(updatedDetails, Product.class);
 		return productService.updateProduct(productId, prod);
 	}
@@ -123,7 +127,11 @@ public class ProductControllerImpl implements ProductController {
 			sellerproductDTO.setProductPrice(product.getProductPrice());
 			sellerproductDTO.setImageUrl(product.getImageUrl());
 			sellerproductDTO.setProductDescription(product.getProductDescription());
+			sellerproductDTO.setProductRatingValue(product.getProductRatingValue());
+			sellerproductDTO.setProductRatingCount(product.getProductRatingCount());
+			
 			sellerproductdtos.add(sellerproductDTO);
+			
 		}
 
 		return sellerproductdtos;

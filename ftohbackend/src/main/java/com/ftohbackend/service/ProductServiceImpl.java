@@ -31,7 +31,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Autowired
 	SellerRepository sellerRepository;
-	
+
 	@Autowired
 	SellerService sellerService;
 
@@ -41,44 +41,45 @@ public class ProductServiceImpl implements ProductService {
 	@Autowired
 	ModelMapper modelMapper;
 
-
+	@Autowired
+	RatingServiceImpl ratingServiceImpl;
 
 	@Override
-	  public ProductDTO addProduct(ProductRequest productRequest) throws ProductException {
-        try {
-            if (productRequest == null) {
-                throw new ProductException("Product request cannot be null.");
-            }
+	public ProductDTO addProduct(ProductRequest productRequest) throws ProductException {
+		try {
+			if (productRequest == null) {
+				throw new ProductException("Product request cannot be null.");
+			}
 
-            Product product = new Product();
-            product.setProductName(productRequest.getProductName());
-            product.setProductPrice(productRequest.getProductPrice());
-            product.setProductQuantity(productRequest.getProductQuantity());
-            product.setProductDescription(productRequest.getProductDescription());
-            product.setProductCategory(productRequest.getProductCategory());
+			Product product = new Product();
+			product.setProductName(productRequest.getProductName());
+			product.setProductPrice(productRequest.getProductPrice());
+			product.setProductQuantity(productRequest.getProductQuantity());
+			product.setProductDescription(productRequest.getProductDescription());
+			product.setProductCategory(productRequest.getProductCategory());
 
-            try {
-                product.setSeller(sellerService.getSeller(productRequest.getSellerId()));
-            } catch (Exception e) {
-                throw new ProductException("Invalid seller ID: " + productRequest.getSellerId());
-            }
+			try {
+				product.setSeller(sellerService.getSeller(productRequest.getSellerId()));
+			} catch (Exception e) {
+				throw new ProductException("Invalid seller ID: " + productRequest.getSellerId());
+			}
 
-            if (productRequest.getImage() == null || productRequest.getImage().isEmpty()) {
-                throw new ProductException("Product image is required.");
-            }
+			if (productRequest.getImage() == null || productRequest.getImage().isEmpty()) {
+				throw new ProductException("Product image is required.");
+			}
 
-            String imageUrl = uploadImage(productRequest.getImage());
-            product.setImageUrl(imageUrl);
+			String imageUrl = uploadImage(productRequest.getImage());
+			product.setImageUrl(imageUrl);
 
-            Product savedProduct = productRepository.save(product);
-            return modelMapper.map(savedProduct, ProductDTO.class);
+			Product savedProduct = productRepository.save(product);
+			return modelMapper.map(savedProduct, ProductDTO.class);
 
-        } catch (IOException e) {
-            throw new ProductException("Error while uploading image.");
-        } catch (Exception e) {
-            throw new ProductException("Failed to add product.");
-        }
-    }
+		} catch (IOException e) {
+			throw new ProductException("Error while uploading image.");
+		} catch (Exception e) {
+			throw new ProductException("Failed to add product.");
+		}
+	}
 
 	private String uploadImage(MultipartFile file) throws IOException {
 		try {
@@ -142,7 +143,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public String updateProduct(Integer productId, Product updatedDetails) throws ProductException {
+	public String updateProduct(Integer productId, Product updatedDetails) throws ProductException, Exception {
 		if (productId == null || updatedDetails == null) {
 			throw new ProductException("Product ID and updated details cannot be null.");
 		}
@@ -159,15 +160,37 @@ public class ProductServiceImpl implements ProductService {
 			product.setProductQuantity(updatedDetails.getProductQuantity());
 		}
 
-		if(updatedDetails.getProductDescription() != null)
-		{
+		if (updatedDetails.getProductDescription() != null) {
 			product.setProductDescription(updatedDetails.getProductDescription());
 		}
 
-		
-		if(updatedDetails.getProductCategory() != null)
-		{
+		if (updatedDetails.getProductCategory() != null) {
 			product.setProductCategory(updatedDetails.getProductCategory());
+		}
+
+//		updatedDetails.getPro
+
+		if (updatedDetails.getProductRatingValue() != null) {
+			int len = 0;
+			try {
+				len = ratingServiceImpl.getRatingsByProductId(productId).size();
+			} catch (Exception e) {
+				len = 0;
+			} finally {
+
+				if (len == 0) {
+					product.setProductRatingValue(updatedDetails.getProductRatingValue());
+
+				} else {
+					double ratingValue = (product.getProductRatingValue() * len
+							+ updatedDetails.getProductRatingValue()) / (double) (len + 1);
+					
+					
+					product.setProductRatingValue(Math.round(ratingValue * 10.0)/10.0);
+
+				}
+			}
+			product.setProductRatingCount(len+1);
 		}
 
 		productRepository.save(product);
@@ -197,21 +220,19 @@ public class ProductServiceImpl implements ProductService {
 		return products;
 	}
 
-
 	@Override
-	 public List<CustomerProductDTO> searchProductsWithSellerDetails(String productName) throws ProductException {
-        if (productName == null || productName.trim().isEmpty()) {
-            throw new ProductException("Product name cannot be null or empty.");
-        }
+	public List<CustomerProductDTO> searchProductsWithSellerDetails(String productName) throws ProductException {
+		if (productName == null || productName.trim().isEmpty()) {
+			throw new ProductException("Product name cannot be null or empty.");
+		}
 
-        List<Product> products = productRepository.findProductsByNameWithSeller(productName.trim());
-        if (products == null || products.isEmpty()) {
-            throw new ProductException("No products found with name: " + productName);
-        }
+		List<Product> products = productRepository.findProductsByNameWithSeller(productName.trim());
+		if (products == null || products.isEmpty()) {
+			throw new ProductException("No products found with name: " + productName);
+		}
 
-        return products.stream().map(CustomerProductDTO::new).collect(Collectors.toList());
-    }
-
+		return products.stream().map(CustomerProductDTO::new).collect(Collectors.toList());
+	}
 
 	@Override
 	public Product getProduct(Integer productId) throws ProductException {
@@ -221,14 +242,12 @@ public class ProductServiceImpl implements ProductService {
 		return productRepository.findById(productId)
 				.orElseThrow(() -> new ProductException("Product not found with ID: " + productId));
 	}
-	
+
 	@Override
-	public List<Product> getCategoryProducts(String productCategory) throws ProductException
-	{
-		
+	public List<Product> getCategoryProducts(String productCategory) throws ProductException {
+
 		return productRepository.findByProductCategory(productCategory);
-		
+
 	}
 
-	
 }

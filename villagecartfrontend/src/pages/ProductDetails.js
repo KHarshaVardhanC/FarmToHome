@@ -11,30 +11,14 @@ const ProductDetails = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [product, setProduct] = useState(null);
-  const [editedProduct, setEditedProduct] = useState({
-    productName: '',
-    productPrice: 0,
-    productQuantity: 0,
-    productDescription: '',
-    sellerId: 2,
-  });
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
         const response = await productApi.getProduct(id);
-        const productData = response.data;
-        setProduct(productData);
-        setEditedProduct({
-          productName: productData.productName,
-          productPrice: productData.productPrice,
-          productQuantity: productData.productQuantity,
-          productDescription: productData.productDescription || '',
-          sellerId: productData.sellerId || 2,
-        });
+        setProduct(response.data);
       } catch (err) {
         console.error('Error fetching product:', err);
         setError('Failed to load product details. Please try again later.');
@@ -45,30 +29,6 @@ const ProductDetails = () => {
 
     fetchProduct();
   }, [id]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setEditedProduct(prev => ({
-      ...prev,
-      [name]: name === 'productPrice' || name === 'productQuantity' ? parseFloat(value) : value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
-      await productApi.updateProduct(id, editedProduct);
-      setProduct({ ...product, ...editedProduct });
-      setIsEditing(false);
-      alert('Product updated successfully!');
-    } catch (err) {
-      console.error('Error updating product:', err);
-      setError('Failed to update product. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this product?')) {
@@ -103,17 +63,13 @@ const ProductDetails = () => {
 
   return (
     <div className="product-details-page">
-      <nav className="navbar navbar-light bg-white">
-        <div className="container-fluid px-4">
-          <div className="d-flex align-items-center">
-            <Link to="/SellerHome" className="text-decoration-none">
-              <div className="logo text-dark d-flex align-items-center">
-                <i className="fas fa-leaf text-success me-2" style={{ fontSize: '24px' }}></i>
-                <span className="fw-bold">FarmToHome</span>
-              </div>
-            </Link>
-          </div>
-          <div className="d-flex align-items-center gap-3">
+      <nav className="navbar navbar-light bg-white shadow-sm">
+        <div className="container-fluid px-4 py-2 d-flex justify-content-between align-items-center">
+          <Link to="/SellerHome" className="text-decoration-none d-flex align-items-center">
+            <i className="fas fa-leaf text-success me-2 fs-4"></i>
+            <span className="fw-bold fs-4 text-success">FarmToHome</span>
+          </Link>
+          <div className="d-flex gap-3">
             <Link to="/view-products" className="btn btn-outline-primary">
               <i className="fas fa-arrow-left me-2"></i>Back to Products
             </Link>
@@ -122,27 +78,42 @@ const ProductDetails = () => {
         </div>
       </nav>
 
-      <div className="container-fluid px-4 py-4">
+      <div className="container mt-4">
         <h4 className="mb-4 fw-bold">Product Details</h4>
-        <div className="card">
-          <div className="card-body d-flex justify-content-between align-items-start flex-wrap">
-            <div className="product-info">
-              <p><span className="fw-bold">Name:</span> <span className="text-dark fs-5">{product.productName}</span></p>
-              <p><span className="fw-bold">Description:</span> <span className="text-dark fs-5">{product.productDescription}</span></p>
-              <p><span className="fw-bold">Quantity:</span> <span className="text-dark fs-5">{product.productQuantity}</span></p>
-              <p><span className="fw-bold">Price:</span> <span className="text-dark fs-5">₹{product.productPrice}</span></p>
-              <div className="btn-group mt-3">
-                <button className="btn btn-primary" onClick={() => setIsEditing(true)}>
-                  <i className="fas fa-edit me-2"></i>Edit Product
-                </button>
+        <div className="card shadow-sm">
+          <div className="row g-0 align-items-center">
+            <div className="col-md-8 p-4">
+              <p><strong>Name:</strong> {product.productName}</p>
+              <p><strong>Description:</strong> {product.productDescription}</p>
+              <p><strong>Quantity:</strong> {product.productQuantity}</p>
+              <p><strong>Price:</strong> ₹{product.productPrice}</p>
+              {product.productQuantity === 0 && (
+                <span className="badge bg-danger mb-3">Out of Stock</span>
+              )}
+              <div className="d-flex flex-wrap gap-3 mt-3">
+                {product.productQuantity === 0 ? (
+                  <button className="btn btn-secondary" disabled>
+                    <i className="fas fa-edit me-2"></i>Edit Product
+                  </button>
+                ) : (
+                  <Link to={`/edit-product/${id}`} className="btn btn-primary">
+                    <i className="fas fa-edit me-2"></i>Edit Product
+                  </Link>
+                )}
                 <button className="btn btn-danger" onClick={handleDelete}>
                   <i className="fas fa-trash-alt me-2"></i>Delete Product
                 </button>
               </div>
             </div>
+
             {product.imageUrl && (
-              <div className="product-image">
-                <img src={product.imageUrl} alt={product.productName} className="img-fluid rounded shadow-sm" />
+              <div className="col-md-4 p-4">
+                <img
+                  src={product.imageUrl}
+                  alt={product.productName}
+                  className="img-fluid rounded product-image"
+                  style={{ maxHeight: '200px', objectFit: 'cover', width: '100%' }}
+                />
               </div>
             )}
           </div>
