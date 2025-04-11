@@ -11,7 +11,7 @@ const AddProduct = () => {
   const [error, setError] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const sellerId = 2;
+  const sellerId = 1;
 
   const [productData, setProductData] = useState({
     productName: '',
@@ -131,7 +131,7 @@ const AddProduct = () => {
                       <option value="Fruits">Fruits</option>
                       <option value="Dairy">Dairy</option>
                       <option value="Grains">Seeds</option>
-                      <option value="seafood">Seafood</option>
+                      <option value="others">Other</option>
                     </select>
                   </div>
 

@@ -11,10 +11,13 @@ import ViewRatings from './pages/ViewRatings';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import MainHome from './pages/MainHome';
+import SignIn from './pages/Login/SignIn';
+import SignUp from './pages/Login/SignUp';
 import OrderInvoice from './pages/OrderInvoice';
  import SignIn from './pages/Login/SignIn';
 // import SignUp from './pages/Login/SignUp';
 import CustomerHomePage from './components/CustomerHomePage'; 
+
 
 // Styles
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -34,12 +37,22 @@ function App() {
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/SellerHome" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
+
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/add-product" element={<AddProduct />} />
+      
+
           <Route path="/invoice/:orderId" element={<OrderInvoice />} />
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<SignIn />} />
           <Route path="/customer-home" element={<CustomerHomePage />} /> 
+
+
+
+          {/* ✅ Auth Routes */}
+        <Route path="/signup" element={<SignUp />} /> 
+        <Route path="/login" element={<SignIn/>}/>
         </Routes>
       </div>
     </Router>

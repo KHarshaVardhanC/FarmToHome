@@ -20,7 +20,6 @@ import com.ftohbackend.model.Product;
 import com.ftohbackend.repository.ProductRepository;
 import com.ftohbackend.repository.SellerRepository;
 
-import ch.qos.logback.core.encoder.EchoEncoder;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -174,23 +173,24 @@ public class ProductServiceImpl implements ProductService {
 		if (updatedDetails.getProductRatingValue() != null) {
 			int len = 0;
 			try {
-
 				len = ratingServiceImpl.getRatingsByProductId(productId).size();
 			} catch (Exception e) {
 				len = 0;
-			}
-			finally {
-				
-			if (len == 0) {
-				product.setProductRatingValue(updatedDetails.getProductRatingValue());
+			} finally {
 
-			} else {
-				double ratingValue = (product.getProductRatingValue() * len + updatedDetails.getProductRatingValue())
-						/ (double) (len + 1);
-				product.setProductRatingValue(ratingValue);
+				if (len == 0) {
+					product.setProductRatingValue(updatedDetails.getProductRatingValue());
 
+				} else {
+					double ratingValue = (product.getProductRatingValue() * len
+							+ updatedDetails.getProductRatingValue()) / (double) (len + 1);
+					
+					
+					product.setProductRatingValue(Math.round(ratingValue * 10.0)/10.0);
+
+				}
 			}
-			}
+			product.setProductRatingCount(len+1);
 		}
 
 		productRepository.save(product);

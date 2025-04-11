@@ -8,9 +8,10 @@ public class SellerProductDTO {
 	String productName;
 	Double productQuantity;
 	Double productRatingValue;
+	Integer productRatingCount;
 
 	public SellerProductDTO(Integer productId, Double productPrice, String imageUrl, String productDescription,
-			String productName, Double productQuantity, Double productRatingValue) {
+			String productName, Double productQuantity, Double productRatingValue, Integer productRatingCount) {
 		super();
 		this.productId = productId;
 		this.productPrice = productPrice;
@@ -19,6 +20,7 @@ public class SellerProductDTO {
 		this.productName = productName;
 		this.productQuantity = productQuantity;
 		this.productRatingValue=productRatingValue;
+		this.productRatingCount=productRatingCount;
 
 	}
 
@@ -82,12 +84,22 @@ public class SellerProductDTO {
 	public void setProductRatingValue(Double productRatingValue) {
 		this.productRatingValue = productRatingValue;
 	}
+	
+	
+	public Integer getProductRatingCount() {
+		return productRatingCount;
+	}
+
+	public void setProductRatingCount(Integer productRatingCount) {
+		this.productRatingCount = productRatingCount;
+	}
 
 	@Override
 	public String toString() {
 		return "SellerProductDTO [productId=" + productId + ", productPrice=" + productPrice + ", ImageUrl=" + ImageUrl
 				+ ", productDescription=" + productDescription + ", productName=" + productName + ", productQuantity="
-				+ productQuantity + ", productRatingValue=" + productRatingValue + "]";
+				+ productQuantity + ", productRatingValue=" + productRatingValue + ", productRatingCount="
+				+ productRatingCount + "]";
 	}
 
 	
