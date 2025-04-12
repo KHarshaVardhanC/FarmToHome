@@ -14,6 +14,7 @@ import MainHome from './pages/MainHome';
 import OrderInvoice from './pages/OrderInvoice';
 // import SignIn from './pages/Login/SignIn';
 // import SignUp from './pages/Login/SignUp';
+import EditProduct from './pages/EditProduct';
 
 
 // Styles
@@ -34,6 +35,7 @@ function App() {
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/SellerHome" element={<Home />} />
+          <Route path="/edit-product/:id" element={<EditProduct />} />
 
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />

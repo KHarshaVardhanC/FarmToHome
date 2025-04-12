@@ -1,0 +1,38 @@
+/* styles/EditProduct.css */
+.edit-product-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .edit-form .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .edit-form label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  
+  .edit-form input,
+  .edit-form textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .edit-form textarea {
+    resize: vertical;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  
