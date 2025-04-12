@@ -143,66 +143,127 @@ export const getOrderInvoice = async (orderId) => {
   }
 };
 
-export const submitRating = async (ratingData) => {
+export const fetchSellerById = async (sellerId) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/ratings`, ratingData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
+    const response = await api.get(`/seller/${sellerId}`);
     return response.data;
   } catch (error) {
-    console.error('Error submitting rating:', error);
-    throw error.response?.data || error;
+    console.error(`Failed to fetch seller ${sellerId}:`, error);
+    throw error;
   }
 };
 
-export const getProductRatings = async (productId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/ratings/product/${productId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching product ratings:', error);
-    throw error.response?.data || error;
+export const fetchProductsBySellerId = async (sellerId) => {
+  const response = await fetch(`/product/${sellerId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch products');
   }
+  return response.json();
 };
 
-export const getUserRatings = async (customerId) => {
+export const deleteSeller = async (sellerId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/ratings/customer/${customerId}`, {
+    const response = await fetch(`${API_BASE_URL}/seller/${sellerId}`, {
+      method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Content-Type': 'application/json'
       }
     });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching user ratings:', error);
-    throw error.response?.data || error;
-  }
-};
 
-// Function to add a "Rate" button to the order item
-export const addRateButton = (orderId, productId, customerId, productInfo) => {
-  return {
-    label: 'Rate',
-    onClick: (navigate) => {
-      navigate(`/rate-product/${productId}`, {
-        state: {
-          customerId,
-          productInfo
-        }
-      });
+    if (!response.ok) {
+      throw new Error(`Error deleting seller: ${response.statusText}`);
     }
-  };
+
+    return await response.json();
+  } catch (error) {
+    console.error(`Failed to delete seller ${sellerId}:`, error);
+    throw error;
+  }
+};
+
+// API functions for product operations
+export const updateProduct = async (product) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/product/${product.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(product)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error updating product: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(`Failed to update product ${product.id}:`, error);
+    throw error;
+  }
 };
 
 
-// Get products by category
+
+// API functions for customer operations
+export const fetchCustomers = async () => {
+  try {
+    const response = await api.get('/customer/');
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch customers:", error);
+    throw error;
+  }
+};
+
+export const fetchCustomerById = async (customerId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/customer/${customerId}`);
+    if (!response.ok) {
+      throw new Error(`Error fetching customer details: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Failed to fetch customer ${customerId}:`, error);
+    throw error;
+  }
+};
+
+// API function for orders
+export const fetchSellerOrders = async (sellerId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/order/seller/${sellerId}`);
+    if (!response.ok) {
+      throw new Error(`Error fetching seller orders: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Failed to fetch orders for seller ${sellerId}:`, error);
+    throw error;
+  }
+};
+
+export const fetchCustomerOrders = async (customerId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/order/customer/${customerId}`);
+    if (!response.ok) {
+      throw new Error(`Error fetching customer orders: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Failed to fetch orders for customer ${customerId}:`, error);
+    throw error;
+  }
+};
+export const fetchSellers = async () => {
+  try {
+    const response = await api.get('/seller');
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch sellers:", error);
+    throw error;
+  }
+};
 
 
 export default api;
