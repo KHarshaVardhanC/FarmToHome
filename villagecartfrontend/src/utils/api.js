@@ -78,7 +78,7 @@ export const ordersApi = {
 
   updateOrderStatus: (orderId, status) =>
     // api.post(`/order/${orderId}/status`, status),
-  api.put(`/order/order/${orderId}/${status}`),
+    api.put(`/order/order/${orderId}/${status}`),
 };
 
 // Ratings API endpoints
@@ -111,6 +111,11 @@ export const getCategoryProducts = async (category) => {
   }
 };
 
+export const getProductById = async (productId) => {
+  const response = await axios.get(`/api/products/${productId}`);
+  return response.data;
+};
+
 export const getOrderInvoice = async (orderId) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/order/invoice/${orderId}`);
@@ -138,6 +143,63 @@ export const getOrderInvoice = async (orderId) => {
   }
 };
 
+export const submitRating = async (ratingData) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/ratings`, ratingData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error submitting rating:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const getProductRatings = async (productId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/ratings/product/${productId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching product ratings:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const getUserRatings = async (customerId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/ratings/customer/${customerId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user ratings:', error);
+    throw error.response?.data || error;
+  }
+};
+
+// Function to add a "Rate" button to the order item
+export const addRateButton = (orderId, productId, customerId, productInfo) => {
+  return {
+    label: 'Rate',
+    onClick: (navigate) => {
+      navigate(`/rate-product/${productId}`, {
+        state: {
+          customerId,
+          productInfo
+        }
+      });
+    }
+  };
+};
 
 
 // Get products by category
