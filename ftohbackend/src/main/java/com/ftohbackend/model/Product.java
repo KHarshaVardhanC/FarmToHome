@@ -62,6 +62,8 @@ public class Product {
 	@Column(name = "productCategory")
 	String productCategory;
 	
+	String productQuantityType;
+	
 	Double productRatingValue;
 	Integer productRatingCount;
 	

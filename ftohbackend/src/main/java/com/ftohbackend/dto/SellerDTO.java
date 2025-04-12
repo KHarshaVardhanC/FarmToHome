@@ -19,7 +19,7 @@ public class SellerDTO {
 	String sellerEmail;
 	String sellerFirstName;
 	String sellerLastName;
-	@Past(message = "Age after this date")
+//	@Past(message = "Age after this date")
 	Date sellerDOB;
 	@Pattern(regexp = "^[0-9]{10,10}$", message = "Phone number must be 10 digits")
 	String sellerMobileNumber;

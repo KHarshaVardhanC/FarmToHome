@@ -14,6 +14,8 @@ public class SellerProductDTO {
 	String productDescription;
 	String productName;
 	Double productQuantity;
+	String productQuantityType;
+
 	Double productRatingValue;
 	Integer productRatingCount;
 

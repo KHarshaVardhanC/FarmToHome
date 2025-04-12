@@ -13,6 +13,8 @@ public class SellerOrderDTO {
 	String productName;
 	String ImageUrl;
 	String productDescription;
+	String productQuantityType;
+
 	Double orderQuantity;
 	Double productPrice;
 	String customerName;

@@ -15,6 +15,7 @@ public class CustomerProductDTO {
     public String ImageUrl;
     public String productDescription;
     private Double productQuantity;
+	String productQuantityType;
     private String sellerName;
     private String sellerPlace;
     private String sellerCity;
