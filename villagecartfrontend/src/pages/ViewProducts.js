@@ -151,32 +151,32 @@ const ViewProducts = () => {
                       />
                     )}
                     <div className="card-body">
-  <h5 className="card-title">{product.productName}</h5>
+                      <h5 className="card-title">{product.productName}</h5>
 
-  <p className="card-text mb-1 text-muted">
-    Stock remaining: {product.productQuantity}
-  </p>
-  {product.productQuantity === 0 && (
-    <div className="mb-2">
-      <span className="badge bg-danger">Out of Stock</span>
-    </div>
-  )}
+                      <p className="card-text mb-1 text-muted">
+                        Stock remaining: {product.productQuantity}
+                      </p>
+                      {product.productQuantity === 0 && (
+                        <div className="mb-2">
+                          <span className="badge bg-danger">Out of Stock</span>
+                        </div>
+                      )}
 
-  <p className="card-text mb-0">
-    <strong>Price: ₹{product.productPrice}</strong>
-  </p>
+                      <p className="card-text mb-0">
+                        <strong>Price: ₹{product.productPrice}</strong>
+                      </p>
 
-  <p className="card-text text-muted mb-0">
-    {product.productRatingValue != null
-      ? `${product.productRatingValue} ⭐ (${product.productRatingCount} ratings)`
-      : "No Ratings"}
-  </p>
-  {product.productFeedback && (
-    <p className="card-text small text-muted fst-italic mt-1">
-      "{product.productFeedback}"
-    </p>
-     )}
-</div>
+                      <p className="card-text text-muted mb-0">
+                        {product.productRatingValue != null
+                          ? `${product.productRatingValue} ⭐ (${product.productRatingCount} ratings)`
+                          : "No Ratings"}
+                      </p>
+                      {product.productFeedback && (
+                        <p className="card-text small text-muted fst-italic mt-1">
+                          "{product.productFeedback}"
+                        </p>
+                      )}
+                    </div>
 
                   </div>
                 </Link>

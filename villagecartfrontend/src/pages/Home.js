@@ -240,42 +240,42 @@ const Home = () => {
         </div>
 
         <div className="products-grid">
-  {products.slice(0, 3).map((product, index) => (
-    <div key={product.productId}>
-      <div className="card h-100">
-        {product.imageUrl && (
-          <img
-            src={product.imageUrl}
-            className="card-img-top product-image"
-            alt={product.productName}
-          />
-        )}
-        <div className="card-body">
-          <h5 className="card-title">{product.productName}</h5>
-          <p className="card-text mb-1 text-muted">
-            Stock remaining: {product.productQuantity}
-          </p>
-          {product.productQuantity === 0 && (
-            <div className="mb-2">
-              <span className="badge bg-danger">Out of Stock</span>
+          {products.slice(0, 3).map((product, index) => (
+            <div key={product.productId}>
+              <div className="card h-100">
+                {product.imageUrl && (
+                  <img
+                    src={product.imageUrl}
+                    className="card-img-top product-image"
+                    alt={product.productName}
+                  />
+                )}
+                <div className="card-body">
+                  <h5 className="card-title">{product.productName}</h5>
+                  <p className="card-text mb-1 text-muted">
+                    Stock remaining: {product.productQuantity} /{product.productQuantityType || 'kg'}
+                  </p>
+                  {product.productQuantity === 0 && (
+                    <div className="mb-2">
+                      <span className="badge bg-danger">Out of Stock</span>
+                    </div>
+                  )}
+                  <p className="card-text mb-1">
+                    <strong>Price: ₹{product.productPrice}</strong>
+                  </p>
+                  {productRatings[product.productId] ? (
+                    <p className="card-text mb-1">
+                      {renderStars(productRatings[product.productId])}
+                      <small className="text-muted ms-2">({productRatings[product.productId]} / 5)</small>
+                    </p>
+                  ) : (
+                    <p className="card-text text-muted">No Ratings</p>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
-          <p className="card-text mb-1">
-            <strong>Price: ₹{product.productPrice}</strong>
-          </p>
-          {productRatings[product.productId] ? (
-            <p className="card-text mb-1">
-              {renderStars(productRatings[product.productId])}
-              <small className="text-muted ms-2">({productRatings[product.productId]} / 5)</small>
-            </p>
-          ) : (
-            <p className="card-text text-muted">No Ratings</p>
-          )}
+          ))}
         </div>
-      </div>
-    </div>
-  ))}
-</div>
 
 
         {/* My Orders Section */}

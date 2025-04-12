@@ -363,6 +363,45 @@ export const createRating = async (ratingData) => {
     body: JSON.stringify(ratingData)
   });
 };
+export const submitRating = async (ratingData) => {
+  try {
+    const response = await api.post('/rating', ratingData);
+    return response.data;
+  } catch (error) {
+    console.error('Rating submission error:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to submit rating');
+  }
+};
+
+/**
+ * Get existing rating for a product by a customer
+ * @param {number} customerId - Customer ID
+ * @param {number} productId - Product ID
+ * @returns {Promise} - Promise with the existing rating data
+ */
+export const getExistingRating = async (customerId, productId) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/ratings?customerId=${customerId}&productId=${productId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch rating');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+};
 
 export const deleteRating = async (ratingId) => {
   return fetchWithErrorHandling(`${API_BASE_URL}/rating/${ratingId}`, {
