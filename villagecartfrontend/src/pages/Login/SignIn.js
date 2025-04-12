@@ -224,38 +224,49 @@ const Signin = () => {
 
     try {
       // Determine the backend endpoint based on the selected role
-      let endpoint = "";
+      let endpoint = "http://localhost:8080"; // Changed to 8080
       if (formData.userType === "customer") {
-        endpoint = "http://localhost:8081/customer/login";
+        endpoint += "/customer/login";
       } else if (formData.userType === "seller") {
-        endpoint = "http://localhost:8081/seller/login";
-      } else if (formData.userType === "admin") {
-        endpoint = "http://localhost:8081/admin/login";
+        endpoint += "/seller/login";
       }
 
-      // Send login request to the backend
+      // Create login request body to match backend LoginRequest
+      const loginRequest = {
+        email: formData.email,
+        password: formData.password
+      };
+
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+        body: JSON.stringify(loginRequest)
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
+        throw new Error("Invalid email or password");
       }
 
       const data = await response.json();
-      console.log("Login successful:", data);
 
-      // Navigate to the dashboard or home page after successful login
-      navigate("/dashboard", { state: { user: data } });
+      // Store user data based on role
+      if (formData.userType === "customer") {
+        localStorage.setItem("customerId", data.customerId);
+        localStorage.setItem("customerEmail", data.customerEmail);
+        localStorage.setItem("userType", "customer");
+        navigate("/customer/dashboard");
+      } else if (formData.userType === "seller") {
+        localStorage.setItem("sellerId", data.sellerId);
+        localStorage.setItem("sellerEmail", data.sellerEmail);
+        localStorage.setItem("sellerName", `${data.sellerFirstName} ${data.sellerLastName}`);
+        localStorage.setItem("userType", "seller");
+        navigate("/seller/dashboard");
+      }
+
     } catch (error) {
+      console.error('Login error:', error);
       setError(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);

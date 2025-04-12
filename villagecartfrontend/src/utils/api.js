@@ -36,6 +36,29 @@ api.interceptors.response.use(
   }
 );
 
+// Utility function for fetch API error handling
+// This is missing in the original code but referenced by other functions
+const fetchWithErrorHandling = async (url, options = {}) => {
+  try {
+    const defaultOptions = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+
+    const response = await fetch(url, { ...defaultOptions, ...options });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(`API Error: ${error.message}`);
+    throw error;
+  }
+};
+
 // Seller API endpoints
 export const sellerApi = {
   login: (email, password) => api.post('/seller/login', { email, password }),
@@ -96,6 +119,7 @@ export async function getAllProducts() {
   const res = await axios.get(`${API_BASE_URL}/products`); // Fixed BASE_URL to API_BASE_URL
   return res.data;
 }
+
 export const getCategoryProducts = async (category) => {
   try {
     const response = await fetch(`http://localhost:8080/products/${category}`);
@@ -112,7 +136,7 @@ export const getCategoryProducts = async (category) => {
 };
 
 export const getProductById = async (productId) => {
-  const response = await axios.get(`/api/products/${productId}`);
+  const response = await axios.get(`/api/${productId}`);
   return response.data;
 };
 
@@ -143,16 +167,6 @@ export const getOrderInvoice = async (orderId) => {
   }
 };
 
-export const fetchSellerById = async (sellerId) => {
-  try {
-    const response = await api.get(`/seller/${sellerId}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Failed to fetch seller ${sellerId}:`, error);
-    throw error;
-  }
-};
-
 export const fetchProductsBySellerId = async (sellerId) => {
   const response = await fetch(`/product/${sellerId}`);
   if (!response.ok) {
@@ -161,109 +175,261 @@ export const fetchProductsBySellerId = async (sellerId) => {
   return response.json();
 };
 
-export const deleteSeller = async (sellerId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/seller/${sellerId}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error deleting seller: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error(`Failed to delete seller ${sellerId}:`, error);
-    throw error;
-  }
-};
-
-// API functions for product operations
-export const updateProduct = async (product) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/product/${product.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(product)
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error updating product: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error(`Failed to update product ${product.id}:`, error);
-    throw error;
-  }
-};
-
-
-
-// API functions for customer operations
-export const fetchCustomers = async () => {
-  try {
-    const response = await api.get('/customer/');
-    return response.data;
-  } catch (error) {
-    console.error("Failed to fetch customers:", error);
-    throw error;
-  }
-};
-
-export const fetchCustomerById = async (customerId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/customer/${customerId}`);
-    if (!response.ok) {
-      throw new Error(`Error fetching customer details: ${response.statusText}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(`Failed to fetch customer ${customerId}:`, error);
-    throw error;
-  }
-};
-
-// API function for orders
-export const fetchSellerOrders = async (sellerId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/order/seller/${sellerId}`);
-    if (!response.ok) {
-      throw new Error(`Error fetching seller orders: ${response.statusText}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(`Failed to fetch orders for seller ${sellerId}:`, error);
-    throw error;
-  }
-};
-
-export const fetchCustomerOrders = async (customerId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/order/customer/${customerId}`);
-    if (!response.ok) {
-      throw new Error(`Error fetching customer orders: ${response.statusText}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(`Failed to fetch orders for customer ${customerId}:`, error);
-    throw error;
-  }
-};
+// SELLER API FUNCTIONS
+// Remove this duplicate function - keeping the one that uses fetchWithErrorHandling
 export const fetchSellers = async () => {
   try {
     const response = await api.get('/seller');
+    console.log('Fetched sellers:', response.data); // Debug log
     return response.data;
   } catch (error) {
-    console.error("Failed to fetch sellers:", error);
+    console.error('Error fetching sellers:', error);
     throw error;
   }
 };
 
+export const fetchSellerById = async (sellerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/seller/${sellerId}`);
+};
 
-export default api;
+export const createSeller = async (sellerData) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/seller`, {
+    method: 'POST',
+    body: JSON.stringify(sellerData)
+  });
+};
+
+export const updateSeller = async (sellerId, sellerData) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/seller/${sellerId}`, {
+    method: 'PUT',
+    body: JSON.stringify(sellerData)
+  });
+};
+
+export const deleteSeller = async (sellerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/seller/${sellerId}`, {
+    method: 'DELETE'
+  });
+};
+
+export const updateSellerStatus = async (sellerId, status) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/seller/${sellerId}/${status}`, {
+    method: 'PUT'
+  });
+};
+
+export const loginSeller = async (credentials) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/seller/login`, {
+    method: 'POST',
+    body: JSON.stringify(credentials)
+  });
+};
+
+// CUSTOMER API FUNCTIONS
+export const fetchCustomers = async () => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/customer/`);
+};
+
+export const fetchCustomerById = async (customerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/customer/${customerId}`);
+};
+
+export const createCustomer = async (customerData) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/customer`, {
+    method: 'POST',
+    body: JSON.stringify(customerData)
+  });
+};
+
+export const updateCustomer = async (customerId, customerData) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/customer/${customerId}`, {
+    method: 'PUT',
+    body: JSON.stringify(customerData)
+  });
+};
+
+export const loginCustomer = async (credentials) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/customer/login`, {
+    method: 'POST',
+    body: JSON.stringify(credentials)
+  });
+};
+
+// PRODUCT API FUNCTIONS
+export const fetchProducts = async () => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/products`);
+};
+
+// export const fetchProductById2 = async (productId) => {
+//   return fetchWithErrorHandling(`${API_BASE_URL}/product2/${productId}`);
+// };
+
+export const fetchProductByName = async (productName) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/product1/${productName}`);
+};
+
+export const fetchProductsByCategory = async (category) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/products/${category}`);
+};
+
+export const fetchSellerProducts = async (sellerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/product/${sellerId}`);
+};
+
+export const createProduct = async (productData) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/product`, {
+    method: 'POST',
+    body: JSON.stringify(productData)
+  });
+};
+
+export const updateProduct = async (product) => {
+  try {
+    const response = await api.put(`/product/${product.productId}`, product);
+    console.log('Product update response:', response.data); // Debug log
+    return response.data;
+  } catch (error) {
+    console.error('Error updating product:', error);
+    throw error;
+  }
+};
+
+export const deleteProduct = async (productId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/product/${productId}`, {
+    method: 'DELETE'
+  });
+};
+
+// ORDER API FUNCTIONS
+export const fetchOrders = async () => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order`);
+};
+
+export const fetchSellerOrders = async (sellerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/seller/${sellerId}`);
+};
+
+export const fetchCustomerOrders = async (customerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/customer/${customerId}`);
+};
+
+export const fetchOrderInvoice = async (orderId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/invoice/${orderId}`);
+};
+
+export const fetchCustomerCartOrders = async (customerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/orders/incart/${customerId}`);
+};
+
+export const createOrder = async (orderData) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/add`, {
+    method: 'POST',
+    body: JSON.stringify(orderData)
+  });
+};
+
+export const updateOrderStatus = async (orderId, status) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/order/${orderId}/${status}`, {
+    method: 'PUT'
+  });
+};
+
+export const deleteOrder = async (orderId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/delete/${orderId}`, {
+    method: 'DELETE'
+  });
+};
+
+// RATING API FUNCTIONS
+export const fetchRatings = async () => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating`);
+};
+
+export const fetchRatingById = async (ratingId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating/${ratingId}`);
+};
+
+export const fetchProductRatings = async (productId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating/product/${productId}`);
+};
+
+export const fetchCustomerRatings = async (customerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating/customer/${customerId}`);
+};
+
+export const createRating = async (ratingData) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating`, {
+    method: 'POST',
+    body: JSON.stringify(ratingData)
+  });
+};
+
+export const deleteRating = async (ratingId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating/${ratingId}`, {
+    method: 'DELETE'
+  });
+};
+export const fetchProductById = async (productId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/product/${productId}`);
+};
+
+
+// } catch (err) {
+//   setError(`Failed to update product: ${err.message}`);
+// } finally {
+//   setLoading(false);
+// }
+
+// Combine all functions into a single object for the default export
+const apiUtils = {
+  // Seller functions
+  fetchSellers,
+  fetchSellerById,
+  createSeller,
+  updateSeller,
+  deleteSeller,
+  updateSellerStatus,
+  loginSeller,
+
+  // Customer functions
+  fetchCustomers,
+  fetchCustomerById,
+  createCustomer,
+  updateCustomer,
+  loginCustomer,
+
+  // Product functions
+  fetchProducts,
+  fetchProductById,
+  fetchProductByName,
+  fetchProductsByCategory,
+  fetchSellerProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+
+
+  // Order functions
+  fetchOrders,
+  fetchSellerOrders,
+  fetchCustomerOrders,
+  fetchOrderInvoice,
+  fetchCustomerCartOrders,
+  createOrder,
+  updateOrderStatus,
+  deleteOrder,
+
+  // Rating functions
+  fetchRatings,
+  fetchRatingById,
+  fetchProductRatings,
+  fetchCustomerRatings,
+  createRating,
+  deleteRating,
+
+  // The axios instance
+  api
+};
+
+// Choose one default export
+export default apiUtils;
