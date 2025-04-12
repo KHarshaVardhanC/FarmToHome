@@ -57,6 +57,7 @@ public class ProductServiceImpl implements ProductService {
 			product.setProductQuantity(productRequest.getProductQuantity());
 			product.setProductDescription(productRequest.getProductDescription());
 			product.setProductCategory(productRequest.getProductCategory());
+			product.setProductQuantityType(productRequest.getProductQuantityType());
 
 			try {
 				product.setSeller(sellerService.getSeller(productRequest.getSellerId()));
@@ -167,6 +168,11 @@ public class ProductServiceImpl implements ProductService {
 		if (updatedDetails.getProductCategory() != null) {
 			product.setProductCategory(updatedDetails.getProductCategory());
 		}
+		
+		if(updatedDetails.getProductQuantityType() != null)
+		{
+			product.setProductQuantityType(updatedDetails.getProductQuantityType());
+		}
 
 //		updatedDetails.getPro
 
@@ -242,6 +248,7 @@ public class ProductServiceImpl implements ProductService {
 				customerProductDTO.setProductPrice(product.getProductPrice());
 				customerProductDTO.setProductName(product.getProductName());
 				customerProductDTO.setProductQuantity(product.getProductQuantity());
+				customerProductDTO.setProductQuantityType(product.getProductQuantityType());
 				customerProductDTO.setProductRatingCount(product.getProductRatingCount());
 				customerProductDTO.setProductRatingValue(product.getProductRatingValue());
 				customerProductDTO.setSellerName(

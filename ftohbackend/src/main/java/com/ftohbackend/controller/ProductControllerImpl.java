@@ -66,9 +66,12 @@ public class ProductControllerImpl implements ProductController {
 		customerProductDTO.setProductPrice(product.getProductPrice());
 		customerProductDTO.setProductDescription(product.getProductDescription());
 		customerProductDTO.setProductQuantity(product.getProductQuantity());
+		customerProductDTO.setProductQuantityType(product.getProductQuantityType());
+		
 		customerProductDTO.setImageUrl(product.getImageUrl());
 		customerProductDTO.setProductRatingValue(product.getProductRatingValue());
 		customerProductDTO.setProductRatingCount(product.getProductRatingCount());
+		
 		
 		
 		customerProductDTO.setSellerPlace(product.getSeller().getSellerPlace());
@@ -124,6 +127,7 @@ public class ProductControllerImpl implements ProductController {
 			sellerproductDTO.setProductId(product.getProductId());
 			sellerproductDTO.setProductName(product.getProductName());
 			sellerproductDTO.setProductQuantity(product.getProductQuantity());
+			sellerproductDTO.setProductQuantityType(product.getProductQuantityType());
 			sellerproductDTO.setProductPrice(product.getProductPrice());
 			sellerproductDTO.setImageUrl(product.getImageUrl());
 			sellerproductDTO.setProductDescription(product.getProductDescription());

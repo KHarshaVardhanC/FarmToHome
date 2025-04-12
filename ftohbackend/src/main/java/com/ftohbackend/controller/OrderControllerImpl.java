@@ -75,6 +75,7 @@ public class OrderControllerImpl implements OrderController {
 				customerorderdto.setProductPrice(product.getProductPrice());
 				customerorderdto.setImageUrl(product.getImageUrl());
 				customerorderdto.setProductDescription(product.getProductDescription());
+				customerorderdto.setProductQuantityType(product.getProductQuantityType());
 				
 				Seller seller = product.getSeller();
 				customerorderdto.setSellerName(seller.getSellerFirstName() + " " + seller.getSellerLastName());
@@ -102,6 +103,7 @@ public class OrderControllerImpl implements OrderController {
 			Product product = order.getProduct();
 			customerorderdto.setProductName(product.getProductName());
 			customerorderdto.setProductPrice(product.getProductPrice());
+			customerorderdto.setProductQuantityType(product.getProductQuantityType());
 			customerorderdto.setImageUrl(product.getImageUrl());
 			customerorderdto.setProductDescription(product.getProductDescription());
 			customerorderdto.setOrderStatus(order.getOrderStatus());
@@ -141,6 +143,7 @@ public class OrderControllerImpl implements OrderController {
 
 			sellerorderdto.setProductName(product.getProductName());
 			sellerorderdto.setProductPrice(product.getProductPrice());
+			sellerorderdto.setProductQuantityType(product.getProductQuantityType());
 			sellerorderdto.setImageUrl(product.getImageUrl());
 			sellerorderdto.setProductDescription(product.getProductDescription());
 			
