@@ -26,17 +26,12 @@ public class Seller {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Integer sellerId;
 	@Column(nullable = false, unique = true)
-//	@Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$", message = "Invalid email format")
 	String sellerEmail;
 	@Column(nullable = false)
 	String sellerFirstName;
 	@Column(nullable = false)
 	String sellerLastName;
 	@Column(nullable = false)
-//	@Past(message = "Age after this date")
-	Date sellerDOB;
-	@Column(nullable = false)
-//	@Pattern(regexp = "^[0-9]{10,10}$", message = "Phone number must be 10 digits")
 	String sellerMobileNumber;
 	@Column(nullable = false)
 	String sellerPlace;
