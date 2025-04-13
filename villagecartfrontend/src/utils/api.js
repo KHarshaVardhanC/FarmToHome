@@ -35,7 +35,27 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+const fetchWithErrorHandling = async (url, options = {}) => {
+  try {
+    const defaultOptions = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
 
+    const response = await fetch(url, { ...defaultOptions, ...options });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'API request failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+};
 // Seller API endpoints
 export const sellerApi = {
   login: (email, password) => api.post('/seller/login', { email, password }),
@@ -296,25 +316,54 @@ export const deleteRating = async (ratingId) => {
 };
 export const fetchProductById = async (productId) => {
   return fetchWithErrorHandling(`${API_BASE_URL}/product/${productId}`);
-  // Function to add a "Rate" button to the order item
-  const addRateButton = (orderId, productId, customerId, productInfo) => {
-    return {
-      label: 'Rate',
-      onClick: (navigate) => {
-        navigate(`/rate-product/${productId}`, {
-          state: {
-            customerId,
-            productInfo
-          }
-        });
-      }
-    };
+};
+
+// Move this to a separate utility file (e.g., orderUtils.js)
+export const addRateButton = (orderId, productId, customerId, productInfo) => {
+  return {
+    label: 'Rate',
+    onClick: (navigate) => {
+      navigate(`/rate-product/${productId}`, {
+        state: {
+          customerId,
+          productInfo
+        }
+      });
+    }
   };
-}
+};
 
 // Get products by category
+export const adminApi = {
+  // Seller management
+  fetchSellers: () => api.get('/admin/sellers'),
+  fetchSellerById: (sellerId) => api.get(`/admin/seller/${sellerId}`),
+  deleteSeller: (sellerId) => api.delete(`/admin/seller/${sellerId}`),
+  updateSellerStatus: (sellerId, status) => api.put(`/admin/seller/${sellerId}/status`, { status }),
+  fetchSellerProducts: (sellerId) => api.get(`/admin/seller/${sellerId}/products`),
 
+  // Customer management
+  fetchCustomers: () => api.get('/admin/customers'),
+  fetchCustomerById: (customerId) => api.get(`/admin/customer/${customerId}`),
 
+  // Product management
+  fetchProducts: () => api.get('/admin/products'),
+  updateProduct: (productId, productData) => api.put(`/admin/product/${productId}`, productData),
+  deleteProduct: (productId) => api.delete(`/admin/product/${productId}`)
+};
+
+export const {
+  fetchSellers,
+  fetchSellerById,
+  deleteSeller,
+  updateSellerStatus,
+  fetchSellerProducts,
+  fetchCustomers,
+  fetchCustomerById,
+  fetchProducts,
+  updateProduct,
+  deleteProduct
+} = adminApi;
 export default api;
 
 // Changes done
