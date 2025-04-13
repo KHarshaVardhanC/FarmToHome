@@ -336,20 +336,107 @@ export const addRateButton = (orderId, productId, customerId, productInfo) => {
 // Get products by category
 export const adminApi = {
   // Seller management
-  fetchSellers: () => api.get('/admin/sellers'),
-  fetchSellerById: (sellerId) => api.get(`/admin/seller/${sellerId}`),
-  deleteSeller: (sellerId) => api.delete(`/admin/seller/${sellerId}`),
-  updateSellerStatus: (sellerId, status) => api.put(`/admin/seller/${sellerId}/status`, { status }),
-  fetchSellerProducts: (sellerId) => api.get(`/admin/seller/${sellerId}/products`),
+  fetchSellers: async () => {
+    try {
+      const response = await api.get('/seller');
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Error fetching sellers:', error);
+      return []; // Return empty array on error
+    }
+  },
+
+  fetchSellerById: async (sellerId) => {
+    try {
+      const response = await api.get(`/seller/${sellerId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching seller ${sellerId}:`, error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch seller details');
+    }
+  },
+
+  deleteSeller: async (sellerId) => {
+    try {
+      const response = await api.delete(`/seller/${sellerId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error deleting seller ${sellerId}:`, error);
+      throw new Error(error.response?.data?.message || 'Failed to delete seller');
+    }
+  },
+
+  updateSellerStatus: async (sellerId, status) => {
+    try {
+      const response = await api.put(`/seller/${sellerId}/status`, { status });
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating seller ${sellerId} status:`, error);
+      throw new Error(error.response?.data?.message || 'Failed to update seller status');
+    }
+  },
+
+  fetchSellerProducts: async (sellerId) => {
+    try {
+      const response = await api.get(`/product/${sellerId}`);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error(`Error fetching seller ${sellerId} products:`, error);
+      return []; // Return empty array on error
+    }
+  },
 
   // Customer management
-  fetchCustomers: () => api.get('/admin/customers'),
-  fetchCustomerById: (customerId) => api.get(`/admin/customer/${customerId}`),
+  fetchCustomers: async () => {
+    try {
+      const response = await api.get('/customer/');
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      return []; // Return empty array on error
+    }
+  },
+
+  fetchCustomerById: async (customerId) => {
+    try {
+      const response = await api.get(`/customer/${customerId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching customer ${customerId}:`, error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch customer details');
+    }
+  },
 
   // Product management
-  fetchProducts: () => api.get('/admin/products'),
-  updateProduct: (productId, productData) => api.put(`/admin/product/${productId}`, productData),
-  deleteProduct: (productId) => api.delete(`/admin/product/${productId}`)
+  fetchProducts: async () => {
+    try {
+      const response = await api.get('/products');
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      return []; // Return empty array on error
+    }
+  },
+
+  updateProduct: async (productId, productData) => {
+    try {
+      const response = await api.put(`/product/${productId}`, productData);
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating product ${productId}:`, error);
+      throw new Error(error.response?.data?.message || 'Failed to update product');
+    }
+  },
+
+  deleteProduct: async (productId) => {
+    try {
+      const response = await api.delete(`/product/${productId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error deleting product ${productId}:`, error);
+      throw new Error(error.response?.data?.message || 'Failed to delete product');
+    }
+  }
 };
 
 export const {
