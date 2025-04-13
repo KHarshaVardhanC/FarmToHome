@@ -36,14 +36,14 @@ const ViewProducts = () => {
         const productsData = response.data || [];
         setProducts(productsData);
         setFilteredProducts(productsData);
-        
+
         // Fetch ratings for each product
         const ratings = {};
         for (const product of productsData) {
           try {
             const ratingRes = await ratingsApi.getProductRatings(product.productId);
             const data = Array.isArray(ratingRes.data) ? ratingRes.data : (ratingRes.data ? [ratingRes.data] : []);
-            
+
             if (data.length > 0) {
               const avg = (data.reduce((sum, r) => sum + r.ratingValue, 0) / data.length).toFixed(1);
               ratings[product.productId] = {
@@ -181,54 +181,6 @@ const ViewProducts = () => {
                 No products found. Click "Add Product" to add your first product.
               </div>
             </div>
-<<<<<<< HEAD
-          ) : (
-            filteredProducts.map((product) => (
-              <div key={product.productId} className="col-md-4 col-lg-3">
-                <Link to={`/product/${product.productId}`} className="text-decoration-none text-dark">
-                  <div className="card h-100 product-card shadow-sm">
-                    {product.imageUrl && (
-                      <img
-                        src={product.imageUrl}
-                        className="card-img-top"
-                        alt={product.productName}
-                        style={{ height: '200px', objectFit: 'cover' }}
-                      />
-                    )}
-                    <div className="card-body">
-                      <h5 className="card-title">{product.productName}</h5>
-
-                      <p className="card-text mb-1 text-muted">
-                        Stock remaining: {product.productQuantity}
-                      </p>
-                      {product.productQuantity === 0 && (
-                        <div className="mb-2">
-                          <span className="badge bg-danger">Out of Stock</span>
-                        </div>
-                      )}
-
-                      <p className="card-text mb-0">
-                        <strong>Price: ₹{product.productPrice}</strong>
-                      </p>
-
-                      <p className="card-text text-muted mb-0">
-                        {product.productRatingValue != null
-                          ? `${product.productRatingValue} ⭐ (${product.productRatingCount} ratings)`
-                          : "No Ratings"}
-                      </p>
-                      {product.productFeedback && (
-                        <p className="card-text small text-muted fst-italic mt-1">
-                          "{product.productFeedback}"
-                        </p>
-                      )}
-                    </div>
-
-                  </div>
-                </Link>
-              </div>
-            ))
-=======
->>>>>>> 2c15d9726cdf4a380326a12d2c2752de26b5524d
           )}
           {filteredProducts.map((product) => (
             <div key={product.productId} className="col-md-4 col-lg-3">

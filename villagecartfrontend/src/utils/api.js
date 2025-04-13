@@ -297,7 +297,7 @@ export const deleteRating = async (ratingId) => {
 export const fetchProductById = async (productId) => {
   return fetchWithErrorHandling(`${API_BASE_URL}/product/${productId}`);
   // Function to add a "Rate" button to the order item
-  export const addRateButton = (orderId, productId, customerId, productInfo) => {
+  const addRateButton = (orderId, productId, customerId, productInfo) => {
     return {
       label: 'Rate',
       onClick: (navigate) => {
@@ -310,9 +310,9 @@ export const fetchProductById = async (productId) => {
       }
     };
   };
+}
+
+// Get products by category
 
 
-  // Get products by category
-
-
-  export default api;
+export default api;
