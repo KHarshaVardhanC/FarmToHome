@@ -75,7 +75,6 @@ public class SellerServiceimpl implements SellerService {
 
 		sl.setSellerFirstName(seller.getSellerFirstName());
 		sl.setSellerLastName(seller.getSellerLastName());
-		sl.setSellerDOB(seller.getSellerDOB());
 		sl.setSellerEmail(seller.getSellerEmail());
 		sl.setSellerMobileNumber(seller.getSellerMobileNumber());
 		sl.setSellerPassword(seller.getSellerPassword());

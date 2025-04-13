@@ -1,9 +1,9 @@
 package com.ftohbackend.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +57,7 @@ public class ProductServiceImpl implements ProductService {
 			product.setProductQuantity(productRequest.getProductQuantity());
 			product.setProductDescription(productRequest.getProductDescription());
 			product.setProductCategory(productRequest.getProductCategory());
+			product.setProductQuantityType(productRequest.getProductQuantityType());
 
 			try {
 				product.setSeller(sellerService.getSeller(productRequest.getSellerId()));
@@ -167,6 +168,11 @@ public class ProductServiceImpl implements ProductService {
 		if (updatedDetails.getProductCategory() != null) {
 			product.setProductCategory(updatedDetails.getProductCategory());
 		}
+		
+		if(updatedDetails.getProductQuantityType() != null)
+		{
+			product.setProductQuantityType(updatedDetails.getProductQuantityType());
+		}
 
 //		updatedDetails.getPro
 
@@ -184,13 +190,12 @@ public class ProductServiceImpl implements ProductService {
 				} else {
 					double ratingValue = (product.getProductRatingValue() * len
 							+ updatedDetails.getProductRatingValue()) / (double) (len + 1);
-					
-					
-					product.setProductRatingValue(Math.round(ratingValue * 10.0)/10.0);
+
+					product.setProductRatingValue(Math.round(ratingValue * 10.0) / 10.0);
 
 				}
 			}
-			product.setProductRatingCount(len+1);
+			product.setProductRatingCount(len + 1);
 		}
 
 		productRepository.save(product);
@@ -231,7 +236,31 @@ public class ProductServiceImpl implements ProductService {
 			throw new ProductException("No products found with name: " + productName);
 		}
 
-		return products.stream().map(CustomerProductDTO::new).collect(Collectors.toList());
+		List<CustomerProductDTO> customerproductdto = new ArrayList<>();
+		for (Product product : products) {
+			if (product.getProductQuantity() == 0.0) {
+
+				CustomerProductDTO customerProductDTO = new CustomerProductDTO();
+
+				customerProductDTO.setImageUrl(product.getImageUrl());
+				customerProductDTO.setProductDescription(product.getProductDescription());
+				customerProductDTO.setProductId(product.getProductId());
+				customerProductDTO.setProductPrice(product.getProductPrice());
+				customerProductDTO.setProductName(product.getProductName());
+				customerProductDTO.setProductQuantity(product.getProductQuantity());
+				customerProductDTO.setProductQuantityType(product.getProductQuantityType());
+				customerProductDTO.setProductRatingCount(product.getProductRatingCount());
+				customerProductDTO.setProductRatingValue(product.getProductRatingValue());
+				customerProductDTO.setSellerName(
+						product.getSeller().getSellerFirstName() + " " + product.getSeller().getSellerLastName());
+				customerProductDTO.setSellerCity(product.getSeller().getSellerCity());
+				customerProductDTO.setSellerPlace(product.getSeller().getSellerPlace());
+
+				customerproductdto.add(customerProductDTO);
+			}
+		}
+
+		return customerproductdto;
 	}
 
 	@Override
@@ -251,3 +280,5 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 }
+
+

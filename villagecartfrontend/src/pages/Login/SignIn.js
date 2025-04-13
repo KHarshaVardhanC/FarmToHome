@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/signin.css";
+import "../../assets/signin.css"
 import VerifyEmailPopup from "./VerifyEmailPopup"; // Import the popup component
 
 const Signin = () => {
@@ -42,68 +42,49 @@ const Signin = () => {
 
     try {
       // Determine the backend endpoint based on the selected role
-      let endpoint = "";
-      if (formData.userType === "Customer") {
-        endpoint = "http://localhost:8080/customer/login";
-      } else if (formData.userType === "Seller") {
-        endpoint = "http://localhost:8080/seller/login";
-      } else {
-        throw new Error("Invalid user type selected.");
+      let endpoint = "http://localhost:8080"; // Changed to 8080
+      if (formData.userType === "customer") {
+        endpoint += "/customer/login";
+      } else if (formData.userType === "seller") {
+        endpoint += "/seller/login";
       }
 
-      // Send login request to the backend
+      // Create login request body to match backend LoginRequest
+      const loginRequest = {
+        email: formData.email,
+        password: formData.password
+      };
+
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+        body: JSON.stringify(loginRequest)
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
+        throw new Error("Invalid email or password");
       }
 
       const data = await response.json();
-      console.log("Login successful:", data);
 
-      // Store customerId and customerEmail in localStorage
-      localStorage.setItem("customerId", data.customerId);
-      localStorage.setItem("customerEmail", data.customerEmail);
-
-      // Fetch customer details using customerId
-      const customerDetailsResponse = await fetch(
-        `http://localhost:8080/customer/${data.customerId}`
-      );
-      if (!customerDetailsResponse.ok) {
-        throw new Error("Failed to fetch customer details");
+      // Store user data based on role
+      if (formData.userType === "customer") {
+        localStorage.setItem("customerId", data.customerId);
+        localStorage.setItem("customerEmail", data.customerEmail);
+        localStorage.setItem("userType", "customer");
+        navigate("/customer/dashboard");
+      } else if (formData.userType === "seller") {
+        localStorage.setItem("sellerId", data.sellerId);
+        localStorage.setItem("sellerEmail", data.sellerEmail);
+        localStorage.setItem("sellerName", `${data.sellerFirstName} ${data.sellerLastName}`);
+        localStorage.setItem("userType", "seller");
+        navigate("/SellerHome");
       }
-      const customerDetails = await customerDetailsResponse.json();
-      console.log("Customer details fetched:", customerDetails);
 
-      // Store customer name in localStorage
-      localStorage.setItem("userName", customerDetails.name);
-
-      // Debug what was stored
-      console.log("Values stored in localStorage:", {
-        userName: localStorage.getItem("userName"),
-        customerId: localStorage.getItem("customerId"),
-        customerEmail: localStorage.getItem("customerEmail"),
-      });
-
-      // Navigate to the appropriate home page based on user type
-      if (formData.userType === "Customer") {
-        navigate("/customer-home"); // Redirect to customer home page
-      } else if (formData.userType === "Seller") {
-        navigate("/seller-home"); // Redirect to seller home page
-      } else {
-        throw new Error("Invalid user type returned from server.");
-      }
     } catch (error) {
+      console.error('Login error:', error);
       setError(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);

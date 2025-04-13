@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { productApi } from '../utils/api';
+import { productApi, ratingsApi } from '../utils/api';
 import ProfileDropdown from '../components/ProfileDropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -12,16 +12,50 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [product, setProduct] = useState(null);
+  const [ratings, setRatings] = useState([]);
+  const [averageRating, setAverageRating] = useState(null);
+
+  const renderStars = (rating) => {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating - fullStars >= 0.5;
+    const stars = [];
+    for (let i = 0; i < fullStars; i++) stars.push(<i key={`full-${i}`} className="fas fa-star text-warning"></i>);
+    if (halfStar) stars.push(<i key="half" className="fas fa-star-half-alt text-warning"></i>);
+    while (stars.length < 5) stars.push(<i key={`empty-${stars.length}`} className="far fa-star text-warning"></i>);
+    return stars;
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const response = await productApi.getProduct(id);
-        setProduct(response.data);
-      } catch (err) {
-        console.error('Error fetching product:', err);
-        setError('Failed to load product details. Please try again later.');
+        
+        try {
+          const res = await productApi.getProduct(id);
+          setProduct(res.data);
+        } catch (err) {
+          console.error('Error fetching product:', err);
+          setError('Failed to load product details. Please try again later.');
+          setLoading(false);
+          return;
+        }
+
+        // Fetch ratings separately
+        try {
+          const ratingRes = await ratingsApi.getProductRatings(id);
+          const data = Array.isArray(ratingRes.data) ? ratingRes.data : (ratingRes.data ? [ratingRes.data] : []);
+          setRatings(data);
+
+          if (data.length > 0) {
+            const avg = (data.reduce((sum, r) => sum + r.ratingValue, 0) / data.length).toFixed(1);
+            setAverageRating(avg);
+          }
+        } catch (ratingErr) {
+          console.error('Error fetching ratings:', ratingErr);
+          // Don't set error for missing ratings
+          setRatings([]);
+          setAverageRating(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -53,13 +87,8 @@ const ProductDetails = () => {
     );
   }
 
-  if (error) {
-    return <div className="alert alert-danger m-4">{error}</div>;
-  }
-
-  if (!product) {
-    return <div className="alert alert-warning m-4">Product not found.</div>;
-  }
+  if (error) return <div className="alert alert-danger m-4">{error}</div>;
+  if (!product) return <div className="alert alert-warning m-4">Product not found.</div>;
 
   return (
     <div className="product-details-page">
@@ -85,12 +114,43 @@ const ProductDetails = () => {
             <div className="col-md-8 p-4">
               <p><strong>Name:</strong> {product.productName}</p>
               <p><strong>Description:</strong> {product.productDescription}</p>
-              <p><strong>Quantity:</strong> {product.productQuantity}</p>
-              <p><strong>Price:</strong> ₹{product.productPrice}</p>
+              <p><strong>Quantity:</strong> {product.productQuantity} {product.productQuantityType && product.productQuantityType}</p>
+              <p><strong>Price:</strong> ₹{product.productPrice} {product.productQuantityType ? `per ${product.productQuantityType}` : ''}</p>
+
               {product.productQuantity === 0 && (
                 <span className="badge bg-danger mb-3">Out of Stock</span>
               )}
-              <div className="d-flex flex-wrap gap-3 mt-3">
+
+              {/* Ratings & Feedback Section */}
+              {averageRating ? (
+                <div className="mb-2">
+                  <strong>Rating:</strong> {renderStars(averageRating)}{' '}
+                  <small className="text-muted">({averageRating} / 5, {ratings.length} ratings)</small>
+                </div>
+              ) : (
+                <div className="mb-2">
+                  <strong>Rating:</strong> <span className="text-muted">No ratings yet</span>
+                </div>
+              )}
+
+              {ratings.length > 0 ? (
+                <div className="mt-2">
+                  <h6 className="fw-semibold">Customer Feedback</h6>
+                  <ul className="feedback-list ps-3">
+                    {ratings.map((r, i) => (
+                      <li key={i} className="text-muted small fst-italic">"{r.feedback || 'No comment'}"</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <div className="mt-2">
+                  <h6 className="fw-semibold">Customer Feedback</h6>
+                  <p className="text-muted small">No feedback available yet.</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="d-flex flex-wrap gap-3 mt-4">
                 {product.productQuantity === 0 ? (
                   <button className="btn btn-secondary" disabled>
                     <i className="fas fa-edit me-2"></i>Edit Product

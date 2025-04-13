@@ -68,7 +68,7 @@
   .input-group {
     display: flex;
     align-items: center;
-    /*background-color: #edf2f7;*/
+    background-color: #edf2f7;
   
     border-radius: 12px;
     padding: 10px;
