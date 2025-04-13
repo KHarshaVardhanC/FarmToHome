@@ -127,7 +127,7 @@ const Home = () => {
           <div className="d-flex gap-4">
             <Link className="nav-link" to="/">Home</Link>
             <Link className="nav-link" to="/login">Login</Link>
-            <Link className="nav-link" to="/register">Register</Link>
+            <Link className="nav-link" to="/signup">Register</Link> {/* Changed from /register to /signup */}
             <Link className="nav-link" to="/about">About Us</Link>
             <Link className="nav-link" to="/contact">Contact Us</Link>
           </div>
@@ -190,7 +190,8 @@ const Home = () => {
                       </div>
                       <div className="card-body d-flex flex-column">
                         <h5 className="card-title text-center">{product.productName}</h5>
-                        <p className="card-text text-center fw-bold mt-auto">₹{product.productPrice}/kg</p>
+                        <p className="card-text text-center fw-bold mt-auto">₹{product.productPrice}/{product.productQuantityType || 'kg'}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -219,7 +220,9 @@ const Home = () => {
                     </div>
                     <div className="card-body d-flex flex-column">
                       <h5 className="card-title text-center">{product.productName}</h5>
-                      <p className="card-text text-center fw-bold mt-auto">₹{product.productPrice}/kg</p>
+                      <p className="card-text text-center fw-bold mt-auto">₹{product.productPrice}/{product.productQuantityType || 'kg'}
+                      </p>
+
 
                     </div>
                   </div>

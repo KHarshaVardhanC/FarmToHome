@@ -39,10 +39,10 @@ const Home = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         let productsData = [];
         let ordersData = [];
-        
+
         try {
           const productsRes = await productApi.getProducts(sellerId);
           productsData = productsRes.data || [];
@@ -81,7 +81,7 @@ const Home = () => {
           }
         }
         setProductRatings(ratings);
-        
+
       } catch (err) {
         console.error('Critical error:', err);
         // Initialize empty data instead of showing error
@@ -210,34 +210,39 @@ const Home = () => {
             See All Products <i className="fas fa-arrow-right ms-1"></i>
           </Link>
         </div>
-        <div className="row g-4">
-          {products.slice(0, 3).map(product => (
-            <div key={product.productId} className="col-md-4 col-lg-4">
+
+        <div className="products-grid">
+          {products.slice(0, 3).map((product, index) => (
+            <div key={product.productId}>
               <div className="card h-100">
-                <div className="product-img-wrapper">
-                  {product.imageUrl && <img src={product.imageUrl} alt={product.productName} className="card-img-top product-image" />}
-                </div>
+                {product.imageUrl && (
+                  <img
+                    src={product.imageUrl}
+                    className="card-img-top product-image"
+                    alt={product.productName}
+                  />
+                )}
                 <div className="card-body">
                   <h5 className="card-title">{product.productName}</h5>
-                  <p className="text-muted mb-1">Stock remaining: {product.productQuantity}</p>
-                  {product.productQuantity === 0 && <span className="badge bg-danger mb-2">Out of Stock</span>}
-                  <p className="mb-1"><strong>Price: ₹{product.productPrice} {product.productQuantityType ? `per ${product.productQuantityType}` : ''}</strong></p>
-                  {productRatings[product.productId]?.average ? (
-                    <>
-                      <p className="mb-1">
-                        {renderStars(productRatings[product.productId].average)}
-                        <small className="text-muted ms-2">
-                          ({productRatings[product.productId].average} / 5, {productRatings[product.productId].count} ratings)
-                        </small>
-                      </p>
-                      {/* <ul className="feedback-list ps-3">
-                        {productRatings[product.productId].feedbacks.slice(0, 2).map((fb, i) => (
-                          <li key={i} className="text-muted small">"{fb}"</li>
-                        ))}
-                      </ul> */}
-                    </>
+                  <p className="card-text mb-1 text-muted">
+                    Stock remaining: {product.productQuantity} /{product.productQuantityType || 'kg'}
+                  </p>
+                  {product.productQuantity === 0 && (
+                    <div className="mb-2">
+                      <span className="badge bg-danger">Out of Stock</span>
+                    </div>
+                  )}
+                  <p className="card-text mb-1">
+                    <strong>Price: ₹{product.productPrice}</strong>
+                  </p>
+                  {productRatings[product.productId] ? (
+                    <p className="card-text mb-1">
+                      {renderStars(productRatings[product.productId])}
+                      <small className="text-muted ms-2">({productRatings[product.productId]} / 5)</small>
+                    </p>
                   ) : (
-                    <p className="text-muted">No Ratings</p>
+                    <p className="card-text text-muted">No Ratings</p>
+
                   )}
                 </div>
               </div>

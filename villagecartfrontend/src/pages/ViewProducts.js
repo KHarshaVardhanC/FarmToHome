@@ -36,14 +36,14 @@ const ViewProducts = () => {
         const productsData = response.data || [];
         setProducts(productsData);
         setFilteredProducts(productsData);
-        
+
         // Fetch ratings for each product
         const ratings = {};
         for (const product of productsData) {
           try {
             const ratingRes = await ratingsApi.getProductRatings(product.productId);
             const data = Array.isArray(ratingRes.data) ? ratingRes.data : (ratingRes.data ? [ratingRes.data] : []);
-            
+
             if (data.length > 0) {
               const avg = (data.reduce((sum, r) => sum + r.ratingValue, 0) / data.length).toFixed(1);
               ratings[product.productId] = {

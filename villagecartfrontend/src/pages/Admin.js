@@ -27,29 +27,43 @@ const Admin = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Load initial data based on the current view
         const loadData = async () => {
             setLoading(true);
             setError(null);
 
             try {
                 if (view === 'sellers' || view === 'home') {
-                    const sellersData = await fetchSellers();
-                    setSellers(sellersData);
+                    try {
+                        const sellersData = await fetchSellers();
+                        setSellers(sellersData || []);
+                    } catch (err) {
+                        console.error('Error fetching sellers:', err);
+                        setError(err.message || 'Failed to load sellers');
+                    }
                 }
 
                 if (view === 'customers' || view === 'home') {
-                    const customersData = await fetchCustomers();
-                    setCustomers(customersData);
+                    try {
+                        const customersData = await fetchCustomers();
+                        setCustomers(customersData || []);
+                    } catch (err) {
+                        console.error('Error fetching customers:', err);
+                        setError(prev => prev ? `${prev}; Failed to load customers` : 'Failed to load customers');
+                    }
                 }
 
                 if (view === 'products' || view === 'home') {
-                    const productsData = await fetchProducts();
-                    setProducts(productsData);
+                    try {
+                        const productsData = await fetchProducts();
+                        setProducts(productsData || []);
+                    } catch (err) {
+                        console.error('Error fetching products:', err);
+                        setError(prev => prev ? `${prev}; Failed to load products` : 'Failed to load products');
+                    }
                 }
             } catch (err) {
-                setError(`Failed to load data: ${err.message}`);
-                console.error(err);
+                console.error('General error:', err);
+                setError('Failed to load data - please check your connection');
             } finally {
                 setLoading(false);
             }
@@ -57,7 +71,6 @@ const Admin = () => {
 
         loadData();
     }, [view]);
-
     const handleSellerClick = async (seller) => {
         setLoading(true);
         setError(null);

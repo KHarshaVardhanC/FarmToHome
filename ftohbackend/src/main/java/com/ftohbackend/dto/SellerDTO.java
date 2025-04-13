@@ -1,8 +1,5 @@
 package com.ftohbackend.dto;
 
-import java.sql.Date;
-
-import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,8 +15,6 @@ public class SellerDTO {
 	String sellerEmail;
 	String sellerFirstName;
 	String sellerLastName;
-	@Past(message = "Age after this date")
-	Date sellerDOB;
 	@Pattern(regexp = "^[0-9]{10,10}$", message = "Phone number must be 10 digits")
 	String sellerMobileNumber;
 	String sellerPlace;
