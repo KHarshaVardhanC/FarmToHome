@@ -32,7 +32,7 @@ public class Seller {
 	String sellerFirstName;
 	@Column(nullable = false)
 	String sellerLastName;
-//	@Column(nullable = false)
+	@Column(nullable = false)
 //	@Past(message = "Age after this date")
 	Date sellerDOB;
 	@Column(nullable = false)

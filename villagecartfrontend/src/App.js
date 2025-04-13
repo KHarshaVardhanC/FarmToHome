@@ -11,12 +11,12 @@ import ViewRatings from './pages/ViewRatings';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import MainHome from './pages/MainHome';
-import SignIn from './pages/Login/SignIn';
-import SignUp from './pages/Login/SignUp';
+// import SignIn from './pages/Login/SignIn';
+// import SignUp from './pages/Login/SignUp';
 import OrderInvoice from './pages/OrderInvoice';
 import Admin from './pages/Admin';
-import Rating from './pages/Rating';
-// import Rating from './pages/Rating'; // Import the Rating component
+// import Rating from './pages/Rating';
+import Rating from './pages/Rating'; // Import the Rating component
 // import SignIn from './pages/Login/SignIn';
 // import SignUp from './pages/Login/SignUp';
 import EditProduct from './pages/EditProduct';
@@ -40,7 +40,6 @@ function App() {
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/SellerHome" element={<Home />} />
-          <Route path="/admin" element={<Admin />} />
           <Route path="/edit-product/:id" element={<EditProduct />} />
           <Route path="/products/:productId/rate" element={<Rating />} />
 
@@ -51,8 +50,13 @@ function App() {
 
           <Route path="/invoice/:orderId" element={<OrderInvoice />} />
 
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/login" element={<SignIn />} />
+          {/* Rating Route */}
+          {/* <Route
+            path="/rate-product/:productId" element={<Rating />}
+          /> */}
+
+          {/* <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<SignIn />} /> */}
         </Routes>
       </div>
     </Router>

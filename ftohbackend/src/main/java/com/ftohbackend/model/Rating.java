@@ -26,12 +26,17 @@ public class Rating {
 	@JoinColumn(name = "customerId", nullable = false)
 	private Customer customer;
 
+	
 	@ManyToOne
 	@JoinColumn(name = "productId", nullable = false)
 	private Product product;
 
-	Double ratingValue;
+	
+	
 	private String feedback;
+	
+	Double ratingValue;
+
 
 	@CreationTimestamp
 	private LocalDateTime createdAt;

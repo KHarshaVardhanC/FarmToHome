@@ -13,7 +13,6 @@ public class ProductDTO {
 	Double productPrice;
 	String productName;
 	Double productQuantity;
-	String productQuantityType;
 	String ImageUrl;
 	String productDescription;
 	String productCategory;

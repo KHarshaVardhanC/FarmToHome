@@ -172,7 +172,6 @@ public class OrderServiceImpl implements OrderService {
 		customerOrderDTO.setProductDescription(product.getProductDescription());
 		customerOrderDTO.setProductPrice(product.getProductPrice());
 		customerOrderDTO.setImageUrl(product.getImageUrl());
-		customerOrderDTO.setProductQuantityType(product.getProductQuantityType());
 		
 		Customer customer=order.getCustomer();
 		customerOrderDTO.setCustomerName(customer.getCustomerFirstName() + " "+ customer.getCustomerLastName());

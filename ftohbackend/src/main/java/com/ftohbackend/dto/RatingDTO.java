@@ -12,9 +12,10 @@ public class RatingDTO {
     private Integer ratingId;
     private Integer customerId;
     private Integer productId;
-    private Double ratingValue;
+
+    Double ratingValue;
     private String feedback;
-//
+
 //    public RatingDTO() {
 //    }
 //
