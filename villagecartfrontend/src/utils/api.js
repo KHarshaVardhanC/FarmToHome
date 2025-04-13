@@ -112,7 +112,7 @@ export const getCategoryProducts = async (category) => {
 };
 
 export const getProductById = async (productId) => {
-  const response = await axios.get(`/api/products/${productId}`);
+  const response = await axios.get(`/api/product/${productId}`);
   return response.data;
 };
 
@@ -186,23 +186,133 @@ export const getUserRatings = async (customerId) => {
   }
 };
 
-// Function to add a "Rate" button to the order item
-export const addRateButton = (orderId, productId, customerId, productInfo) => {
-  return {
-    label: 'Rate',
-    onClick: (navigate) => {
-      navigate(`/rate-product/${productId}`, {
-        state: {
-          customerId,
-          productInfo
-        }
-      });
-    }
-  };
+// ORDER API FUNCTIONS
+export const fetchOrders = async () => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order`);
 };
 
+export const fetchSellerOrders = async (sellerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/seller/${sellerId}`);
+};
 
-// Get products by category
+export const fetchCustomerOrders = async (customerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/customer/${customerId}`);
+};
+
+export const fetchOrderInvoice = async (orderId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/invoice/${orderId}`);
+};
+
+export const fetchCustomerCartOrders = async (customerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/orders/incart/${customerId}`);
+};
+
+export const createOrder = async (orderData) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/add`, {
+    method: 'POST',
+    body: JSON.stringify(orderData)
+  });
+};
+
+export const updateOrderStatus = async (orderId, status) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/order/${orderId}/${status}`, {
+    method: 'PUT'
+  });
+};
+
+export const deleteOrder = async (orderId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/order/delete/${orderId}`, {
+    method: 'DELETE'
+  });
+};
+
+// RATING API FUNCTIONS
+export const fetchRatings = async () => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating`);
+};
+
+export const fetchRatingById = async (ratingId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating/${ratingId}`);
+};
+
+export const fetchProductRatings = async (productId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating/product/${productId}`);
+};
+
+export const fetchCustomerRatings = async (customerId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating/customer/${customerId}`);
+};
+
+export const createRating = async (ratingData) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating`, {
+    method: 'POST',
+    body: JSON.stringify(ratingData)
+  });
+};
+// export const submitRating = async (ratingData) => {
+//   try {
+//     const response = await api.post('/rating', ratingData);
+//     return response.data;
+//   } catch (error) {
+//     console.error('Rating submission error:', error.response?.data || error.message);
+//     throw new Error(error.response?.data?.message || 'Failed to submit rating');
+//   }
+// };
+
+/**
+ * Get existing rating for a product by a customer
+ * @param {number} customerId - Customer ID
+ * @param {number} productId - Product ID
+ * @returns {Promise} - Promise with the existing rating data
+ */
+export const getExistingRating = async (customerId, productId) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/ratings?customerId=${customerId}&productId=${productId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch rating');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+};
+
+export const deleteRating = async (ratingId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/rating/${ratingId}`, {
+    method: 'DELETE'
+  });
+};
+export const fetchProductById = async (productId) => {
+  return fetchWithErrorHandling(`${API_BASE_URL}/product/${productId}`);
+  // Function to add a "Rate" button to the order item
+  export const addRateButton = (orderId, productId, customerId, productInfo) => {
+    return {
+      label: 'Rate',
+      onClick: (navigate) => {
+        navigate(`/rate-product/${productId}`, {
+          state: {
+            customerId,
+            productInfo
+          }
+        });
+      }
+    };
+  };
 
 
-export default api;
+  // Get products by category
+
+
+  export default api;

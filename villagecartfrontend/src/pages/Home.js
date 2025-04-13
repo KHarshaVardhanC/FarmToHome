@@ -210,7 +210,43 @@ const Home = () => {
             See All Products <i className="fas fa-arrow-right ms-1"></i>
           </Link>
         </div>
+<<<<<<< HEAD
+        <div className="products-grid">
+<<<<<<< HEAD
+          {products.slice(0, 3).map((product, index) => (
+            <div key={product.productId}>
+              <div className="card h-100">
+                {product.imageUrl && (
+                  <img
+                    src={product.imageUrl}
+                    className="card-img-top product-image"
+                    alt={product.productName}
+                  />
+                )}
+                <div className="card-body">
+                  <h5 className="card-title">{product.productName}</h5>
+                  <p className="card-text mb-1 text-muted">
+                    Stock remaining: {product.productQuantity} /{product.productQuantityType || 'kg'}
+                  </p>
+                  {product.productQuantity === 0 && (
+                    <div className="mb-2">
+                      <span className="badge bg-danger">Out of Stock</span>
+                    </div>
+                  )}
+                  <p className="card-text mb-1">
+                    <strong>Price: ₹{product.productPrice}</strong>
+                  </p>
+                  {productRatings[product.productId] ? (
+                    <p className="card-text mb-1">
+                      {renderStars(productRatings[product.productId])}
+                      <small className="text-muted ms-2">({productRatings[product.productId]} / 5)</small>
+                    </p>
+                  ) : (
+                    <p className="card-text text-muted">No Ratings</p>
+=======
+=======
         <div className="row g-4">
+>>>>>>> 2c15d9726cdf4a380326a12d2c2752de26b5524d
           {products.slice(0, 3).map(product => (
             <div key={product.productId} className="col-md-4 col-lg-4">
               <div className="card h-100">
@@ -238,6 +274,7 @@ const Home = () => {
                     </>
                   ) : (
                     <p className="text-muted">No Ratings</p>
+>>>>>>> b7909e6c991ed337b78f7f6d9954dabaf571001d
                   )}
                 </div>
               </div>

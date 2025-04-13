@@ -182,7 +182,7 @@ export default Signin;
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/signin.css";
+import "../../assets/signin.css"
 import VerifyEmailPopup from "./VerifyEmailPopup"; // Import the popup component
 
 const Signin = () => {

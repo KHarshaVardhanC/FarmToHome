@@ -14,7 +14,9 @@ import MainHome from './pages/MainHome';
 import SignIn from './pages/Login/SignIn';
 import SignUp from './pages/Login/SignUp';
 import OrderInvoice from './pages/OrderInvoice';
-// import Rating from './pages/Rating'; // Import the Rating component
+import Admin from './pages/Admin';
+// import Rating from './pages/Rating';
+import Rating from './pages/Rating'; // Import the Rating component
 // import SignIn from './pages/Login/SignIn';
 // import SignUp from './pages/Login/SignUp';
 import EditProduct from './pages/EditProduct';
@@ -39,6 +41,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/SellerHome" element={<Home />} />
           <Route path="/edit-product/:id" element={<EditProduct />} />
+          <Route path="/products/:productId/rate" element={<Rating />} />
 
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
