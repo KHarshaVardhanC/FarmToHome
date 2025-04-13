@@ -165,7 +165,7 @@ export const getOrderInvoice = async (orderId) => {
 
 export const submitRating = async (ratingData) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/ratings`, ratingData, {
+    const response = await axios.post(`${API_BASE_URL}/rating`, ratingData, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`

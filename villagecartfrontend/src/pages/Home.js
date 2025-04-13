@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import ProfileDropdown from '../components/ProfileDropdown';
 import { ordersApi, productApi, ratingsApi } from '../utils/api';
 import '../styles/SellerHome.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
 
 const Home = () => {
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ const Home = () => {
   };
 
   const renderStars = (rating) => {
+    if (!rating || isNaN(rating)) return null;
     const fullStars = Math.floor(rating);
     const halfStar = rating - fullStars >= 0.5;
     const stars = [];
@@ -236,14 +239,14 @@ const Home = () => {
                     <strong>Price: ₹{product.productPrice}</strong>
                   </p>
                   {productRatings[product.productId] ? (
-                    <p className="card-text mb-1">
-                      {renderStars(productRatings[product.productId])}
-                      <small className="text-muted ms-2">({productRatings[product.productId]} / 5)</small>
-                    </p>
+                     <p className="card-text mb-1">
+                     <span>{renderStars(parseFloat(productRatings[product.productId].average))}</span>
+                     <small className="text-muted ms-2">({productRatings[product.productId].average} / 5)</small>
+                     </p>
                   ) : (
                     <p className="card-text text-muted">No Ratings</p>
-
                   )}
+
                 </div>
               </div>
             </div>
