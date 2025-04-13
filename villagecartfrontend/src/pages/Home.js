@@ -9,13 +9,12 @@ const Home = () => {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [productRatings, setProductRatings] = useState({});
 
-  const sellerId = 1;
+  const sellerId = localStorage.getItem('sellerId');
 
   const calculateTotalRevenue = (orders) => {
     return orders.reduce((total, order) => {
@@ -40,35 +39,68 @@ const Home = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const productsRes = await productApi.getProducts(sellerId);
-        setProducts(productsRes.data);
+        
+        let productsData = [];
+        let ordersData = [];
+        
+        try {
+          const productsRes = await productApi.getProducts(sellerId);
+          productsData = productsRes.data || [];
+        } catch (prodErr) {
+          console.log('Products fetch error:', prodErr);
+          productsData = [];
+        }
+        setProducts(productsData);
 
-        const ordersRes = await ordersApi.getSellerOrders(sellerId);
-        setOrders(ordersRes.data.sort((a, b) => b.orderId - a.orderId));
+        try {
+          const ordersRes = await ordersApi.getSellerOrders(sellerId);
+          ordersData = (ordersRes.data || []).sort((a, b) => b.orderId - a.orderId);
+        } catch (orderErr) {
+          console.log('Orders fetch error:', orderErr);
+          ordersData = [];
+        }
+        setOrders(ordersData);
 
+        // Fetch ratings only if we have products
         const ratings = {};
-        for (let product of productsRes.data) {
-          try {
-            const res = await ratingsApi.getProductRatings(product.productId);
-            const data = Array.isArray(res.data) ? res.data : [res.data];
-            const avg = data.length ? (data.reduce((sum, r) => sum + r.ratingValue, 0) / data.length).toFixed(1) : null;
-            ratings[product.productId] = {
-              average: avg,
-              count: data.length,
-              feedbacks: data.map(r => r.feedback)
-            };
-          } catch {
-            ratings[product.productId] = null;
+        if (productsData.length > 0) {
+          for (let product of productsData) {
+            try {
+              const res = await ratingsApi.getProductRatings(product.productId);
+              const data = Array.isArray(res.data) ? res.data : [res.data];
+              const avg = data.length ? (data.reduce((sum, r) => sum + r.ratingValue, 0) / data.length).toFixed(1) : null;
+              ratings[product.productId] = {
+                average: avg,
+                count: data.length,
+                feedbacks: data.map(r => r.feedback)
+              };
+            } catch (ratingErr) {
+              console.log('Rating fetch error for product', product.productId, ':', ratingErr);
+              ratings[product.productId] = null;
+            }
           }
         }
         setProductRatings(ratings);
+        
       } catch (err) {
-        setError(`Failed to load data: ${err.response?.data?.message || err.message}`);
+        console.error('Critical error:', err);
+        // Initialize empty data instead of showing error
+        setProducts([]);
+        setOrders([]);
+        setProductRatings({});
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+
+    if (sellerId) {
+      fetchData();
+    } else {
+      setLoading(false);
+      setProducts([]);
+      setOrders([]);
+      setProductRatings({});
+    }
   }, [sellerId]);
 
   const handleSearchChange = (e) => {
@@ -99,8 +131,6 @@ const Home = () => {
   };
 
   if (loading) return <div className="loading-container"><div className="spinner-border text-primary" role="status"><span className="visually-hidden">Loading...</span></div></div>;
-
-  if (error) return <div className="alert alert-danger m-4" role="alert">{error}</div>;
 
   const totalRevenue = calculateTotalRevenue(orders);
 
@@ -180,16 +210,18 @@ const Home = () => {
             See All Products <i className="fas fa-arrow-right ms-1"></i>
           </Link>
         </div>
-        <div className="products-grid">
+        <div className="row g-4">
           {products.slice(0, 3).map(product => (
-            <div key={product.productId}>
+            <div key={product.productId} className="col-md-4 col-lg-4">
               <div className="card h-100">
-                {product.imageUrl && <img src={product.imageUrl} alt={product.productName} className="card-img-top product-image" />}
+                <div className="product-img-wrapper">
+                  {product.imageUrl && <img src={product.imageUrl} alt={product.productName} className="card-img-top product-image" />}
+                </div>
                 <div className="card-body">
                   <h5 className="card-title">{product.productName}</h5>
                   <p className="text-muted mb-1">Stock remaining: {product.productQuantity}</p>
                   {product.productQuantity === 0 && <span className="badge bg-danger mb-2">Out of Stock</span>}
-                  <p className="mb-1"><strong>Price: ₹{product.productPrice}</strong></p>
+                  <p className="mb-1"><strong>Price: ₹{product.productPrice} {product.productQuantityType ? `per ${product.productQuantityType}` : ''}</strong></p>
                   {productRatings[product.productId]?.average ? (
                     <>
                       <p className="mb-1">
@@ -198,11 +230,11 @@ const Home = () => {
                           ({productRatings[product.productId].average} / 5, {productRatings[product.productId].count} ratings)
                         </small>
                       </p>
-                      <ul className="feedback-list ps-3">
+                      {/* <ul className="feedback-list ps-3">
                         {productRatings[product.productId].feedbacks.slice(0, 2).map((fb, i) => (
-                          <li key={i} className="text-muted small">“{fb}”</li>
+                          <li key={i} className="text-muted small">"{fb}"</li>
                         ))}
-                      </ul>
+                      </ul> */}
                     </>
                   ) : (
                     <p className="text-muted">No Ratings</p>
@@ -219,9 +251,9 @@ const Home = () => {
             See All Orders <i className="fas fa-arrow-right ms-1"></i>
           </Link>
         </div>
-        <div className="orders-grid">
+        <div className="row g-4">
           {orders.slice(0, 3).map(order => (
-            <div key={order.orderId}>
+            <div key={order.orderId} className="col-md-4 col-lg-4">
               <div className="card h-100">
                 <div className="card-body">
                   <p className="text-muted mb-1"><small>Order ID: {order.orderId}</small></p>

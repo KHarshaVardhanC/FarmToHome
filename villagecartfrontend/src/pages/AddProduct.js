@@ -11,12 +11,13 @@ const AddProduct = () => {
   const [error, setError] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const sellerId = 1;
+  const sellerId = localStorage.getItem('sellerId');
 
   const [productData, setProductData] = useState({
     productName: '',
     productPrice: '',
     productQuantity: '',
+    productQuantityType: 'kg',
     sellerId: sellerId,
     productDescription: '',
     productCategory: '',
@@ -64,7 +65,7 @@ const AddProduct = () => {
         formData.append('image', selectedFile);
       }
 
-      const response = await productApi.addProduct(formData);
+      await productApi.addProduct(formData);
       navigate('/view-products');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to add product. Please try again.');
@@ -110,22 +111,87 @@ const AddProduct = () => {
                 <form onSubmit={handleSubmit}>
                   <div className="mb-3">
                     <label className="form-label">Product Name</label>
-                    <input type="text" className="form-control" name="productName" value={productData.productName} onChange={handleChange} required />
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      name="productName" 
+                      value={productData.productName} 
+                      onChange={handleChange} 
+                      required 
+                      style={{ 
+                        backgroundColor: 'white',
+                        color: '#212529'
+                      }}
+                    />
                   </div>
 
                   <div className="mb-3">
                     <label className="form-label">Price (₹)</label>
-                    <input type="number" className="form-control" name="productPrice" value={productData.productPrice} onChange={handleChange} required min="0" step="0.01" />
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      name="productPrice" 
+                      value={productData.productPrice} 
+                      onChange={handleChange} 
+                      required 
+                      min="0" 
+                      step="0.01" 
+                      style={{ 
+                        backgroundColor: 'white',
+                        color: '#212529'
+                      }}
+                    />
                   </div>
 
                   <div className="mb-3">
                     <label className="form-label">Quantity</label>
-                    <input type="number" className="form-control" name="productQuantity" value={productData.productQuantity} onChange={handleChange} required min="0" />
+                    <div className="input-group">
+                      <input 
+                        type="number" 
+                        className="form-control" 
+                        name="productQuantity" 
+                        value={productData.productQuantity} 
+                        onChange={handleChange} 
+                        required 
+                        min="0"
+                        style={{ 
+                          backgroundColor: 'white',
+                          color: '#212529'
+                        }}
+                      />
+                      <select 
+                        className="form-select" 
+                        style={{ 
+                          maxWidth: '40%', 
+                          backgroundColor: 'white',
+                          color: '#212529'
+                        }}
+                        name="productQuantityType" 
+                        value={productData.productQuantityType} 
+                        onChange={handleChange}
+                        required
+                      >
+                        <option value="kg">kg</option>
+                        <option value="litre">litre</option>
+                        <option value="piece">piece</option>
+                        <option value="dozen">dozen</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="mb-3">
                     <label className="form-label">Category</label>
-                    <select className="form-select" name="productCategory" value={productData.productCategory} onChange={handleChange} required>
+                    <select 
+                      className="form-select" 
+                      name="productCategory" 
+                      value={productData.productCategory} 
+                      onChange={handleChange} 
+                      required
+                      style={{ 
+                        backgroundColor: 'white',
+                        color: '#212529'
+                      }}
+                    >
                       <option value="">Select Category</option>
                       <option value="Vegetables">Vegetables</option>
                       <option value="Fruits">Fruits</option>
@@ -137,12 +203,33 @@ const AddProduct = () => {
 
                   <div className="mb-3">
                     <label className="form-label">Description</label>
-                    <textarea className="form-control" name="productDescription" value={productData.productDescription} onChange={handleChange} required rows="3" />
+                    <textarea 
+                      className="form-control" 
+                      name="productDescription" 
+                      value={productData.productDescription} 
+                      onChange={handleChange} 
+                      required 
+                      rows="3" 
+                      style={{ 
+                        backgroundColor: 'white',
+                        color: '#212529'
+                      }}
+                    />
                   </div>
 
                   <div className="mb-3">
                     <label className="form-label">Product Image</label>
-                    <input type="file" className="form-control" accept="image/*" onChange={handleFileChange} required />
+                    <input 
+                      type="file" 
+                      className="form-control" 
+                      accept="image/*" 
+                      onChange={handleFileChange} 
+                      required 
+                      style={{ 
+                        backgroundColor: 'white',
+                        color: '#212529'
+                      }}
+                    />
                     {previewUrl && (
                       <div className="mt-2">
                         <img src={previewUrl} alt="Preview" className="img-thumbnail" style={{ maxHeight: '200px' }} />

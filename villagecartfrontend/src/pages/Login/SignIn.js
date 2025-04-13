@@ -262,7 +262,7 @@ const Signin = () => {
         localStorage.setItem("sellerEmail", data.sellerEmail);
         localStorage.setItem("sellerName", `${data.sellerFirstName} ${data.sellerLastName}`);
         localStorage.setItem("userType", "seller");
-        navigate("/seller/dashboard");
+        navigate("/SellerHome");
       }
 
     } catch (error) {
