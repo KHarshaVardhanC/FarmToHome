@@ -138,7 +138,7 @@ const Home = () => {
     <div className="home-page">
       <nav className="navbar navbar-light bg-white">
         <div className="container-fluid px-4">
-          <Link to="/" className="text-decoration-none">
+          <Link to="/SellerHome" className="text-decoration-none">
             <div className="logo text-dark d-flex align-items-center">
               <i className="fas fa-leaf text-success me-2 logo-icon"></i>
               <span className="fw-bold">FarmToHome</span>
