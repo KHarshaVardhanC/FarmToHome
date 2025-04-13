@@ -9,12 +9,11 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 const ViewOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
-  const sellerId = 1; // Replace with actual logged-in seller ID
+  const sellerId = localStorage.getItem('sellerId');
 
   const statusOptions = [
     { label: 'In Cart', value: 'Incart' },
@@ -28,9 +27,11 @@ const ViewOrders = () => {
     try {
       setLoading(true);
       const response = await ordersApi.getSellerOrders(sellerId);
-      setOrders(response.data.sort((a, b) => b.orderId - a.orderId));
+      const ordersData = response.data || [];
+      setOrders(ordersData.sort((a, b) => b.orderId - a.orderId));
     } catch (err) {
-      setError('Failed to load orders. Please try again later.');
+      console.log('Orders fetch error:', err);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -46,34 +47,28 @@ const ViewOrders = () => {
       setUpdatingStatus(true);
       await ordersApi.updateOrderStatus(orderId, newStatus);
 
-      setOrders(prev =>
-        prev.map(order =>
-          order.orderId === orderId ? { ...order, orderStatus: newStatus } : order
-        )
-      );
+      // Refresh orders after status update
+      await fetchOrders();
 
       if (selectedOrder?.orderId === orderId) {
-        setSelectedOrder({ ...selectedOrder, orderStatus: newStatus });
+        setSelectedOrder(prev => ({ ...prev, orderStatus: newStatus }));
       }
     } catch (err) {
       let errorMessage = 'Failed to update order status. Try again.';
 
-if (err?.response?.data) {
-  if (typeof err.response.data === 'string') {
-    errorMessage = err.response.data;
-  } else if (err.response.data.message) {
-    errorMessage = err.response.data.message;
-  }
-}
+      if (err?.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+      }
 
-if (errorMessage.includes('Quantity Exceeded')) {
-  window.alert('❌ Quantity exceeds stock! Please update the quantity or restock.');
-} else {
-  window.alert('⚠️ ' + errorMessage);
-}
-
-
-      setError(errorMessage);
+      if (errorMessage.includes('Quantity Exceeded')) {
+        window.alert('❌ Quantity exceeds stock! Please update the quantity or restock.');
+      } else {
+        window.alert('⚠️ ' + errorMessage);
+      }
     } finally {
       setUpdatingStatus(false);
     }
@@ -90,8 +85,28 @@ if (errorMessage.includes('Quantity Exceeded')) {
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (!sellerId) {
+      setLoading(false);
+      setOrders([]);
+      return;
+    }
+
+    const getOrders = async () => {
+      try {
+        setLoading(true);
+        const response = await ordersApi.getSellerOrders(sellerId);
+        const ordersData = response.data || [];
+        setOrders(ordersData.sort((a, b) => b.orderId - a.orderId));
+      } catch (err) {
+        console.log('Orders fetch error:', err);
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getOrders();
+  }, [sellerId]);
 
   if (loading) {
     return (
@@ -125,7 +140,6 @@ if (errorMessage.includes('Quantity Exceeded')) {
       {/* Orders Table */}
       <div className="container-fluid px-4 py-4">
         <h4 className="mb-4">All Orders</h4>
-        {error && <div className="alert alert-danger">{error}</div>}
         {orders.length === 0 ? (
           <div className="alert alert-info">No orders found.</div>
         ) : (

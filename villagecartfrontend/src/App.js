@@ -11,8 +11,8 @@ import ViewRatings from './pages/ViewRatings';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import MainHome from './pages/MainHome';
-// import SignIn from './pages/Login/SignIn';
-// import SignUp from './pages/Login/SignUp';
+import SignIn from './pages/Login/SignIn';
+import SignUp from './pages/Login/SignUp';
 import OrderInvoice from './pages/OrderInvoice';
 import Admin from './pages/Admin';
 // import Rating from './pages/Rating';
@@ -55,8 +55,8 @@ function App() {
             path="/rate-product/:productId" element={<Rating />}
           /> */}
 
-          {/* <Route path="/signup" element={<SignUp />} />
-          <Route path="/login" element={<SignIn />} /> */}
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<SignIn />} />
         </Routes>
       </div>
     </Router>

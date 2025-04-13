@@ -11,7 +11,7 @@ const ViewRatings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const sellerId = 1; // Replace with dynamic auth-based ID
+  const sellerId = localStorage.getItem('sellerId');
 
   useEffect(() => {
     const fetchRatings = async () => {

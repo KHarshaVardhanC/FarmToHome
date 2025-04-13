@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ftohbackend.dto.LoginRequest;
 import com.ftohbackend.dto.SellerDTO;
 import com.ftohbackend.exception.SellerException;
 import com.ftohbackend.model.Mails;
@@ -121,29 +122,8 @@ public class SellerControllerImpl implements SellerController {
 			return ResponseEntity.status(401).body("Invalid email or password");
 		}
 	}
+	
 
-	// Inner class for login request
-	public static class LoginRequest {
-		private String email;
-		private String password;
-
-		// Getters and setters
-		public String getEmail() {
-			return email;
-		}
-
-		public void setEmail(String email) {
-			this.email = email;
-		}
-
-		public String getPassword() {
-			return password;
-		}
-
-		public void setPassword(String password) {
-			this.password = password;
-		}
-	}
 
 	// Inner class for seller response (without sensitive data)
 	public static class SellerResponse {

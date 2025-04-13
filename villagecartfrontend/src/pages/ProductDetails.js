@@ -29,20 +29,33 @@ const ProductDetails = () => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const res = await productApi.getProduct(id);
-        setProduct(res.data);
-
-        const ratingRes = await ratingsApi.getProductRatings(id);
-        const data = Array.isArray(ratingRes.data) ? ratingRes.data : [ratingRes.data];
-        setRatings(data);
-
-        if (data.length > 0) {
-          const avg = (data.reduce((sum, r) => sum + r.ratingValue, 0) / data.length).toFixed(1);
-          setAverageRating(avg);
+        
+        try {
+          const res = await productApi.getProduct(id);
+          setProduct(res.data);
+        } catch (err) {
+          console.error('Error fetching product:', err);
+          setError('Failed to load product details. Please try again later.');
+          setLoading(false);
+          return;
         }
-      } catch (err) {
-        console.error('Error fetching product or ratings:', err);
-        setError('Failed to load product details. Please try again later.');
+
+        // Fetch ratings separately
+        try {
+          const ratingRes = await ratingsApi.getProductRatings(id);
+          const data = Array.isArray(ratingRes.data) ? ratingRes.data : (ratingRes.data ? [ratingRes.data] : []);
+          setRatings(data);
+
+          if (data.length > 0) {
+            const avg = (data.reduce((sum, r) => sum + r.ratingValue, 0) / data.length).toFixed(1);
+            setAverageRating(avg);
+          }
+        } catch (ratingErr) {
+          console.error('Error fetching ratings:', ratingErr);
+          // Don't set error for missing ratings
+          setRatings([]);
+          setAverageRating(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -101,29 +114,38 @@ const ProductDetails = () => {
             <div className="col-md-8 p-4">
               <p><strong>Name:</strong> {product.productName}</p>
               <p><strong>Description:</strong> {product.productDescription}</p>
-              <p><strong>Quantity:</strong> {product.productQuantity}</p>
-              <p><strong>Price:</strong> ₹{product.productPrice}</p>
+              <p><strong>Quantity:</strong> {product.productQuantity} {product.productQuantityType && product.productQuantityType}</p>
+              <p><strong>Price:</strong> ₹{product.productPrice} {product.productQuantityType ? `per ${product.productQuantityType}` : ''}</p>
 
               {product.productQuantity === 0 && (
                 <span className="badge bg-danger mb-3">Out of Stock</span>
               )}
 
               {/* Ratings & Feedback Section */}
-              {averageRating && (
+              {averageRating ? (
                 <div className="mb-2">
                   <strong>Rating:</strong> {renderStars(averageRating)}{' '}
                   <small className="text-muted">({averageRating} / 5, {ratings.length} ratings)</small>
                 </div>
+              ) : (
+                <div className="mb-2">
+                  <strong>Rating:</strong> <span className="text-muted">No ratings yet</span>
+                </div>
               )}
 
-              {ratings.length > 0 && (
+              {ratings.length > 0 ? (
                 <div className="mt-2">
                   <h6 className="fw-semibold">Customer Feedback</h6>
                   <ul className="feedback-list ps-3">
                     {ratings.map((r, i) => (
-                      <li key={i} className="text-muted small fst-italic">“{r.feedback}”</li>
+                      <li key={i} className="text-muted small fst-italic">"{r.feedback || 'No comment'}"</li>
                     ))}
                   </ul>
+                </div>
+              ) : (
+                <div className="mt-2">
+                  <h6 className="fw-semibold">Customer Feedback</h6>
+                  <p className="text-muted small">No feedback available yet.</p>
                 </div>
               )}
 
