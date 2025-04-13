@@ -223,46 +223,53 @@ const Signin = () => {
     setError("");
 
     try {
-      // Determine the backend endpoint based on the selected role
-      let endpoint = "http://localhost:8080"; // Changed to 8080
+      // Updated endpoint URLs
+      let endpoint = "http://localhost:8080"; // Add /api to base URL
       if (formData.userType === "customer") {
         endpoint += "/customer/login";
       } else if (formData.userType === "seller") {
         endpoint += "/seller/login";
+      } else if (formData.userType === "admin") {
+        endpoint += "/admin/login";
       }
-
-      // Create login request body to match backend LoginRequest
-      const loginRequest = {
-        email: formData.email,
-        password: formData.password
-      };
 
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(loginRequest)
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
       });
 
       if (!response.ok) {
-        throw new Error("Invalid email or password");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Invalid email or password");
       }
 
       const data = await response.json();
 
-      // Store user data based on role
-      if (formData.userType === "customer") {
-        localStorage.setItem("customerId", data.customerId);
-        localStorage.setItem("customerEmail", data.customerEmail);
-        localStorage.setItem("userType", "customer");
-        navigate("/customer/dashboard");
-      } else if (formData.userType === "seller") {
+      // Updated data handling for seller login
+      if (formData.userType === "seller") {
+        localStorage.setItem("token", data.token); // Store JWT token if provided
         localStorage.setItem("sellerId", data.sellerId);
         localStorage.setItem("sellerEmail", data.sellerEmail);
         localStorage.setItem("sellerName", `${data.sellerFirstName} ${data.sellerLastName}`);
         localStorage.setItem("userType", "seller");
-        navigate("/SellerHome");
+        navigate("/seller/dashboard"); // Update this path to match your seller dashboard route
+      } else if (formData.userType === "customer") {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("customerId", data.customerId);
+        localStorage.setItem("customerEmail", data.customerEmail);
+        localStorage.setItem("userType", "customer");
+        navigate("/customer/dashboard");
+      } else if (formData.userType === "admin") {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("adminId", data.adminId);
+        localStorage.setItem("userType", "admin");
+        navigate("/admin/dashboard");
       }
 
     } catch (error) {

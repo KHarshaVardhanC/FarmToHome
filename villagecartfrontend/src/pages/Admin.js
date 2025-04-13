@@ -12,7 +12,7 @@ import {
     updateSellerStatus,
     deleteProduct,
     fetchSellerProducts,
-    fetchProducts // You'll need to implement this API function
+    fetchProducts
 } from '../utils/api';
 
 const Admin = () => {
@@ -25,6 +25,17 @@ const Admin = () => {
     const [editingProduct, setEditingProduct] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Helper function to get seller name from ID
+    const getSellerNameById = (sellerId) => {
+        const seller = sellers.find(s => (s.id || s.sellerId) === sellerId);
+        return seller ? (seller.name || `${seller.sellerFirstName} ${seller.sellerLastName}`) : 'Unknown Seller';
+    };
+
+    // Helper function to calculate order total
+    const calculateOrderTotal = (order) => {
+        return (order.orderQuantity || 0) * (order.productPrice || 0);
+    };
 
     useEffect(() => {
         const loadData = async () => {
@@ -71,6 +82,7 @@ const Admin = () => {
 
         loadData();
     }, [view]);
+
     const handleSellerClick = async (seller) => {
         setLoading(true);
         setError(null);
@@ -118,31 +130,38 @@ const Admin = () => {
         setLoading(true);
         setError(null);
         try {
-            // Fetch complete customer details
+            // Get customerId consistently
             const customerId = customer.id || customer.customerId;
-            const customerDetails = await fetchCustomerById(customerId);
 
-            // Handle potential errors with fetching orders
-            let customerOrders = [];
-            try {
-                customerOrders = await fetchCustomerOrders(customerId);
-            } catch (orderErr) {
-                console.error('Error fetching customer orders:', orderErr);
-                // Proceed without orders
-            }
+            // Fetch customer details and orders in parallel
+            const [customerDetails, customerOrders] = await Promise.all([
+                fetchCustomerById(customerId),
+                fetchCustomerOrders(customerId)
+            ]);
+
+            // Enhance orders with product details
+            const ordersWithProducts = await Promise.all(
+                customerOrders.map(async (order) => {
+                    const product = products.find(p => p.productId === order.productId) || {};
+                    return {
+                        ...order,
+                        product
+                    };
+                })
+            );
 
             setSelectedCustomer({
                 ...customerDetails,
-                orders: customerOrders || []
+                orders: ordersWithProducts || []
             });
             setView('customer-details');
         } catch (err) {
+            console.error('Error in handleCustomerClick:', err);
             setError(`Failed to load customer details: ${err.message}`);
         } finally {
             setLoading(false);
         }
     };
-
     const handleDeleteSeller = async (sellerId) => {
         if (window.confirm('Are you sure you want to delete this seller?')) {
             setLoading(true);
@@ -178,10 +197,10 @@ const Admin = () => {
             const formattedProduct = {
                 ...editingProduct,
                 productPrice: parseFloat(editingProduct.productPrice),
-                productQuantity: parseInt(editingProduct.productQuantity)
+                productQuantity: parseFloat(editingProduct.productQuantity)
             };
 
-            console.log('Updating product:', formattedProduct); // Debug log
+            console.log('Updating product:', formattedProduct);
 
             // Update the product
             await updateProduct(formattedProduct);
@@ -210,6 +229,7 @@ const Admin = () => {
             setLoading(false);
         }
     };
+
     const handleDeleteProduct = async (productId) => {
         if (window.confirm('Are you sure you want to delete this product?')) {
             setLoading(true);
@@ -230,35 +250,6 @@ const Admin = () => {
 
     const handleCancelEdit = () => {
         setEditingProduct(null);
-    };
-
-    const handleUpdateSellerStatus = async (sellerId, status) => {
-        setLoading(true);
-        setError(null);
-        try {
-            await updateSellerStatus(sellerId, status);
-
-            // Fetch updated seller details
-            const updatedSeller = await fetchSellerById(sellerId);
-
-            // Try to fetch orders with error handling
-            let sellerOrders = [];
-            try {
-                sellerOrders = await fetchSellerOrders(sellerId);
-            } catch (orderErr) {
-                console.error('Error fetching seller orders after status update:', orderErr);
-            }
-
-            setSelectedSeller({
-                ...updatedSeller,
-                orders: sellerOrders || [],
-                products: selectedSeller.products || [] // Keep existing products to avoid another API call
-            });
-        } catch (err) {
-            setError(`Failed to update seller status: ${err.message}`);
-        } finally {
-            setLoading(false);
-        }
     };
 
     const renderHome = () => (
@@ -327,11 +318,31 @@ const Admin = () => {
                                     value={editingProduct.productQuantity}
                                     onChange={(e) => setEditingProduct({
                                         ...editingProduct,
-                                        productQuantity: parseInt(e.target.value)
+                                        productQuantity: parseFloat(e.target.value)
                                     })}
                                     required
                                     min="0"
+                                    step="0.01"
                                 />
+                            </div>
+                            <div className="form-group">
+                                <label>Quantity Type:</label>
+                                <select
+                                    value={editingProduct.productQuantityType || ''}
+                                    onChange={(e) => setEditingProduct({
+                                        ...editingProduct,
+                                        productQuantityType: e.target.value
+                                    })}
+                                    required
+                                >
+                                    <option value="">Select Type</option>
+                                    <option value="kg">Kilograms (kg)</option>
+                                    <option value="g">Grams (g)</option>
+                                    <option value="l">Liters (L)</option>
+                                    <option value="ml">Milliliters (ml)</option>
+                                    <option value="pcs">Pieces</option>
+                                    <option value="dozen">Dozen</option>
+                                </select>
                             </div>
                             <div className="form-group">
                                 <label>Description:</label>
@@ -361,6 +372,17 @@ const Admin = () => {
                                     <option value="GRAINS">Grains</option>
                                 </select>
                             </div>
+                            <div className="form-group">
+                                <label>Image URL:</label>
+                                <input
+                                    type="text"
+                                    value={editingProduct.ImageUrl || ''}
+                                    onChange={(e) => setEditingProduct({
+                                        ...editingProduct,
+                                        ImageUrl: e.target.value
+                                    })}
+                                />
+                            </div>
                             <div className="form-actions">
                                 <button type="submit" className="save-button">
                                     Save Changes
@@ -383,18 +405,36 @@ const Admin = () => {
                             products.map(product => (
                                 <div key={product.productId} className="product-card">
                                     <h4>{product.productName}</h4>
-                                    {product.productImage && (
+                                    {product.imageUrl && (
                                         <img
-                                            src={product.productImage}
+                                            src={product.imageUrl}
                                             alt={product.productName}
                                             className="product-image"
                                         />
                                     )}
-                                    <p><strong>Seller:</strong> {product.sellerName || 'Unknown'}</p>
+                                    <p><strong>Seller:</strong> {getSellerNameById(product.sellerId)}</p>
                                     <p>{product.productDescription}</p>
-                                    <p>Price: ${product.productPrice}</p>
-                                    <p>Category: {product.productCategory}</p>
-                                    <p>Stock: {product.productQuantity}</p>
+                                    <p><strong>Price:</strong> Rs.{product.productPrice}</p>
+                                    <p><strong>Category:</strong> {product.productCategory}</p>
+                                    <p><strong>Quantity:</strong> {product.productQuantity} {product.productQuantityType}</p>
+
+                                    {product.productRatingValue > 0 && (
+                                        <div className="product-rating">
+                                            <p><strong>Rating:</strong> {product.productRatingValue.toFixed(1)}/5
+                                                ({product.productRatingCount} review{product.productRatingCount !== 1 ? 's' : ''})</p>
+                                            <div className="rating-stars">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={`star ${i < Math.round(product.productRatingValue) ? 'filled' : ''}`}
+                                                    >
+                                                        ★
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="product-actions">
                                         <button
                                             className="edit-product"
@@ -432,16 +472,27 @@ const Admin = () => {
                     {!sellers || sellers.length === 0 ? (
                         <p>No sellers found.</p>
                     ) : (
-                        sellers.map(seller => (
-                            <div key={seller.id || seller.sellerId} className="seller-card" onClick={() => handleSellerClick(seller)}>
-                                <h3>{seller.name || `${seller.sellerFirstName} ${seller.sellerLastName}`}</h3>
-                                <p>Email: {seller.email || seller.sellerEmail}</p>
-                                <p>Phone: {seller.phone || seller.sellerMobileNumber}</p>
-                                <p>Location: {seller.sellerCity || 'Unknown'}, {seller.sellerState || 'Unknown'}</p>
-                                <p>Status: {seller.sellerStatus || 'Active'}</p>
-                                <p>Products: {seller.productCount || '0'}</p>
-                            </div>
-                        ))
+                        sellers.map(seller => {
+                            // Find products for this seller to get accurate count
+                            const sellerProducts = products.filter(p =>
+                                p.sellerId === (seller.id || seller.sellerId)
+                            );
+
+                            return (
+                                <div
+                                    key={seller.id || seller.sellerId}
+                                    className="seller-card"
+                                    onClick={() => handleSellerClick(seller)}
+                                >
+                                    <h3>{seller.name || `${seller.sellerFirstName} ${seller.sellerLastName}`}</h3>
+                                    <p>Email: {seller.email || seller.sellerEmail}</p>
+                                    <p>Phone: {seller.phone || seller.sellerMobileNumber}</p>
+                                    <p>Location: {seller.sellerCity || 'Unknown'}, {seller.sellerState || 'Unknown'}</p>
+                                    <p>Status: {seller.sellerStatus || 'Active'}</p>
+                                    <p>Products: {sellerProducts.length}</p>
+                                </div>
+                            );
+                        })
                     )}
                 </div>
             )}
@@ -459,14 +510,6 @@ const Admin = () => {
                 <div className="seller-header">
                     <h2>{selectedSeller.name || `${selectedSeller.sellerFirstName} ${selectedSeller.sellerLastName}`}</h2>
                     <div className="seller-actions">
-                        <select
-                            value={selectedSeller.sellerStatus || 'ACTIVE'}
-                            onChange={(e) => handleUpdateSellerStatus(selectedSeller.id || selectedSeller.sellerId, e.target.value)}
-                        >
-                            <option value="ACTIVE">Active</option>
-                            <option value="INACTIVE">Inactive</option>
-                            <option value="SUSPENDED">Suspended</option>
-                        </select>
                         <button className="delete-seller" onClick={() => handleDeleteSeller(selectedSeller.id || selectedSeller.sellerId)}>
                             Delete Seller
                         </button>
@@ -477,7 +520,6 @@ const Admin = () => {
                     <p><strong>ID:</strong> {selectedSeller.id || selectedSeller.sellerId}</p>
                     <p><strong>Email:</strong> {selectedSeller.email || selectedSeller.sellerEmail}</p>
                     <p><strong>Phone:</strong> {selectedSeller.phone || selectedSeller.sellerMobileNumber}</p>
-                    <p><strong>Date of Birth:</strong> {selectedSeller.sellerDOB && new Date(selectedSeller.sellerDOB).toLocaleDateString()}</p>
                     <p><strong>Address:</strong> {selectedSeller.address ||
                         (selectedSeller.sellerPlace ?
                             `${selectedSeller.sellerPlace}, ${selectedSeller.sellerCity || ''}, ${selectedSeller.sellerState || ''} - ${selectedSeller.sellerPincode || ''}`
@@ -493,18 +535,24 @@ const Admin = () => {
                         selectedSeller.products.map(product => (
                             <div key={product.productId} className="product-card">
                                 <h4>{product.productName}</h4>
-                                {product.productImage && (
+                                {product.imageUrl && (
                                     <img
-                                        src={product.productImage}
+                                        src={product.imageUrl}
                                         alt={product.productName}
                                         className="product-image"
                                     />
                                 )}
                                 <p>{product.productDescription}</p>
-                                <p>Price: ${product.productPrice}</p>
-                                <p>Category: {product.productCategory}</p>
-                                <p>Stock: {product.productQuantity}</p>
-                                {/* Removed edit/delete buttons for products in seller details */}
+                                <p><strong>Price:</strong> Rs.{product.productPrice}</p>
+                                <p><strong>Category:</strong> {product.productCategory}</p>
+                                <p><strong>Quantity:</strong> {product.productQuantity} {product.productQuantityType}</p>
+
+                                {product.productRatingValue > 0 && (
+                                    <div className="product-rating">
+                                        <p><strong>Rating:</strong> {product.productRatingValue.toFixed(1)}/5
+                                            ({product.productRatingCount} review{product.productRatingCount !== 1 ? 's' : ''})</p>
+                                    </div>
+                                )}
                             </div>
                         ))
                     )}
@@ -515,18 +563,43 @@ const Admin = () => {
                     {!selectedSeller.orders || selectedSeller.orders.length === 0 ? (
                         <p>No orders found for this seller.</p>
                     ) : (
-                        selectedSeller.orders.map(order => (
-                            <div key={order.id || order.orderId} className="order-card">
-                                <p><strong>Order ID:</strong> {order.id || order.orderId}</p>
-                                <p><strong>Customer ID:</strong> {order.customerId}</p>
-                                <p><strong>Customer:</strong> {order.customerName}</p>
-                                <p><strong>Product ID:</strong> {order.productId}</p>
-                                <p><strong>Quantity:</strong> {order.orderQuantity}</p>
-                                <p><strong>Date:</strong> {order.date && new Date(order.date).toLocaleDateString()}</p>
-                                <p><strong>Status:</strong> {order.status || order.orderStatus}</p>
-                                <p><strong>Total:</strong> ${order.total}</p>
-                            </div>
-                        ))
+                        selectedSeller.orders.map(order => {
+                            // Find product details for this order if available
+                            const product = products.find(p => p.productId === order.productId) || {};
+                            const total = calculateOrderTotal(order);
+
+                            return (
+                                <div key={order.id || order.orderId} className="order-card">
+                                    <p><strong>Order ID:</strong> {order.id || order.orderId}</p>
+                                    <p><strong>Customer:</strong> {order.customerName}</p>
+
+                                    <div className="order-product">
+                                        {order.product && (
+                                            <>
+                                                {order.product.imageUrl && (
+                                                    <img
+                                                        src={order.product.imageUrl}
+                                                        alt={order.product.productName}
+                                                        className="product-image-small"
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = '/placeholder-image.png';
+                                                            console.log(`Failed to load image for product: ${order.product.productId}`);
+                                                        }}
+                                                    />
+                                                )}
+                                                <p><strong>Product:</strong> {order.product.productName || 'Unknown Product'}</p>
+                                                <p><strong>Price:</strong> Rs.{order.product.productPrice}</p>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    <p><strong>Quantity:</strong> {order.orderQuantity}</p>
+                                    <p><strong>Status:</strong> {order.status || order.orderStatus}</p>
+                                    <p><strong>Total:</strong> Rs.{calculateOrderTotal(order)}</p>
+                                </div>
+                            );
+                        })
                     )}
                 </div>
             </div>
@@ -547,16 +620,26 @@ const Admin = () => {
                     {!customers || customers.length === 0 ? (
                         <p>No customers found.</p>
                     ) : (
-                        customers.map(customer => (
-                            <div key={customer.id || customer.customerId} className="customer-card" onClick={() => handleCustomerClick(customer)}>
-                                <h3>{customer.name || `${customer.customerFirstName} ${customer.customerLastName}`}</h3>
-                                <p>Email: {customer.email || customer.customerEmail}</p>
-                                <p>Phone: {customer.phone || customer.customerPhoneNumber}</p>
-                                <p>Location: {customer.customerCity || 'Unknown'}, {customer.customerState || 'Unknown'}</p>
-                                <p>Status: {customer.customerIsActive ? 'Active' : 'Inactive'}</p>
-                                <p>Orders: {customer.orderCount || '0'}</p>
-                            </div>
-                        ))
+                        customers.map(customer => {
+                            // We would ideally fetch accurate order counts here
+                            // For now, we can estimate based on any orders data we might have
+                            const customerOrders = customer.orders || [];
+
+                            return (
+                                <div
+                                    key={customer.id || customer.customerId}
+                                    className="customer-card"
+                                    onClick={() => handleCustomerClick(customer)}
+                                >
+                                    <h3>{customer.name || `${customer.customerFirstName} ${customer.customerLastName}`}</h3>
+                                    <p>Email: {customer.email || customer.customerEmail}</p>
+                                    <p>Phone: {customer.phone || customer.customerPhoneNumber}</p>
+                                    <p>Location: {customer.customerCity || 'Unknown'}, {customer.customerState || 'Unknown'}</p>
+                                    <p>Status: {customer.customerIsActive ? 'Active' : 'Inactive'}</p>
+                                    <p>Orders: {customerOrders.length || '0'}</p>
+                                </div>
+                            );
+                        })
                     )}
                 </div>
             )}
@@ -582,37 +665,52 @@ const Admin = () => {
                             `${selectedCustomer.customerPlace}, ${selectedCustomer.customerCity || ''}, ${selectedCustomer.customerState || ''} - ${selectedCustomer.customerPincode || ''}`
                             : 'Address not available')}</p>
                     <p><strong>Status:</strong> {selectedCustomer.customerIsActive ? 'Active' : 'Inactive'}</p>
-                    <p><strong>Member Since:</strong> {selectedCustomer.memberSince ? new Date(selectedCustomer.memberSince).toLocaleDateString() : 'N/A'}</p>
                 </div>
 
-                <h3>Orders</h3>
+                <h3>Orders ({selectedCustomer.orders?.length || 0})</h3>
                 <div className="orders-list">
                     {!selectedCustomer.orders || selectedCustomer.orders.length === 0 ? (
                         <p>No orders found for this customer.</p>
                     ) : (
-                        selectedCustomer.orders.map(order => (
-                            <div key={order.id || order.orderId} className="order-card">
-                                <p><strong>Order ID:</strong> {order.id || order.orderId}</p>
-                                <p><strong>Product ID:</strong> {order.productId}</p>
-                                <p><strong>Quantity:</strong> {order.orderQuantity}</p>
-                                <p><strong>Date:</strong> {order.date && new Date(order.date).toLocaleDateString()}</p>
-                                <p><strong>Status:</strong> {order.status || order.orderStatus}</p>
-                                <p><strong>Total:</strong> ${order.total}</p>
+                        selectedCustomer.orders.map(order => {
+                            // Find product details for this order if available
+                            const product = products.find(p => p.productId === order.productId) || {};
+                            const total = calculateOrderTotal(order);
 
-                                {order.items && order.items.length > 0 && (
-                                    <div className="order-items">
-                                        <h4>Items</h4>
-                                        <ul>
-                                            {order.items.map(item => (
-                                                <li key={item.id || `${order.id || order.orderId}-${item.productId}`}>
-                                                    {item.name || item.productName} - ${item.price} x {item.quantity}
-                                                </li>
-                                            ))}
-                                        </ul>
+                            return (
+                                <div key={order.id || order.orderId} className="order-card">
+                                    <p><strong>Order ID:</strong> {order.id || order.orderId}</p>
+
+                                    <div className="order-product">
+                                        {product.imageUrl && (
+                                            <img
+                                                src={product.imageUrl}
+                                                alt={product.productName}
+                                                className="product-image-small"
+                                            />
+                                        )}
+                                        <p><strong>Product:</strong> {product.productName || 'Unknown Product'}</p>
                                     </div>
-                                )}
-                            </div>
-                        ))
+
+                                    <p><strong>Quantity:</strong> {order.orderQuantity}</p>
+                                    <p><strong>Status:</strong> {order.status || order.orderStatus}</p>
+                                    <p><strong>Total:</strong> Rs.{total}</p>
+
+                                    {order.items && order.items.length > 0 && (
+                                        <div className="order-items">
+                                            <h4>Items</h4>
+                                            <ul>
+                                                {order.items.map(item => (
+                                                    <li key={item.id || `${order.id || order.orderId}-${item.productId}`}>
+                                                        {item.name || item.productName} - Rs.{item.price} x {item.quantity}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })
                     )}
                 </div>
             </div>
