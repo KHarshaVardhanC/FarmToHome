@@ -27,7 +27,6 @@ import com.ftohbackend.service.SellerService;
 
 import jakarta.validation.Valid;
 @CrossOrigin(origins = "*")
-
 @RestController
 @RequestMapping("/seller")
 public class SellerControllerImpl implements SellerController {
