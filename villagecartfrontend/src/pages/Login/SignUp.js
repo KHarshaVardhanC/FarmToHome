@@ -18,7 +18,6 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
     userType: "customer", // Default to customer
-    dob: "", // Added for seller
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -42,30 +41,47 @@ const Signup = () => {
   const validateForm = () => {
     const newErrors = {};
 
+    // Basic validations
     if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
     if (!formData.place.trim()) newErrors.place = "Place is required";
     if (!formData.city.trim()) newErrors.city = "City is required";
-    if (!formData.pincode.trim()) newErrors.pincode = "Pincode is required";
     if (!formData.state.trim()) newErrors.state = "State is required";
-    if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
-    if (!formData.email.trim()) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email))
-      newErrors.email = "Email is invalid";
-    if (!formData.password) newErrors.password = "Password is required";
-    else if (formData.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters";
-    if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
 
-    // Validate DOB for sellers
-    if (formData.userType === "seller" && !formData.dob) {
-      newErrors.dob = "Date of Birth is required for sellers";
+    // Pincode validation
+    if (!formData.pincode.trim()) {
+      newErrors.pincode = "Pincode is required";
+    } else if (!/^\d{6}$/.test(formData.pincode)) {
+      newErrors.pincode = "Pincode must be 6 digits";
+    }
+
+    // Phone validation
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^\d{10}$/.test(formData.phone)) {
+      newErrors.phone = "Phone number must be 10 digits";
+    }
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     return newErrors;
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
@@ -76,6 +92,8 @@ const Signup = () => {
     }
 
     setIsLoading(true);
+    setErrors({});
+
     try {
       let endpoint;
       let requestBody;
@@ -92,7 +110,7 @@ const Signup = () => {
           customerState: formData.state,
           customerPincode: formData.pincode,
           customerPhoneNumber: formData.phone,
-          customerIsActive: true
+          customerRole: "CUSTOMER"
         };
       } else if (formData.userType === "seller") {
         endpoint = "http://localhost:8080/seller";
@@ -106,34 +124,53 @@ const Signup = () => {
           sellerState: formData.state,
           sellerPincode: formData.pincode,
           sellerMobileNumber: formData.phone,
-          sellerDOB: formData.dob,
-          sellerStatus: "ACTIVE"
+          sellerStatus: "ACTIVE",
+          sellerRole: "SELLER"
         };
       }
+
+      console.log('Sending request to:', endpoint);
+      console.log('Request body:', requestBody);
 
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(requestBody)
       });
 
-      if (!response.ok) {
-        throw new Error("Registration failed");
+      // First try to get the response as text
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+
+      let data;
+      try {
+        // Try to parse the response text as JSON
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        // If parsing fails, use the text as message
+        data = { message: responseText || 'Unknown error occurred' };
       }
 
-      // Navigate to login page without checking response data
+      if (!response.ok) {
+        throw new Error(data.message || `Registration failed with status ${response.status}`);
+      }
+
+      console.log('Registration successful:', data);
+
+      // Success case
       navigate("/login", {
         state: {
           message: "Registration successful! Please log in.",
           userType: formData.userType
         }
       });
+
     } catch (error) {
       console.error('Registration error:', error);
       setErrors({
-        general: "Registration failed. Please try again."
+        general: error.message || "Registration failed. Please try again."
       });
     } finally {
       setIsLoading(false);
@@ -199,22 +236,6 @@ const Signup = () => {
               <div className="signup-error-message">{errors.lastName}</div>
             )}
           </div>
-
-          {formData.userType === "seller" && (
-            <div className="signup-form-group">
-              <input
-                type="date"
-                name="dob"
-                placeholder="Date of Birth"
-                value={formData.dob}
-                onChange={handleChange}
-                className={errors.dob ? "signup-input error" : "signup-input"}
-              />
-              {errors.dob && (
-                <div className="signup-error-message">{errors.dob}</div>
-              )}
-            </div>
-          )}
 
           <div className="signup-form-group">
             <input
