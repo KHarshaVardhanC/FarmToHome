@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/signin.css"
+import "../../assets/signin.css";
 import VerifyEmailPopup from "./VerifyEmailPopup"; // Import the popup component
 
 const Signin = () => {
@@ -42,7 +42,7 @@ const Signin = () => {
 
     try {
       // Determine the backend endpoint based on the selected role
-      let endpoint = "http://localhost:8080"; // Changed to 8080
+      let endpoint = "http://localhost:8080";
       if (formData.userType === "customer") {
         endpoint += "/customer/login";
       } else if (formData.userType === "seller") {
@@ -52,22 +52,28 @@ const Signin = () => {
       // Create login request body to match backend LoginRequest
       const loginRequest = {
         email: formData.email,
-        password: formData.password
+        password: formData.password,
       };
+
+      console.log("Sending login request to:", endpoint);
+      console.log("Request body:", loginRequest);
 
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(loginRequest)
+        body: JSON.stringify(loginRequest),
       });
 
       if (!response.ok) {
-        throw new Error("Invalid email or password");
+        const errorData = await response.json();
+        console.error("Login failed:", errorData);
+        throw new Error(errorData.message || "Invalid email or password");
       }
 
       const data = await response.json();
+      console.log("Login successful:", data);
 
       // Store user data based on role
       if (formData.userType === "customer") {
@@ -78,13 +84,15 @@ const Signin = () => {
       } else if (formData.userType === "seller") {
         localStorage.setItem("sellerId", data.sellerId);
         localStorage.setItem("sellerEmail", data.sellerEmail);
-        localStorage.setItem("sellerName", `${data.sellerFirstName} ${data.sellerLastName}`);
+        localStorage.setItem(
+          "sellerName",
+          `${data.sellerFirstName} ${data.sellerLastName}`
+        );
         localStorage.setItem("userType", "seller");
         navigate("/SellerHome");
       }
-
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       setError(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);

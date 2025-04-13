@@ -1,62 +1,64 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './CustomerNavbar';
 import '../styles/CartPage.css';
 
-function CartPage() {
+const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userName, setUserName] = useState('');
-  const [customerId, setCustomerId] = useState('');
   const [showOrderPopup, setShowOrderPopup] = useState(false);
-  const [orderDetails, setOrderDetails] = useState({
-    products: [],
-    totalPrice: 0,
-    isSingleProduct: false
-  });
+  const [orderProducts, setOrderProducts] = useState([]);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [customerId, setCustomerId] = useState(null);
+  const [userName, setUserName] = useState('');
   const [orderSuccess, setOrderSuccess] = useState(false);
+  
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Get user name and ID from localStorage
-    const name = localStorage.getItem('userName');
-    const id = localStorage.getItem('customerId');
-    setUserName(name || 'Customer');
-    setCustomerId(id);
-
-    if (id) {
-      // If we have a customerId, fetch their cart from backend
-      fetchCustomerCart(id);
+    const storedCustomerId = localStorage.getItem('customerId');
+    const storedUserName = localStorage.getItem('userName');
+    
+    setCustomerId(storedCustomerId);
+    setUserName(storedUserName || '');
+    
+    if (storedCustomerId) {
+      fetchCartItems(storedCustomerId);
     } else {
-      // Otherwise use local storage cart
+      // Fallback to localStorage if customerId is not available
       try {
         const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
         setCartItems(savedCart);
+        calculateTotal(savedCart);
         setLoading(false);
       } catch (e) {
-        console.warn('Invalid cart data in localStorage:', e);
-        localStorage.removeItem('cart');
+        console.error('Error loading cart from localStorage', e);
         setCartItems([]);
         setLoading(false);
       }
     }
   }, []);
 
-  const fetchCustomerCart = async (id) => {
+  const fetchCartItems = async (id) => {
     try {
       setLoading(true);
       const response = await axios.get(`http://localhost:8080/order/orders/incart/${id}`);
-      setCartItems(response.data);
-      setError(null);
+      const items = response.data || [];
+      setCartItems(items);
+      calculateTotal(items);
     } catch (err) {
-      console.error('Error fetching customer cart:', err);
-      setError('Failed to fetch your cart. Please try again later.');
+      console.error('Error fetching cart items:', err);
+      setError('Failed to load your cart. Please try again.');
       
       // Fallback to localStorage
       try {
         const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
         setCartItems(savedCart);
+        calculateTotal(savedCart);
       } catch (e) {
+        console.warn('Invalid cart data in localStorage:', e);
         setCartItems([]);
       }
     } finally {
@@ -64,99 +66,119 @@ function CartPage() {
     }
   };
 
-  const updateQuantity = (productId, newQuantity) => {
+  const calculateTotal = (items) => {
+    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    setTotalAmount(total);
+  };
+
+  const updateQuantity = (index, newQuantity) => {
     if (newQuantity < 1) return;
     
-    const updatedCart = cartItems.map(item => 
-      item.productId === productId ? { ...item, quantity: newQuantity } : item
-    );
+    const updatedCart = [...cartItems];
+    updatedCart[index].quantity = newQuantity;
     
     setCartItems(updatedCart);
+    calculateTotal(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
     
-    // If customer is logged in, update cart in backend
+    // Update cart in backend if customerId is available
     if (customerId) {
-      // This would be an API call to update the quantity in the backend
-      // Implementation depends on your API design
+      updateCartInBackend(updatedCart);
     }
   };
 
-  const removeItem = (productId) => {
-    const updatedCart = cartItems.filter(item => item.productId !== productId);
-    setCartItems(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    
-    // If customer is logged in, update cart in backend
-    if (customerId) {
-      // This would be an API call to remove the item from the backend cart
+  const updateCartInBackend = async (cart) => {
+    try {
+      await axios.post(`http://localhost:8080/order/updateCart/${customerId}`, cart);
+    } catch (err) {
+      console.error('Error updating cart in backend:', err);
     }
   };
 
-  const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const removeFromCart = (index) => {
+    const updatedCart = cartItems.filter((_, i) => i !== index);
+    setCartItems(updatedCart);
+    calculateTotal(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    
+    // Update cart in backend if customerId is available
+    if (customerId) {
+      updateCartInBackend(updatedCart);
+    }
   };
 
-  const handleBuyNow = (product) => {
-    setOrderDetails({
-      products: [product],
-      totalPrice: product.price * product.quantity,
-      isSingleProduct: true
-    });
+  const handleBuyNow = (item, index) => {
+    setOrderProducts([item]);
     setShowOrderPopup(true);
   };
 
   const handleBuyAll = () => {
-    setOrderDetails({
-      products: cartItems,
-      totalPrice: calculateTotal(),
-      isSingleProduct: false
-    });
+    if (cartItems.length === 0) return;
+    
+    setOrderProducts([...cartItems]);
     setShowOrderPopup(true);
   };
 
-  const placeOrder = async () => {
+  const handlePlaceOrder = async () => {
+    if (!customerId) {
+      setError('Please log in to place an order');
+      return;
+    }
+    
     try {
-      // Here you would implement your API call to place the order
-      // const response = await axios.post('http://localhost:8080/order/place', {
-      //   customerId,
-      //   products: orderDetails.products.map(p => ({
-      //     productId: p.productId,
-      //     quantity: p.quantity
-      //   }))
-      // });
-
-      // For now, we'll simulate successful order placement
-      setOrderSuccess(true);
+      const orderData = {
+        customerId: customerId,
+        products: orderProducts.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        totalAmount: orderProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+        status: 'PLACED'
+      };
       
-      // Remove ordered items from cart
-      let updatedCart;
-      if (orderDetails.isSingleProduct) {
-        // Remove just the single product
-        updatedCart = cartItems.filter(
-          item => item.productId !== orderDetails.products[0].productId
-        );
-      } else {
-        // Remove all products
-        updatedCart = [];
+      const response = await axios.post('http://localhost:8080/order/place', orderData);
+      
+      if (response.data) {
+        // If ordering all products, clear the cart
+        if (orderProducts.length === cartItems.length) {
+          setCartItems([]);
+          localStorage.setItem('cart', JSON.stringify([]));
+          if (customerId) {
+            updateCartInBackend([]);
+          }
+        } else {
+          // Remove only the ordered products from cart
+          const productIds = orderProducts.map(p => p.productId);
+          const updatedCart = cartItems.filter(item => !productIds.includes(item.productId));
+          setCartItems(updatedCart);
+          localStorage.setItem('cart', JSON.stringify(updatedCart));
+          if (customerId) {
+            updateCartInBackend(updatedCart);
+          }
+        }
+        
+        setOrderSuccess(true);
+        
+        // Reset after 3 seconds
+        setTimeout(() => {
+          setShowOrderPopup(false);
+          setOrderSuccess(false);
+          calculateTotal([]);
+        }, 3000);
       }
-      
-      setCartItems(updatedCart);
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
-      
-      // Reset order popup after a delay
-      setTimeout(() => {
-        setShowOrderPopup(false);
-        setOrderSuccess(false);
-      }, 3000);
     } catch (err) {
       console.error('Error placing order:', err);
-      setError('Failed to place order. Please try again.');
+      setError('Failed to place your order. Please try again.');
     }
   };
 
   return (
     <div className="cart-page">
-      <Navbar userName={userName} cartCount={cartItems.length} />
+      <Navbar 
+        cartCount={cartItems.reduce((total, item) => total + item.quantity, 0)} 
+        userName={userName}
+      />
       
       <div className="cart-container">
         <h1>Your Shopping Cart</h1>
@@ -165,119 +187,147 @@ function CartPage() {
         
         {error && <div className="error-message">{error}</div>}
         
-        {!loading && !error && cartItems.length === 0 && (
+        {!loading && cartItems.length === 0 && (
           <div className="empty-cart">
             <h2>Your cart is empty</h2>
-            <p>Add some products to your cart and they will appear here.</p>
+            <p>Add some products to your cart from our collection.</p>
+            <button 
+              className="continue-shopping-btn"
+              onClick={() => navigate('/customer-home')}
+            >
+              Continue Shopping
+            </button>
           </div>
         )}
         
         {cartItems.length > 0 && (
           <>
             <div className="cart-items">
-              {cartItems.map((item) => (
-                <div key={item.productId} className="cart-item">
+              {cartItems.map((item, index) => (
+                <div key={index} className="cart-item">
                   <div className="item-image">
                     <img src={item.image} alt={item.name} />
                   </div>
+                  
                   <div className="item-details">
                     <h3>{item.name}</h3>
                     <p className="item-price">₹{item.price}/kg</p>
-                  </div>
-                  <div className="item-quantity">
-                    <button 
-                      onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                      className="quantity-btn"
-                    >
-                      -
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button 
-                      onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                      className="quantity-btn"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <div className="item-total">
-                    <p>₹{(item.price * item.quantity).toFixed(2)}</p>
-                    <button 
-                      onClick={() => removeItem(item.productId)}
-                      className="remove-btn"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                  <div className="item-actions">
-                    <button 
-                      className="buy-now-btn"
-                      onClick={() => handleBuyNow(item)}
-                    >
-                      Buy Now
-                    </button>
+                    
+                    <div className="quantity-control">
+                      <button 
+                        onClick={() => updateQuantity(index, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
+                      >
+                        -
+                      </button>
+                      <span>{item.quantity}</span>
+                      <button onClick={() => updateQuantity(index, item.quantity + 1)}>
+                        +
+                      </button>
+                    </div>
+                    
+                    <p className="item-subtotal">
+                      Subtotal: ₹{(item.price * item.quantity).toFixed(2)}
+                    </p>
+                    
+                    <div className="item-actions">
+                      <button 
+                        className="remove-btn"
+                        onClick={() => removeFromCart(index)}
+                      >
+                        Remove
+                      </button>
+                      <button 
+                        className="buy-now-btn"
+                        onClick={() => handleBuyNow(item, index)}
+                      >
+                        Buy Now
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
             
             <div className="cart-summary">
-              <div className="summary-row">
-                <span>Total Items:</span>
-                <span>{cartItems.reduce((total, item) => total + item.quantity, 0)}</span>
+              <div className="summary-details">
+                <h3>Order Summary</h3>
+                <div className="summary-row">
+                  <span>Items ({cartItems.reduce((total, item) => total + item.quantity, 0)}):</span>
+                  <span>₹{totalAmount.toFixed(2)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>Shipping:</span>
+                  <span>Free</span>
+                </div>
+                <div className="summary-total">
+                  <span>Total:</span>
+                  <span>₹{totalAmount.toFixed(2)}</span>
+                </div>
               </div>
-              <div className="summary-row total">
-                <span>Total Price:</span>
-                <span>₹{calculateTotal().toFixed(2)}</span>
-              </div>
+              
               <button 
                 className="buy-all-btn"
                 onClick={handleBuyAll}
               >
-                Buy All
+                Buy All Items
+              </button>
+              
+              <button 
+                className="continue-shopping-btn"
+                onClick={() => navigate('/customer-home')}
+              >
+                Continue Shopping
               </button>
             </div>
           </>
         )}
       </div>
       
-      {/* Order Popup */}
       {showOrderPopup && (
-        <div className="popup-overlay">
+        <div className="order-popup-overlay">
           <div className="order-popup">
+            <button 
+              className="close-popup"
+              onClick={() => {
+                setShowOrderPopup(false);
+                setOrderSuccess(false);
+              }}
+            >
+              ×
+            </button>
+            
             {orderSuccess ? (
               <div className="order-success">
                 <h2>Order Placed Successfully!</h2>
-                <p>Thank you for your purchase.</p>
+                <p>Your order has been placed and will be processed soon.</p>
+                <p>You can check your order status in the "My Orders" section.</p>
               </div>
             ) : (
               <>
-                <h2>Order Details</h2>
-                <div className="popup-items">
-                  {orderDetails.products.map((item) => (
-                    <div key={item.productId} className="popup-item">
-                      <span>{item.name} x {item.quantity}</span>
-                      <span>₹{(item.price * item.quantity).toFixed(2)}</span>
+                <h2>Confirm Your Order</h2>
+                
+                <div className="order-items">
+                  {orderProducts.map((item, index) => (
+                    <div key={index} className="order-item">
+                      <h4>{item.name}</h4>
+                      <p>Quantity: {item.quantity}</p>
+                      <p>Price: ₹{item.price}/kg</p>
+                      <p>Subtotal: ₹{(item.price * item.quantity).toFixed(2)}</p>
                     </div>
                   ))}
                 </div>
-                <div className="popup-total">
-                  <span>Total:</span>
-                  <span>₹{orderDetails.totalPrice.toFixed(2)}</span>
+                
+                <div className="order-total">
+                  <h3>Total Amount: ₹{orderProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}</h3>
                 </div>
-                <div className="popup-actions">
-                  <button 
-                    className="cancel-btn"
-                    onClick={() => setShowOrderPopup(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    className="place-order-btn"
-                    onClick={placeOrder}
-                  >
-                    Place Order
-                  </button>
-                </div>
+                
+                <button 
+                  className="place-order-btn"
+                  onClick={handlePlaceOrder}
+                >
+                  Place Order
+                </button>
               </>
             )}
           </div>
@@ -285,6 +335,6 @@ function CartPage() {
       )}
     </div>
   );
-}
+};
 
 export default CartPage;

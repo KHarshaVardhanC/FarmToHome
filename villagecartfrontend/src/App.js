@@ -57,7 +57,6 @@ function App() {
           <Route path="/admin" element={<Admin />} />
 
           <Route path="/invoice/:orderId" element={<OrderInvoice />} />
-<<<<<<< HEAD
          
           <Route path="/login" element={<SignIn />} />
           <Route path="/customer-home" element={<CustomerHomePage />} /> 
@@ -69,7 +68,6 @@ function App() {
           {/* ✅ Auth Routes */}
         <Route path="/signup" element={<SignUp />} /> 
         <Route path="/login" element={<SignIn/>}/>
-=======
 
           {/* Rating Route */}
           {/* <Route
@@ -78,7 +76,6 @@ function App() {
 
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<SignIn />} />
->>>>>>> c5ad6bfe57867ff748f782a992ce02eab2d11f5f
         </Routes>
       </div>
     </Router>
