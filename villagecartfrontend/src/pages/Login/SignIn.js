@@ -1,185 +1,3 @@
-/*import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaEnvelope, FaLock } from "react-icons/fa";
-import VerifyEmailPopup from "./VerifyEmailPopup";
-import '../../assets/signin.css';
-
-const Signin = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [isSellerLogin, setIsSellerLogin] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    userType: "customer",
-  });
-  const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [isPopupOpen, setIsPopupOpen] = useState(false); // Popup state
-
-  useEffect(() => {
-    if (location.state?.message) {
-      setMessage(location.state.message);
-    }
-  }, [location.state]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
-
-  const toggleForm = () => {
-    setIsSellerLogin(!isSellerLogin);
-    setFormData((prevState) => ({
-      ...prevState,
-      userType: !isSellerLogin ? "seller" : "customer",
-    }));
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.email.trim()) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email))
-      newErrors.email = "Email is invalid";
-    if (!formData.password) newErrors.password = "Password is required";
-    return newErrors;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await fetch("http://localhost:8081/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
-      }
-
-      const userData = await response.json();
-      localStorage.setItem("token", userData.token);
-      localStorage.setItem("userType", userData.userType);
-      localStorage.setItem("userId", userData.id);
-
-      if (userData.userType === "customer") {
-        navigate("/customer/dashboard");
-      } else {
-        navigate("/seller/dashboard");
-      }
-    } catch (error) {
-      setErrors({
-        general: error.message || "Login failed. Please check your credentials.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="signin-container">
-      <div className="signin-box">
-        <h2 className="signin-title">
-          {isSellerLogin ? "Seller" : "Customer"} Login
-        </h2>
-        <p className="signin-subtitle">Welcome back to Village Cart!</p>
-
-        {message && <div className="success-message">{message}</div>}
-
-        <div className="toggle-buttons">
-          <button
-            className={!isSellerLogin ? "active" : ""}
-            onClick={() => (!isSellerLogin ? null : toggleForm())}
-          >
-            Customer
-          </button>
-          <button
-            className={isSellerLogin ? "active" : ""}
-            onClick={() => (isSellerLogin ? null : toggleForm())}
-          >
-            Seller
-          </button>
-        </div>
-
-        {errors.general && (
-          <div className="error-message">{errors.general}</div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <FaEnvelope className="input-icon" />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </div>
-          {errors.email && <div className="error-message">{errors.email}</div>}
-
-          <div className="input-group">
-            <FaLock className="input-icon" />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-            />
-          </div>
-          {errors.password && (
-            <div className="error-message">{errors.password}</div>
-          )}
-
-          <div className="forgot-password">
-            <button
-              type="button"
-              className="link-button"
-              onClick={() => setIsPopupOpen(true)}
-            >
-              Forgot Password?
-            </button>
-          </div>
-
-          <button type="submit" className="submit-btn" disabled={isLoading}>
-            {isLoading ? "Logging In..." : "Login"}
-          </button>
-        </form>
-
-        <div className="signup-link">
-          Don’t have an account? <Link to="/signup">Sign Up</Link>
-        </div>
-      </div>
-
-    
-      <VerifyEmailPopup
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-      />
-    </div>
-  );
-};
-
-export default Signin;
-*/
-
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../assets/signin.css"
@@ -224,7 +42,7 @@ const Signin = () => {
 
     try {
       // Updated endpoint URLs
-      let endpoint = "http://localhost:8080"; // Add /api to base URL
+      let endpoint = "http://localhost:8080"; // Base URL
       if (formData.userType === "customer") {
         endpoint += "/customer/login";
       } else if (formData.userType === "seller") {
@@ -233,48 +51,116 @@ const Signin = () => {
         endpoint += "/admin/login";
       }
 
+      const requestBody = {
+        email: formData.email,
+        password: formData.password
+      };
+
+      console.log(`Attempting login to ${endpoint} with email: ${formData.email}`);
+
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
+        body: JSON.stringify(requestBody)
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Invalid email or password");
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+
+      let data;
+      try {
+        // Try to parse the response text as JSON
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        // If parsing fails, use the text as message
+        data = { message: responseText || 'Unknown error occurred' };
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Invalid email or password");
+      }
 
-      // Updated data handling for seller login
+      // Updated data handling for different user types
       if (formData.userType === "seller") {
-        localStorage.setItem("token", data.token); // Store JWT token if provided
+        localStorage.setItem("token", data.token || "token"); // Store JWT token if provided
         localStorage.setItem("sellerId", data.sellerId);
         localStorage.setItem("sellerEmail", data.sellerEmail);
-        localStorage.setItem("sellerName", `${data.sellerFirstName} ${data.sellerLastName}`);
+        localStorage.setItem("sellerName", `${data.sellerFirstName || ""} ${data.sellerLastName || ""}`);
         localStorage.setItem("userType", "seller");
-        navigate("/seller/dashboard"); // Update this path to match your seller dashboard route
+        navigate("/seller/dashboard");
       } else if (formData.userType === "customer") {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("token", data.token || "token");
         localStorage.setItem("customerId", data.customerId);
         localStorage.setItem("customerEmail", data.customerEmail);
         localStorage.setItem("userType", "customer");
         navigate("/customer/dashboard");
       } else if (formData.userType === "admin") {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("token", data.token || "token");
         localStorage.setItem("adminId", data.adminId);
+        localStorage.setItem("adminEmail", data.adminEmail);
         localStorage.setItem("userType", "admin");
-        navigate("/admin/dashboard");
+        navigate("/admin");
       }
 
     } catch (error) {
       console.error('Login error:', error);
       setError(error.message || "Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Special admin login function
+  const attemptAdminLogin = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const endpoint = "http://localhost:8080/admin/login";
+      const requestBody = {
+        email: formData.email,
+        password: formData.password
+      };
+
+      console.log(`Attempting admin login with email: ${formData.email}`);
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const responseText = await response.text();
+      console.log('Admin response text:', responseText);
+
+      let data;
+      try {
+        // Try to parse the response text as JSON
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        // If parsing fails, use the text as message
+        data = { message: responseText || 'Unknown error occurred' };
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Invalid admin credentials");
+      }
+
+      // Admin login successful
+      localStorage.setItem("token", data.token || "admin_token");
+      localStorage.setItem("adminId", data.adminId);
+      localStorage.setItem("adminEmail", data.adminEmail);
+      localStorage.setItem("userType", "admin");
+      navigate("/admin");
+
+    } catch (error) {
+      console.error('Admin login error:', error);
+      setError(error.message || "Admin login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -303,12 +189,6 @@ const Signin = () => {
               onClick={() => handleRoleSelect("seller")}
             >
               Seller
-            </button>
-            <button
-              className={formData.userType === "admin" ? "active" : ""}
-              onClick={() => handleRoleSelect("admin")}
-            >
-              Admin
             </button>
           </div>
         )}
@@ -353,6 +233,28 @@ const Signin = () => {
               {isLoading ? "Logging in..." : "Login"}
             </button>
           </form>
+        )}
+
+        {/* Hidden admin login option */}
+        {!formData.userType && (
+          <div className="admin-login-section" style={{ marginTop: "20px" }}>
+            <p>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleRoleSelect("admin");
+                }}
+                style={{
+                  fontSize: "0.8rem",
+                  color: "#777",
+                  textDecoration: "none"
+                }}
+              >
+                Admin Login
+              </a>
+            </p>
+          </div>
         )}
 
         <div className="signup-link">
