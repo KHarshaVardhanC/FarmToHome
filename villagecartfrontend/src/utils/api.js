@@ -112,7 +112,7 @@ export const getCategoryProducts = async (category) => {
 };
 
 export const getProductById = async (productId) => {
-  const response = await axios.get(`/api/products/${productId}`);
+  const response = await axios.get(`/api/product/${productId}`);
   return response.data;
 };
 
@@ -186,7 +186,6 @@ export const getUserRatings = async (customerId) => {
   }
 };
 
-<<<<<<< HEAD
 // ORDER API FUNCTIONS
 export const fetchOrders = async () => {
   return fetchWithErrorHandling(`${API_BASE_URL}/order`);
@@ -250,15 +249,15 @@ export const createRating = async (ratingData) => {
     body: JSON.stringify(ratingData)
   });
 };
-export const submitRating = async (ratingData) => {
-  try {
-    const response = await api.post('/rating', ratingData);
-    return response.data;
-  } catch (error) {
-    console.error('Rating submission error:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Failed to submit rating');
-  }
-};
+// export const submitRating = async (ratingData) => {
+//   try {
+//     const response = await api.post('/rating', ratingData);
+//     return response.data;
+//   } catch (error) {
+//     console.error('Rating submission error:', error.response?.data || error.message);
+//     throw new Error(error.response?.data?.message || 'Failed to submit rating');
+//   }
+// };
 
 /**
  * Get existing rating for a product by a customer
@@ -297,25 +296,23 @@ export const deleteRating = async (ratingId) => {
 };
 export const fetchProductById = async (productId) => {
   return fetchWithErrorHandling(`${API_BASE_URL}/product/${productId}`);
-=======
-// Function to add a "Rate" button to the order item
-export const addRateButton = (orderId, productId, customerId, productInfo) => {
-  return {
-    label: 'Rate',
-    onClick: (navigate) => {
-      navigate(`/rate-product/${productId}`, {
-        state: {
-          customerId,
-          productInfo
-        }
-      });
-    }
+  // Function to add a "Rate" button to the order item
+  export const addRateButton = (orderId, productId, customerId, productInfo) => {
+    return {
+      label: 'Rate',
+      onClick: (navigate) => {
+        navigate(`/rate-product/${productId}`, {
+          state: {
+            customerId,
+            productInfo
+          }
+        });
+      }
+    };
   };
->>>>>>> b7909e6c991ed337b78f7f6d9954dabaf571001d
-};
 
 
-// Get products by category
+  // Get products by category
 
 
-export default api;
+  export default api;
