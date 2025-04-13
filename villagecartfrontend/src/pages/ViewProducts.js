@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { productApi } from '../utils/api';
+import { productApi, ratingsApi } from '../utils/api';
 import ProfileDropdown from '../components/ProfileDropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -13,24 +13,70 @@ const ViewProducts = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [productRatings, setProductRatings] = useState({});
 
   const navigate = useNavigate();
-  const sellerId = 1; // Replace with actual seller ID
+  const sellerId = localStorage.getItem('sellerId');
+
+  const renderStars = (rating) => {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating - fullStars >= 0.5;
+    const stars = [];
+    for (let i = 0; i < fullStars; i++) stars.push(<i key={`full-${i}`} className="fas fa-star text-warning"></i>);
+    if (halfStar) stars.push(<i key="half" className="fas fa-star-half-alt text-warning"></i>);
+    while (stars.length < 5) stars.push(<i key={`empty-${stars.length}`} className="far fa-star text-warning"></i>);
+    return stars;
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const response = await productApi.getProducts(sellerId);
-        setProducts(response.data);
-        setFilteredProducts(response.data);
+        const productsData = response.data || [];
+        setProducts(productsData);
+        setFilteredProducts(productsData);
+        
+        // Fetch ratings for each product
+        const ratings = {};
+        for (const product of productsData) {
+          try {
+            const ratingRes = await ratingsApi.getProductRatings(product.productId);
+            const data = Array.isArray(ratingRes.data) ? ratingRes.data : (ratingRes.data ? [ratingRes.data] : []);
+            
+            if (data.length > 0) {
+              const avg = (data.reduce((sum, r) => sum + r.ratingValue, 0) / data.length).toFixed(1);
+              ratings[product.productId] = {
+                average: avg,
+                count: data.length,
+                feedback: data.length > 0 ? data[0].feedback : null
+              };
+            } else {
+              ratings[product.productId] = null;
+            }
+          } catch (err) {
+            console.log(`Rating fetch error for product ${product.productId}:`, err);
+            ratings[product.productId] = null;
+          }
+        }
+        setProductRatings(ratings);
       } catch (err) {
-        setError('Failed to fetch products');
+        console.log('Products fetch error:', err);
+        // Initialize empty arrays instead of showing error
+        setProducts([]);
+        setFilteredProducts([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchProducts();
+
+    if (sellerId) {
+      fetchProducts();
+    } else {
+      setLoading(false);
+      setProducts([]);
+      setFilteredProducts([]);
+    }
   }, [sellerId]);
 
   const handleSearchChange = (e) => {
@@ -128,61 +174,61 @@ const ViewProducts = () => {
           <h2>My Products</h2>
         </div>
 
-        {error && <div className="alert alert-danger">{error}</div>}
-
         <div className="row g-4">
-          {filteredProducts.length === 0 ? (
+          {filteredProducts.length === 0 && (
             <div className="col-12">
               <div className="alert alert-info">
                 No products found. Click "Add Product" to add your first product.
               </div>
             </div>
-          ) : (
-            filteredProducts.map((product) => (
-              <div key={product.productId} className="col-md-4 col-lg-3">
-                <Link to={`/product/${product.productId}`} className="text-decoration-none text-dark">
-                  <div className="card h-100 product-card shadow-sm">
-                    {product.imageUrl && (
-                      <img
-                        src={product.imageUrl}
-                        className="card-img-top"
-                        alt={product.productName}
-                        style={{ height: '200px', objectFit: 'cover' }}
-                      />
-                    )}
-                    <div className="card-body">
-  <h5 className="card-title">{product.productName}</h5>
-
-  <p className="card-text mb-1 text-muted">
-    Stock remaining: {product.productQuantity}
-  </p>
-  {product.productQuantity === 0 && (
-    <div className="mb-2">
-      <span className="badge bg-danger">Out of Stock</span>
-    </div>
-  )}
-
-  <p className="card-text mb-0">
-    <strong>Price: ₹{product.productPrice}</strong>
-  </p>
-
-  <p className="card-text text-muted mb-0">
-    {product.productRatingValue != null
-      ? `${product.productRatingValue} ⭐ (${product.productRatingCount} ratings)`
-      : "No Ratings"}
-  </p>
-  {product.productFeedback && (
-    <p className="card-text small text-muted fst-italic mt-1">
-      "{product.productFeedback}"
-    </p>
-     )}
-</div>
-
-                  </div>
-                </Link>
-              </div>
-            ))
           )}
+          {filteredProducts.map((product) => (
+            <div key={product.productId} className="col-md-4 col-lg-3">
+              <Link to={`/product/${product.productId}`} className="text-decoration-none text-dark">
+                <div className="card h-100 product-card shadow-sm">
+                  {product.imageUrl && (
+                    <img
+                      src={product.imageUrl}
+                      className="card-img-top"
+                      alt={product.productName}
+                      style={{ height: '200px', objectFit: 'cover' }}
+                    />
+                  )}
+                  <div className="card-body">
+                    <h5 className="card-title">{product.productName}</h5>
+
+                    <p className="card-text mb-1 text-muted">
+                      Stock remaining: {product.productQuantity}
+                    </p>
+                    {product.productQuantity === 0 && (
+                      <div className="mb-2">
+                        <span className="badge bg-danger">Out of Stock</span>
+                      </div>
+                    )}
+
+                    <p className="card-text mb-0">
+                      <strong>Price: ₹{product.productPrice} {product.productQuantityType ? `per ${product.productQuantityType}` : ''}</strong>
+                    </p>
+
+                    <p className="card-text text-muted mb-0">
+                      {productRatings[product.productId] ? (
+                        <div>
+                          {renderStars(productRatings[product.productId].average)} {productRatings[product.productId].average} / 5 ({productRatings[product.productId].count} ratings)
+                        </div>
+                      ) : (
+                        "No Ratings"
+                      )}
+                    </p>
+                    {/* {productRatings[product.productId]?.feedback && (
+                      <p className="card-text small text-muted fst-italic mt-1">
+                        "{productRatings[product.productId].feedback}"
+                      </p>
+                    )} */}
+                  </div>
+                </div>
+              </Link>
+            </div>
+          ))}
         </div>
       </div>
     </div>
