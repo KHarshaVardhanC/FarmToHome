@@ -14,7 +14,11 @@ import MainHome from './pages/MainHome';
 import SignIn from './pages/Login/SignIn';
 import SignUp from './pages/Login/SignUp';
 import OrderInvoice from './pages/OrderInvoice';
- import SignIn from './pages/Login/SignIn';
+import CartPage from "./components/CartPage";
+import MyOrders from './components/MyOrders';
+import MyProfile from './components/MyProfile';
+
+import CustomerProfilePage from './components/CustomerProfilePage';
 // import SignUp from './pages/Login/SignUp';
 import CustomerHomePage from './components/CustomerHomePage'; 
 
@@ -23,6 +27,7 @@ import CustomerHomePage from './components/CustomerHomePage';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './assets/styles.css';
+
 
 function App() {
   return (
@@ -44,11 +49,13 @@ function App() {
       
 
           <Route path="/invoice/:orderId" element={<OrderInvoice />} />
-          <Route path="/" element={<Home />} />
+         
           <Route path="/login" element={<SignIn />} />
           <Route path="/customer-home" element={<CustomerHomePage />} /> 
-
-
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/my-orders" element={<MyOrders />} />
+          <Route path="/customerprofile" element={<CustomerProfilePage />}/>
+          
 
           {/* ✅ Auth Routes */}
         <Route path="/signup" element={<SignUp />} /> 

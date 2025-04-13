@@ -1,76 +1,290 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Navbar from './CustomerNavbar';
 import '../styles/CartPage.css';
 
-const CartPage = () => {
+function CartPage() {
   const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userName, setUserName] = useState('');
+  const [customerId, setCustomerId] = useState('');
+  const [showOrderPopup, setShowOrderPopup] = useState(false);
+  const [orderDetails, setOrderDetails] = useState({
+    products: [],
+    totalPrice: 0,
+    isSingleProduct: false
+  });
+  const [orderSuccess, setOrderSuccess] = useState(false);
 
-  // Load from localStorage on mount
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCartItems(storedCart);
+    // Get user name and ID from localStorage
+    const name = localStorage.getItem('userName');
+    const id = localStorage.getItem('customerId');
+    setUserName(name || 'Customer');
+    setCustomerId(id);
+
+    if (id) {
+      // If we have a customerId, fetch their cart from backend
+      fetchCustomerCart(id);
+    } else {
+      // Otherwise use local storage cart
+      try {
+        const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
+        setCartItems(savedCart);
+        setLoading(false);
+      } catch (e) {
+        console.warn('Invalid cart data in localStorage:', e);
+        localStorage.removeItem('cart');
+        setCartItems([]);
+        setLoading(false);
+      }
+    }
   }, []);
 
-  const handleQuantityChange = (id, delta) => {
-    const updatedItems = cartItems.map(item =>
-      item.productId === id
-        ? { ...item, quantity: Math.max(1, (item.quantity || 1) + delta) }
-        : item
+  const fetchCustomerCart = async (id) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`http://localhost:8080/order/orders/incart/${id}`);
+      setCartItems(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching customer cart:', err);
+      setError('Failed to fetch your cart. Please try again later.');
+      
+      // Fallback to localStorage
+      try {
+        const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
+        setCartItems(savedCart);
+      } catch (e) {
+        setCartItems([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    if (newQuantity < 1) return;
+    
+    const updatedCart = cartItems.map(item => 
+      item.productId === productId ? { ...item, quantity: newQuantity } : item
     );
-    setCartItems(updatedItems);
-    localStorage.setItem("cart", JSON.stringify(updatedItems));
+    
+    setCartItems(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    
+    // If customer is logged in, update cart in backend
+    if (customerId) {
+      // This would be an API call to update the quantity in the backend
+      // Implementation depends on your API design
+    }
   };
 
-  const handleRemoveFromCart = (id) => {
-    const updatedItems = cartItems.filter(item => item.productId !== id);
-    setCartItems(updatedItems);
-    localStorage.setItem("cart", JSON.stringify(updatedItems));
+  const removeItem = (productId) => {
+    const updatedCart = cartItems.filter(item => item.productId !== productId);
+    setCartItems(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    
+    // If customer is logged in, update cart in backend
+    if (customerId) {
+      // This would be an API call to remove the item from the backend cart
+    }
   };
 
-  const handleBuyNow = (id) => {
-    const product = cartItems.find(item => item.productId === id);
-    alert(`Buying ${product.quantity || 1} kg of ${product.name} for ₹${product.price * (product.quantity || 1)}`);
+  const calculateTotal = () => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  const handleBuyNow = (product) => {
+    setOrderDetails({
+      products: [product],
+      totalPrice: product.price * product.quantity,
+      isSingleProduct: true
+    });
+    setShowOrderPopup(true);
   };
 
   const handleBuyAll = () => {
-    const total = cartItems.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
-    alert(`Buying all items for ₹${total}`);
+    setOrderDetails({
+      products: cartItems,
+      totalPrice: calculateTotal(),
+      isSingleProduct: false
+    });
+    setShowOrderPopup(true);
+  };
+
+  const placeOrder = async () => {
+    try {
+      // Here you would implement your API call to place the order
+      // const response = await axios.post('http://localhost:8080/order/place', {
+      //   customerId,
+      //   products: orderDetails.products.map(p => ({
+      //     productId: p.productId,
+      //     quantity: p.quantity
+      //   }))
+      // });
+
+      // For now, we'll simulate successful order placement
+      setOrderSuccess(true);
+      
+      // Remove ordered items from cart
+      let updatedCart;
+      if (orderDetails.isSingleProduct) {
+        // Remove just the single product
+        updatedCart = cartItems.filter(
+          item => item.productId !== orderDetails.products[0].productId
+        );
+      } else {
+        // Remove all products
+        updatedCart = [];
+      }
+      
+      setCartItems(updatedCart);
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
+      
+      // Reset order popup after a delay
+      setTimeout(() => {
+        setShowOrderPopup(false);
+        setOrderSuccess(false);
+      }, 3000);
+    } catch (err) {
+      console.error('Error placing order:', err);
+      setError('Failed to place order. Please try again.');
+    }
   };
 
   return (
     <div className="cart-page">
-      <h2>Your Cart</h2>
-      {cartItems.length === 0 ? (
-        <p>Your cart is empty.</p>
-      ) : (
-        cartItems.map(item => (
-          <div className="cart-item" key={item.productId}>
-            <img
-              src={item.image|| `https://source.unsplash.com/100x100/?${item.productName}`}
-              alt={item.name}
-              className="product-img"
-            />
-            <div className="product-details">
-            <p><strong>Product Name:</strong> {item.name}</p>
-            <p><strong>Price:</strong> ₹{item.price}/kg</p>
-              <div className="quantity-control">
-                <strong>Quantity:</strong>
-                <button onClick={() => handleQuantityChange(item.productId, -1)}>-</button>
-                <span>{item.quantity || 1} kg</span>
-                <button onClick={() => handleQuantityChange(item.productId, 1)}>+</button>
-              </div>
-            </div>
-            <button className="buy-now" onClick={() => handleBuyNow(item.productId)}>Buy Now</button>
-            <button className="remove-from-cart" onClick={() => handleRemoveFromCart(item.productId)}>Remove from Cart</button>
+      <Navbar userName={userName} cartCount={cartItems.length} />
+      
+      <div className="cart-container">
+        <h1>Your Shopping Cart</h1>
+        
+        {loading && <div className="loading">Loading your cart...</div>}
+        
+        {error && <div className="error-message">{error}</div>}
+        
+        {!loading && !error && cartItems.length === 0 && (
+          <div className="empty-cart">
+            <h2>Your cart is empty</h2>
+            <p>Add some products to your cart and they will appear here.</p>
           </div>
-        ))
-      )}
-      {cartItems.length > 0 && (
-        <div className="buy-all-container">
-          <button className="buy-all" onClick={handleBuyAll}>Buy All</button>
+        )}
+        
+        {cartItems.length > 0 && (
+          <>
+            <div className="cart-items">
+              {cartItems.map((item) => (
+                <div key={item.productId} className="cart-item">
+                  <div className="item-image">
+                    <img src={item.image} alt={item.name} />
+                  </div>
+                  <div className="item-details">
+                    <h3>{item.name}</h3>
+                    <p className="item-price">₹{item.price}/kg</p>
+                  </div>
+                  <div className="item-quantity">
+                    <button 
+                      onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                      className="quantity-btn"
+                    >
+                      -
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button 
+                      onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                      className="quantity-btn"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="item-total">
+                    <p>₹{(item.price * item.quantity).toFixed(2)}</p>
+                    <button 
+                      onClick={() => removeItem(item.productId)}
+                      className="remove-btn"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <div className="item-actions">
+                    <button 
+                      className="buy-now-btn"
+                      onClick={() => handleBuyNow(item)}
+                    >
+                      Buy Now
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="cart-summary">
+              <div className="summary-row">
+                <span>Total Items:</span>
+                <span>{cartItems.reduce((total, item) => total + item.quantity, 0)}</span>
+              </div>
+              <div className="summary-row total">
+                <span>Total Price:</span>
+                <span>₹{calculateTotal().toFixed(2)}</span>
+              </div>
+              <button 
+                className="buy-all-btn"
+                onClick={handleBuyAll}
+              >
+                Buy All
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+      
+      {/* Order Popup */}
+      {showOrderPopup && (
+        <div className="popup-overlay">
+          <div className="order-popup">
+            {orderSuccess ? (
+              <div className="order-success">
+                <h2>Order Placed Successfully!</h2>
+                <p>Thank you for your purchase.</p>
+              </div>
+            ) : (
+              <>
+                <h2>Order Details</h2>
+                <div className="popup-items">
+                  {orderDetails.products.map((item) => (
+                    <div key={item.productId} className="popup-item">
+                      <span>{item.name} x {item.quantity}</span>
+                      <span>₹{(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="popup-total">
+                  <span>Total:</span>
+                  <span>₹{orderDetails.totalPrice.toFixed(2)}</span>
+                </div>
+                <div className="popup-actions">
+                  <button 
+                    className="cancel-btn"
+                    onClick={() => setShowOrderPopup(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="place-order-btn"
+                    onClick={placeOrder}
+                  >
+                    Place Order
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
-};
+}
 
 export default CartPage;
