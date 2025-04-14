@@ -24,7 +24,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+<<<<<<< HEAD
+=======
 import com.ftohbackend.dto.CustomerOrderDTO;
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
 import com.ftohbackend.exception.OrderException;
 import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Customer;
@@ -35,7 +38,10 @@ import com.ftohbackend.repository.CustomerRepository;
 import com.ftohbackend.repository.OrderRepository;
 import com.ftohbackend.repository.SellerRepository;
 import com.ftohbackend.service.OrderServiceImpl;
+<<<<<<< HEAD
+=======
 import com.ftohbackend.service.ProductService;
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
 
 @ExtendWith(MockitoExtension.class)
 public class OrderServiceTest {
@@ -49,9 +55,12 @@ public class OrderServiceTest {
     @Mock
     private SellerRepository sellerRepository;
     
+<<<<<<< HEAD
+=======
     @Mock
     private ProductService productService;
     
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
     @InjectMocks
     private OrderServiceImpl orderService;
 
@@ -78,11 +87,19 @@ public class OrderServiceTest {
         
         // Setup seller based on SellerDTO fields
         seller = new Seller();
+<<<<<<< HEAD
+//        seller.setSellerId(1);
+        seller.setSellerEmail("seller@example.com");
+        seller.setSellerFirstName("Jane");
+        seller.setSellerLastName("Smith");
+        seller.setSellerDOB(new Date(90, 1, 15)); // Feb 15, 1990
+=======
         // seller.setSellerId(1);  // Commented line
         seller.setSellerEmail("seller@example.com");
         seller.setSellerFirstName("Jane");
         seller.setSellerLastName("Smith");
         // seller.setSellerDOB(new Date(90, 1, 15)); // Feb 15, 1990  // Commented line
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         seller.setSellerMobileNumber("9876543210");
         seller.setSellerPlace("Uptown");
         seller.setSellerCity("Los Angeles");
@@ -108,7 +125,11 @@ public class OrderServiceTest {
         order.setOrderQuantity(2.0); // Assuming orderQuantity maps to quantity
         order.setCustomer(customer);
         order.setOrderStatus("Ordered"); // Using the orderStatus from DTO
+<<<<<<< HEAD
+//        order.setTotalPrice(200.0); // This might be calculated in your service
+=======
         // order.setTotalPrice(200.0); // This might be calculated in your service // Commented line
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
     }
 
     @AfterEach
@@ -129,9 +150,15 @@ public class OrderServiceTest {
         order2.setProduct(product);
         order2.setOrderQuantity(1.0);
         order2.setOrderStatus("In cart");
+<<<<<<< HEAD
+//        order2.setTotalPrice(100.0);
+        
+        given(orderRepository.findAll()).willReturn(List.of(order, order2));
+=======
         // order2.setTotalPrice(100.0); // Commented line
         
         when(orderRepository.findAll()).thenReturn(List.of(order, order2));
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when - action or the behaviour
         List<Order> orders = orderService.getAllOrders();
@@ -140,12 +167,20 @@ public class OrderServiceTest {
         assertThat(orders).isNotNull();
         assertThat(orders.size()).isEqualTo(2);
     }
+<<<<<<< HEAD
+    
+=======
 
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
     @Test
     @DisplayName("JUnit test for getAllOrders operation - throw OrderException when no orders found")
     public void givenEmptyOrdersList_whenGetAllOrders_thenThrowOrderException() {
         // given - precondition or setup
+<<<<<<< HEAD
+        given(orderRepository.findAll()).willReturn(Collections.emptyList());
+=======
         when(orderRepository.findAll()).thenReturn(Collections.emptyList());
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when/then - action and verify the output
         assertThrows(OrderException.class, () -> {
@@ -157,7 +192,11 @@ public class OrderServiceTest {
     @DisplayName("JUnit test for getOrderById operation")
     public void givenOrderId_whenGetOrderById_thenReturnOrderObject() throws OrderException {
         // given - precondition or setup
+<<<<<<< HEAD
+        given(orderRepository.findById(order.getOrderId())).willReturn(Optional.of(order));
+=======
         when(orderRepository.findById(order.getOrderId())).thenReturn(Optional.of(order));
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when - action or the behaviour
         Order foundOrder = orderService.getOrderById(order.getOrderId());
@@ -181,7 +220,11 @@ public class OrderServiceTest {
     @DisplayName("JUnit test for getOrderById operation - throw OrderException when order not found")
     public void givenOrderId_whenGetOrderById_thenThrowOrderException() {
         // given - precondition or setup
+<<<<<<< HEAD
+        given(orderRepository.findById(anyInt())).willReturn(Optional.empty());
+=======
         when(orderRepository.findById(anyInt())).thenReturn(Optional.empty());
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when/then - action and verify the output
         assertThrows(OrderException.class, () -> {
@@ -193,8 +236,13 @@ public class OrderServiceTest {
     @DisplayName("JUnit test for getOrderByCustomerId operation")
     public void givenCustomerId_whenGetOrderByCustomerId_thenReturnOrdersList() throws OrderException {
         // given - precondition or setup
+<<<<<<< HEAD
+        given(customerRepository.findById(customer.getCustomerId())).willReturn(Optional.of(customer));
+        given(orderRepository.findByCustomerCustomerId(customer.getCustomerId())).willReturn(List.of(order));
+=======
         when(customerRepository.findById(customer.getCustomerId())).thenReturn(Optional.of(customer));
         when(orderRepository.findByCustomerCustomerId(customer.getCustomerId())).thenReturn(List.of(order));
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when - action or the behaviour
         List<Order> orders = orderService.getOrderByCustomerId(customer.getCustomerId());
@@ -219,7 +267,11 @@ public class OrderServiceTest {
     @DisplayName("JUnit test for getOrderByCustomerId operation - throw OrderException when customer not found")
     public void givenCustomerId_whenGetOrderByCustomerId_thenThrowOrderExceptionForCustomerNotFound() {
         // given - precondition or setup
+<<<<<<< HEAD
+        given(customerRepository.findById(anyInt())).willReturn(Optional.empty());
+=======
         when(customerRepository.findById(anyInt())).thenReturn(Optional.empty());
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when/then - action and verify the output
         assertThrows(OrderException.class, () -> {
@@ -231,8 +283,13 @@ public class OrderServiceTest {
     @DisplayName("JUnit test for getOrderByCustomerId operation - throw OrderException when no orders found for customer")
     public void givenCustomerId_whenGetOrderByCustomerId_thenThrowOrderExceptionForNoOrders() {
         // given - precondition or setup
+<<<<<<< HEAD
+        given(customerRepository.findById(customer.getCustomerId())).willReturn(Optional.of(customer));
+        given(orderRepository.findByCustomerCustomerId(customer.getCustomerId())).willReturn(Collections.emptyList());
+=======
         when(customerRepository.findById(customer.getCustomerId())).thenReturn(Optional.of(customer));
         when(orderRepository.findByCustomerCustomerId(customer.getCustomerId())).thenReturn(Collections.emptyList());
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when/then - action and verify the output
         assertThrows(OrderException.class, () -> {
@@ -244,8 +301,12 @@ public class OrderServiceTest {
     @DisplayName("JUnit test for addOrder operation")
     public void givenOrderObject_whenAddOrder_thenReturnSuccessMessage() throws OrderException, ProductException {
         // given - precondition or setup
+<<<<<<< HEAD
+        given(orderRepository.save(order)).willReturn(order);
+=======
         when(productService.getProduct(anyInt())).thenReturn(product);
         when(orderRepository.save(order)).thenReturn(order);
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when - action or the behaviour
         String result = orderService.addOrder(order);
@@ -301,7 +362,11 @@ public class OrderServiceTest {
         List<Order> orderList = new ArrayList<>();
         orderList.add(order);
         
+<<<<<<< HEAD
+        given(orderRepository.findAll()).willReturn(orderList);
+=======
         when(orderRepository.findAll()).thenReturn(orderList);
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when - action or the behaviour
         List<Order> orders = orderService.getOrdersBySellerId(seller.getSellerId());
@@ -325,7 +390,11 @@ public class OrderServiceTest {
     @DisplayName("JUnit test for getOrdersBySellerId operation - throw OrderException when no orders found for seller")
     public void givenSellerId_whenGetOrdersBySellerId_thenThrowOrderExceptionForNoOrders() {
         // given - precondition or setup
+<<<<<<< HEAD
+        given(orderRepository.findAll()).willReturn(Collections.emptyList());
+=======
         when(orderRepository.findAll()).thenReturn(Collections.emptyList());
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when/then - action and verify the output
         assertThrows(OrderException.class, () -> {
@@ -337,8 +406,13 @@ public class OrderServiceTest {
     @DisplayName("JUnit test for deleteOrder operation")
     public void givenOrderId_whenDeleteOrder_thenReturnSuccessMessage() throws OrderException {
         // given - precondition or setup
+<<<<<<< HEAD
+        given(orderRepository.existsById(order.getOrderId())).willReturn(true);
+        willDoNothing().given(orderRepository).deleteById(order.getOrderId());
+=======
         when(orderRepository.existsById(order.getOrderId())).thenReturn(true);
         doNothing().when(orderRepository).deleteById(order.getOrderId());
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when - action or the behaviour
         String result = orderService.deleteOrder(order.getOrderId());
@@ -352,7 +426,11 @@ public class OrderServiceTest {
     @DisplayName("JUnit test for deleteOrder operation - throw OrderException when order not found")
     public void givenOrderId_whenDeleteOrder_thenThrowOrderException() {
         // given - precondition or setup
+<<<<<<< HEAD
+        given(orderRepository.existsById(anyInt())).willReturn(false);
+=======
         when(orderRepository.existsById(anyInt())).thenReturn(false);
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         
         // when/then - action and verify the output
         assertThrows(OrderException.class, () -> {
@@ -361,6 +439,8 @@ public class OrderServiceTest {
         
         verify(orderRepository, never()).deleteById(anyInt());
     }
+<<<<<<< HEAD
+=======
     
     @Test
     @DisplayName("JUnit test for updateOrderStatus - ordered status with sufficient quantity")
@@ -473,4 +553,5 @@ public class OrderServiceTest {
         assertThat(result).isEqualTo("Order Unsuccessful and Not had Sufficient Quantity");
         verify(orderRepository, never()).save(any(Order.class));
     }
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
 }

@@ -19,4 +19,5 @@ public class RatingDTO {
 	Double ratingValue;
 	private String feedback;
 
+   
 }

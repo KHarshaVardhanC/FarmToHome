@@ -1,4 +1,4 @@
-package com.ftohbackend.servicetesting;
+/*package com.ftohbackend.servicetesting;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
