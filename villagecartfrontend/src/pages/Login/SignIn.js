@@ -66,20 +66,26 @@ const Signin = () => {
         body: JSON.stringify(requestBody)
       });
 
+      // Log the raw response for debugging
+      console.log('Response status:', response.status);
+
       const responseText = await response.text();
       console.log('Response text:', responseText);
 
-      let data;
-      try {
-        // Try to parse the response text as JSON
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        // If parsing fails, use the text as message
-        data = { message: responseText || 'Unknown error occurred' };
+      // Only try to parse as JSON if the response has content
+      let data = {};
+      if (responseText && responseText.trim()) {
+        try {
+          data = JSON.parse(responseText);
+          console.log('Parsed response data:', data);
+        } catch (e) {
+          console.error('Failed to parse response as JSON:', e);
+          data = { message: responseText || 'Unknown error occurred' };
+        }
       }
 
       if (!response.ok) {
-        throw new Error(data.message || "Invalid email or password");
+        throw new Error(data.message || `Login failed with status ${response.status}`);
       }
 
       // Updated data handling for different user types
@@ -89,13 +95,13 @@ const Signin = () => {
         localStorage.setItem("sellerEmail", data.sellerEmail);
         localStorage.setItem("sellerName", `${data.sellerFirstName || ""} ${data.sellerLastName || ""}`);
         localStorage.setItem("userType", "seller");
-        navigate("/seller/dashboard");
+        navigate("/SellerHome");
       } else if (formData.userType === "customer") {
         localStorage.setItem("token", data.token || "token");
         localStorage.setItem("customerId", data.customerId);
         localStorage.setItem("customerEmail", data.customerEmail);
         localStorage.setItem("userType", "customer");
-        navigate("/customer/dashboard");
+        navigate("/customerHome");
       } else if (formData.userType === "admin") {
         localStorage.setItem("token", data.token || "token");
         localStorage.setItem("adminId", data.adminId);
@@ -138,13 +144,14 @@ const Signin = () => {
       const responseText = await response.text();
       console.log('Admin response text:', responseText);
 
-      let data;
-      try {
-        // Try to parse the response text as JSON
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        // If parsing fails, use the text as message
-        data = { message: responseText || 'Unknown error occurred' };
+      let data = {};
+      if (responseText && responseText.trim()) {
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          console.error('Failed to parse admin response as JSON:', e);
+          data = { message: responseText || 'Unknown error occurred' };
+        }
       }
 
       if (!response.ok) {
@@ -164,6 +171,14 @@ const Signin = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resetSelection = () => {
+    setFormData(prev => ({
+      ...prev,
+      userType: ""
+    }));
+    setError("");
   };
 
   return (
@@ -194,45 +209,62 @@ const Signin = () => {
         )}
 
         {formData.userType && (
-          <form onSubmit={handleSubmit}>
-            <div className="input-group">
-              <input
-                type="email"
-                name="email"
-                placeholder="Email Address"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+          <>
+            <form onSubmit={handleSubmit}>
+              <div className="input-group">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email Address"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-            <div className="input-group">
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
+              <div className="input-group">
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-            {error && <div className="error-message">{error}</div>}
+              {error && <div className="error-message">{error}</div>}
 
-            <div className="forgot-password">
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => setIsPopupOpen(true)} // Open the forgot password popup
-              >
-                Forgot Password?
+              <div className="forgot-password">
+                <button
+                  type="button"
+                  className="link-button"
+                  onClick={() => setIsPopupOpen(true)} // Open the forgot password popup
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
+              <button type="submit" className="submit-btn" disabled={isLoading}>
+                {isLoading ? "Logging in..." : "Login"}
               </button>
-            </div>
+            </form>
 
-            <button type="submit" className="submit-btn" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
+            <button
+              onClick={resetSelection}
+              className="back-button"
+              style={{
+                marginTop: "10px",
+                background: "transparent",
+                border: "1px solid #ccc",
+                padding: "8px 15px",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              Back to Selection
             </button>
-          </form>
+          </>
         )}
 
         {/* Hidden admin login option */}
