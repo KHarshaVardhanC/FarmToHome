@@ -41,8 +41,8 @@ public class ProductControllerImpl implements ProductController {
 	@Autowired
 	ProductService productService;
 
-	@Autowired
-	ProductServiceImpl productServiceImpl;
+//	@Autowired
+//	ProductServiceImpl productServiceImpl;
 
 
 	@PostMapping(value = "/product", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
