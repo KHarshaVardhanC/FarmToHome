@@ -56,7 +56,18 @@ const Admin = () => {
                 if (view === 'customers' || view === 'home') {
                     try {
                         const customersData = await fetchCustomers();
-                        setCustomers(customersData || []);
+                        const customerOrdersCounts = await Promise.all(
+                          customersData.map(async (customer) => {
+                            try {
+                              const orders = await fetchCustomerOrders(customer.customerId || customer.id);
+                              return { ...customer, ordersCount: orders.length };
+                            } catch {
+                              return { ...customer, ordersCount: 0 };
+                            }
+                          })
+                        );
+                        setCustomers(customerOrdersCounts || []);
+                        
                     } catch (err) {
                         console.error('Error fetching customers:', err);
                         setError(prev => prev ? `${prev}; Failed to load customers` : 'Failed to load customers');
@@ -626,7 +637,8 @@ const Admin = () => {
                                     <p>Phone: {customer.phone || customer.customerPhoneNumber}</p>
                                     <p>Location: {customer.customerCity || 'Unknown'}, {customer.customerState || 'Unknown'}</p>
                                     <p>Status: {customer.customerIsActive ? 'Active' : 'Inactive'}</p>
-                                    <p>Orders: {customerOrders.length || '0'}</p>
+                                    <p>Orders: {customer.ordersCount || 0}</p>
+
                                 </div>
                             );
                         })
