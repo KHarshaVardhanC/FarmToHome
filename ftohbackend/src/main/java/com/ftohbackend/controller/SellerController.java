@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
-import com.ftohbackend.dto.LoginRequest;
+import com.ftohbackend.controller.SellerControllerImpl.LoginRequest;
 import com.ftohbackend.dto.SellerDTO;
 import com.ftohbackend.exception.SellerException;
 
