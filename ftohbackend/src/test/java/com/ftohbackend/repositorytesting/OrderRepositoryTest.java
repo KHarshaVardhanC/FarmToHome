@@ -1,12 +1,30 @@
-package com.ftohbackend.repositorytesting;
-
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class OrderRepositoryTest 
-{
+//package com.ftohbackend.repositorytesting;
+//
+//import static org.assertj.core.api.Assertions.assertThat;
+//
+//import java.util.List;
+//
+//import org.junit.jupiter.api.AfterEach;
+//import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.DisplayName;
+//import org.junit.jupiter.api.Test;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+//
+//import com.ftohbackend.model.Customer;
+//import com.ftohbackend.model.Order;
+//import com.ftohbackend.model.Product;
+//import com.ftohbackend.model.Seller;
+//import com.ftohbackend.repository.CustomerRepository;
+//import com.ftohbackend.repository.OrderRepository;
+//import com.ftohbackend.repository.ProductRepository;
+//import com.ftohbackend.repository.SellerRepository;
+//
+//@DataJpaTest
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+//public class OrderRepositoryTest 
+//{
 //
 //    @Autowired
 //    private OrderRepository orderRepository;
@@ -90,7 +108,7 @@ public class OrderRepositoryTest
 //    @Test
 //    @DisplayName("Find order by ID test")
 //    public void testFindById() {
-//        Order order = new Order(null, testProduct, "Ordered", testCustomer, 1.0);
+//        Order order = new Order(null, testProduct, testCustomer, "Ordered", 1.0);
 //        Order saved = orderRepository.save(order);
 //
 //        Order found = orderRepository.findById(saved.getOrderId()).orElse(null);
@@ -102,8 +120,8 @@ public class OrderRepositoryTest
 //    @Test
 //    @DisplayName("Find orders by customer ID test")
 //    public void testFindByCustomerCustomerId() {
-//        Order order1 = new Order(null, testProduct, "Incart", testCustomer, 1.0);
-//        Order order2 = new Order(null, testProduct, "Ordered", testCustomer, 3.0);
+//        Order order1 = new Order(null, testProduct, testCustomer, "Incart", 1.0);
+//        Order order2 = new Order(null, testProduct, testCustomer, "Ordered", 3.0);
 //        orderRepository.save(order1);
 //        orderRepository.save(order2);
 //
@@ -116,7 +134,7 @@ public class OrderRepositoryTest
 //    @Test
 //    @DisplayName("Delete order test")
 //    public void testDeleteOrder() {
-//        Order order = new Order(null, testProduct, "Deleted", testCustomer, 1.0);
+//        Order order = new Order(null, testProduct,testCustomer,"Deleted", 1.0);
 //        Order saved = orderRepository.save(order);
 //
 //        orderRepository.deleteById(saved.getOrderId());
@@ -127,8 +145,8 @@ public class OrderRepositoryTest
 //    @Test
 //    @DisplayName("Find all orders test")
 //    public void testFindAllOrders() {
-//        Order order1 = new Order(null, testProduct, "Ordered", testCustomer, 2.0);
-//        Order order2 = new Order(null, testProduct, "Success", testCustomer, 5.0);
+//        Order order1 = new Order(null, testProduct, testCustomer, "Ordered", 2.0);
+//        Order order2 = new Order(null, testProduct, testCustomer,  "Success",5.0);
 //        orderRepository.save(order1);
 //        orderRepository.save(order2);
 //
@@ -137,4 +155,4 @@ public class OrderRepositoryTest
 //        assertThat(allOrders).isNotNull();
 //        assertThat(allOrders.size()).isEqualTo(2);
 //    }
-}
+//}
