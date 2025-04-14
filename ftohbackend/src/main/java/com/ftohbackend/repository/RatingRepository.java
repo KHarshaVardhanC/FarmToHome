@@ -13,4 +13,6 @@ public interface RatingRepository extends JpaRepository<Rating, Integer> {
     List<Rating> findByProductProductId(Integer productId) throws RatingException;
 
     List<Rating> findByCustomerCustomerId(Integer customerId) throws RatingException;
+    
+    List<Rating> findByOrderOrderId(Integer orderId) ;
 }

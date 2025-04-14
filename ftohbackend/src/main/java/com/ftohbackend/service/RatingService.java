@@ -17,4 +17,6 @@ public interface RatingService {
     Rating getRatingById(Integer ratingId) throws RatingException;
 
     void deleteRating(Integer ratingId) throws RatingException;
+
+	Boolean getRatingByOrderId(Integer orderId) ;
 }

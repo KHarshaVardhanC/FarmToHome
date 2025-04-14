@@ -26,6 +26,7 @@ import com.ftohbackend.model.Seller;
 import com.ftohbackend.service.CustomerService;
 import com.ftohbackend.service.OrderService;
 import com.ftohbackend.service.ProductService;
+import com.ftohbackend.service.RatingService;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/order")
@@ -42,6 +43,9 @@ public class OrderControllerImpl implements OrderController {
 
 	@Autowired
 	ModelMapper modelMapper;
+	
+	@Autowired 
+	RatingService ratingService; 
 
 	@GetMapping("")
 	@Override
@@ -57,7 +61,7 @@ public class OrderControllerImpl implements OrderController {
 	
 	@GetMapping("/orders/incart/{customerId}")
 	@Override
-	public List<CustomerOrderDTO> getCartOrdersByCustomerId(@PathVariable Integer customerId) throws OrderException {
+	public List<CustomerOrderDTO> getCartOrdersByCustomerId(@PathVariable Integer customerId) throws OrderException, Exception {
 		List<Order> orders = orderService.getOrderByCustomerId(customerId);
 		List<CustomerOrderDTO> customerorders = new ArrayList<>();
 
@@ -77,6 +81,8 @@ public class OrderControllerImpl implements OrderController {
 				customerorderdto.setImageUrl(product.getImageUrl());
 				customerorderdto.setProductDescription(product.getProductDescription());
 				customerorderdto.setProductQuantityType(product.getProductQuantityType());
+				customerorderdto.setOrderRatingStatus(ratingService.getRatingByOrderId(customerId)+"");
+				
 
 				
 				Seller seller = product.getSeller();

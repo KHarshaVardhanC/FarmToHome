@@ -1,7 +1,6 @@
 package com.ftohbackend.model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -11,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,6 +34,12 @@ public class Rating {
 	@ManyToOne
 	@JoinColumn(name = "productId", nullable = false)
 	private Product product;
+	
+	@OneToOne
+	@JoinColumn(name ="orderId", nullable=false)
+	Order order;
+	
+
 
 	private String feedback;
 

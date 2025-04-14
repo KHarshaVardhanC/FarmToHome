@@ -31,4 +31,6 @@ public class ProductDTO {
 	Integer productRatingCount;
 
 
+
 }
+

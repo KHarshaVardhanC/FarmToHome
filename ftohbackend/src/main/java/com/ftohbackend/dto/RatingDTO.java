@@ -10,13 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RatingDTO {
 
+
 	private Integer ratingId;
-	@NotNull(message = "Customer Id is Required")
-	private Integer customerId;
-	@NotNull(message = "Product Id is Required")
-	private Integer productId;
-	@NotNull(message = "Rating Stars is Required")
+	@NotNull(message = "Order Id is Required")
+	Integer orderId;
 	Double ratingValue;
 	private String feedback;
+
 
 }

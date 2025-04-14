@@ -39,7 +39,7 @@ public class CustomerDTO {
 	@NotNull(message = "Modbile Number required")
 	@Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid phone number format")
 	String customerPhoneNumber;
-	
+
 	Boolean customerIsActive;
 
 }
