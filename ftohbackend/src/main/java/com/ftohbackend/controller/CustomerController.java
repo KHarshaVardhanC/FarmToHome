@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
-import com.ftohbackend.controller.CustomerControllerImpl.LoginRequest;
 import com.ftohbackend.dto.CustomerDTO;
+import com.ftohbackend.dto.LoginRequest;
 import com.ftohbackend.exception.CustomerException;
 
 import jakarta.validation.Valid;
@@ -23,5 +23,7 @@ public interface CustomerController {
 	
 	public ResponseEntity<String> updateCustomer(Integer customerId,@Valid CustomerDTO customerDTO) throws CustomerException;
 
-	ResponseEntity<?> loginCustomer(LoginRequest loginRequest) throws Exception;
+
+	ResponseEntity<?> loginCustomer(LoginRequest loginRequest) throws CustomerException, Exception;
+
 }

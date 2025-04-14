@@ -20,6 +20,4 @@ public class Mails {
 	@Id
 	@Column(name="mailId", nullable = false, unique = true)
 	String mailId;
-	
-	
 }

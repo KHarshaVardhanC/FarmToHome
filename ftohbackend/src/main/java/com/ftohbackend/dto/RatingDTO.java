@@ -16,4 +16,6 @@ public class RatingDTO {
 	Integer orderId;
 	Double ratingValue;
 	private String feedback;
+
+
 }

@@ -144,7 +144,7 @@ const Home = () => {
           <Link to="/SellerHome" className="text-decoration-none">
             <div className="logo text-dark d-flex align-items-center">
               <i className="fas fa-leaf text-success me-2 logo-icon"></i>
-              <span className="fw-bold">Village Cart</span>
+              <span className="fw-bold">FarmToHome</span>
             </div>
           </Link>
           <div className="search-container">
@@ -207,52 +207,51 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="section-header mt-4">
-  <h4 className="mb-0">My Products</h4>
-  <Link to="/view-products" className="btn btn-link text-decoration-none">
-    See All Products <i className="fas fa-arrow-right ms-1"></i>
-  </Link>
-</div>
-
-<div className="row g-4">
-  {products.slice(0, 3).map((product) => (
-    <div className="col-md-4" key={product.productId}>
-      <div className="card h-100">
-        {product.imageUrl && (
-          <div className="product-img-wrapper">
-            <img src={product.imageUrl} className="product-image" alt={product.productName} />
-          </div>
-        )}
-        <div className="card-body">
-          <h5 className="card-title">{product.productName}</h5>
-          <p className="card-text mb-1 text-muted">
-            Stock remaining: {product.productQuantity} /{product.productQuantityType || 'kg'}
-          </p>
-          {product.productQuantity === 0 && (
-            <div className="mb-2">
-              <span className="badge bg-danger">Out of Stock</span>
-            </div>
-          )}
-          <p className="card-text mb-1">
-            <strong>Price: ₹{product.productPrice}</strong>
-          </p>
-          {productRatings[product.productId] ? (
-            <p className="card-text mb-1">
-              <span>{renderStars(parseFloat(productRatings[product.productId].average))}</span>
-              <small className="text-muted ms-2">
-                ({productRatings[product.productId].average} / 5)
-              </small>
-            </p>
-          ) : (
-            <p className="card-text text-muted">No Ratings</p>
-          )}
+        <div className="section-header">
+          <h4 className="mb-0">My Products</h4>
+          <Link to="/view-products" className="btn btn-link text-decoration-none">
+            See All Products <i className="fas fa-arrow-right ms-1"></i>
+          </Link>
         </div>
-      </div>
-    </div>
-  ))}
-</div>
 
+        <div className="products-grid">
+          {products.slice(0, 3).map((product, index) => (
+            <div key={product.productId}>
+              <div className="card h-100">
+                {product.imageUrl && (
+                  <img
+                    src={product.imageUrl}
+                    className="card-img-top product-image"
+                    alt={product.productName}
+                  />
+                )}
+                <div className="card-body">
+                  <h5 className="card-title">{product.productName}</h5>
+                  <p className="card-text mb-1 text-muted">
+                    Stock remaining: {product.productQuantity} /{product.productQuantityType || 'kg'}
+                  </p>
+                  {product.productQuantity === 0 && (
+                    <div className="mb-2">
+                      <span className="badge bg-danger">Out of Stock</span>
+                    </div>
+                  )}
+                  <p className="card-text mb-1">
+                    <strong>Price: ₹{product.productPrice}</strong>
+                  </p>
+                  {productRatings[product.productId] ? (
+                     <p className="card-text mb-1">
+                     <span>{renderStars(parseFloat(productRatings[product.productId].average))}</span>
+                     <small className="text-muted ms-2">({productRatings[product.productId].average} / 5)</small>
+                     </p>
+                  ) : (
+                    <p className="card-text text-muted">No Ratings</p>
+                  )}
 
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
         <div className="section-header mt-5">
           <h4 className="mb-0">Recent Orders</h4>

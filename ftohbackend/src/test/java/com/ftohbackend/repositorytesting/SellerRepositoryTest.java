@@ -1,25 +1,25 @@
-//package com.ftohbackend.repositorytesting;
-//
-//import static org.assertj.core.api.Assertions.assertThat;
-//
-//import java.util.Date;
-//import java.util.List;
-//
-//import org.junit.jupiter.api.AfterEach;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.DisplayName;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-//
-//import com.ftohbackend.exception.SellerException;
-//import com.ftohbackend.model.Seller;
-//import com.ftohbackend.repository.SellerRepository;
-//
-//@DataJpaTest
-//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-//public class SellerRepositoryTest {
+package com.ftohbackend.repositorytesting;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Date;
+import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import com.ftohbackend.exception.SellerException;
+import com.ftohbackend.model.Seller;
+import com.ftohbackend.repository.SellerRepository;
+
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+public class SellerRepositoryTest {
 //
 //    @Autowired
 //    private SellerRepository sellerRepository;
@@ -215,4 +215,4 @@
 //        // Verify they're different sellers
 //        assertThat(foundSeller1.getSellerId()).isNotEqualTo(foundSeller2.getSellerId());
 //    }
-//}
+}

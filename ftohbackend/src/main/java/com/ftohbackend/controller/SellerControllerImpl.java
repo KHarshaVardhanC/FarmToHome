@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ftohbackend.dto.LoginRequest;
 import com.ftohbackend.dto.SellerDTO;
 import com.ftohbackend.exception.SellerException;
 import com.ftohbackend.model.Mails;
@@ -24,8 +26,8 @@ import com.ftohbackend.service.MailServiceImpl;
 import com.ftohbackend.service.SellerService;
 
 import jakarta.validation.Valid;
-@CrossOrigin(origins = "*")
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/seller")
 public class SellerControllerImpl implements SellerController {
@@ -38,6 +40,9 @@ public class SellerControllerImpl implements SellerController {
 	
 	@Autowired
 	MailServiceImpl mailServiceImpl;
+	
+	// Create a single instance of BCryptPasswordEncoder for consistent encoding
+	private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 	@Override
 	@PostMapping("")
@@ -47,6 +52,9 @@ public class SellerControllerImpl implements SellerController {
 		if(!mailServiceImpl.isMailExists(sellerdto.getSellerEmail()))
 		{
 			Seller seller = modelMapper.map(sellerdto, Seller.class);
+			// Don't encode the password here, as the Seller class already does it
+			// Just set the password directly
+			seller.setSellerPassword(sellerdto.getSellerPassword());
 			sellerService.addSeller(seller);
 			mailServiceImpl.addMail(new Mails(sellerdto.getSellerEmail()));
 			
@@ -56,9 +64,6 @@ public class SellerControllerImpl implements SellerController {
 		{
 			return "Provided Email All ready Exists";
 		}
-//		return sellerService.addSeller(seller);
-		
-
 	}
 
 	@Override
@@ -106,39 +111,17 @@ public class SellerControllerImpl implements SellerController {
 	@Override
 	@PostMapping("/login")
 	public ResponseEntity<?> loginSeller(@RequestBody LoginRequest loginRequest) throws SellerException {
-		Seller seller = sellerService.authenticateSeller(loginRequest.getEmail(), loginRequest.getPassword());
+		try {
+			Seller seller = sellerService.authenticateSeller(loginRequest.getEmail(), loginRequest.getPassword());
 
-		if (seller != null) {
 			// Create and return a response with seller data (excluding password)
 			return ResponseEntity.ok(new SellerResponse(seller.getSellerId(), seller.getSellerEmail(),
 					seller.getSellerFirstName(), seller.getSellerLastName()
-			// ... other fields you want to return ...
 			));
-		} else {
+		} catch (SellerException e) {
+			// Log the exception for debugging
+			System.out.println("Login error: " + e.getMessage());
 			return ResponseEntity.status(401).body("Invalid email or password");
-		}
-	}
-
-	// Inner class for login request
-	public static class LoginRequest {
-		private String email;
-		private String password;
-
-		// Getters and setters
-		public String getEmail() {
-			return email;
-		}
-
-		public void setEmail(String email) {
-			this.email = email;
-		}
-
-		public String getPassword() {
-			return password;
-		}
-
-		public void setPassword(String password) {
-			this.password = password;
 		}
 	}
 
@@ -174,5 +157,4 @@ public class SellerControllerImpl implements SellerController {
 			return sellerLastName;
 		}
 	}
-
 }

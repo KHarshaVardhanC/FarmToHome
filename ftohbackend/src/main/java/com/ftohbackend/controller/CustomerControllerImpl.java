@@ -18,14 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ftohbackend.dto.CustomerDTO;
-import com.ftohbackend.dto.PasswordResetRequest;
+import com.ftohbackend.dto.LoginRequest;
 import com.ftohbackend.exception.CustomerException;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.model.Mails;
-import com.ftohbackend.repository.CustomerRepository;
 import com.ftohbackend.service.CustomerService;
 import com.ftohbackend.service.MailServiceImpl;
-import com.ftohbackend.service.PasswordResetService;
 
 import jakarta.validation.Valid;
 
@@ -43,32 +41,6 @@ public class CustomerControllerImpl implements CustomerController {
 
 	@Autowired
 	MailServiceImpl mailServiceImpl;
-	
-	
-	
-	@Autowired
-	private PasswordResetService passwordResetService;
-
-	@Autowired
-	private CustomerRepository customerRepository;
-
-	@PostMapping("/resetPassword")
-	public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest request) {
-	    // Assuming OTP is verified here, now proceed with updating password
-
-	    Customer customer = customerRepository.findByCustomerEmail(request.getEmail());
-
-	    if (customer != null) {
-	        passwordResetService.updatePassword(customer, request.getNewPassword());
-	        customerRepository.save(customer);  // Don't forget to save after updating the password
-	        return ResponseEntity.ok("Password reset successfully.");
-	    } else {
-	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found.");
-	    }
-	}
-
-	
-	
 
 	@PostMapping("")
 	public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerdto) throws CustomerException {
@@ -121,27 +93,6 @@ public class CustomerControllerImpl implements CustomerController {
 		}
 	}
 
-	public static class LoginRequest {
-		private String email;
-		private String password;
-
-		// Getters and setters
-		public String getEmail() {
-			return email;
-		}
-
-		public void setEmail(String email) {
-			this.email = email;
-		}
-
-		public String getPassword() {
-			return password;
-		}
-
-		public void setPassword(String password) {
-			this.password = password;
-		}
-	}
 
 	// Inner class for seller response (without sensitive data)
 	public static class CustomerResponse {
