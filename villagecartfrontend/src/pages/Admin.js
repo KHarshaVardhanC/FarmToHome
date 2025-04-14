@@ -142,7 +142,8 @@ const Admin = () => {
             // Enhance orders with product details
             const ordersWithProducts = await Promise.all(
                 customerOrders.map(async (order) => {
-                    const product = products.find(p => p.productId === order.productId) || {};
+                    const product = order.product || {};
+
                     return {
                         ...order,
                         product
@@ -574,24 +575,13 @@ const Admin = () => {
                                     <p><strong>Customer:</strong> {order.customerName}</p>
 
                                     <div className="order-product">
-                                        {order.product && (
-                                            <>
-                                                {order.product.imageUrl && (
-                                                    <img
-                                                        src={order.product.imageUrl}
-                                                        alt={order.product.productName}
-                                                        className="product-image-small"
-                                                        onError={(e) => {
-                                                            e.target.onerror = null;
-                                                            e.target.src = '/placeholder-image.png';
-                                                            console.log(`Failed to load image for product: ${order.product.productId}`);
-                                                        }}
-                                                    />
-                                                )}
-                                                <p><strong>Product:</strong> {order.product.productName || 'Unknown Product'}</p>
-                                                <p><strong>Price:</strong> Rs.{order.product.productPrice}</p>
-                                            </>
-                                        )}
+                                    <>
+
+
+                            <p><strong>Product:</strong> {order.productName || 'Unknown Product'}</p>
+                            <p><strong>Price:</strong> Rs.{order.productPrice}</p>
+                            </ >
+
                                     </div>
 
                                     <p><strong>Quantity:</strong> {order.orderQuantity}</p>
@@ -689,7 +679,9 @@ const Admin = () => {
                                                 className="product-image-small"
                                             />
                                         )}
-                                        <p><strong>Product:</strong> {product.productName || 'Unknown Product'}</p>
+                                        <p><strong>Product:</strong> {order.productName || 'Unknown Product'}</p>
+
+
                                     </div>
 
                                     <p><strong>Quantity:</strong> {order.orderQuantity}</p>

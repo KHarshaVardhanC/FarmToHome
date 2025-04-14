@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+import RequireAuth from './components/RequireAuth';
 import Home from './pages/Home';
 import AddProduct from './pages/AddProduct';
 import ViewProducts from './pages/ViewProducts';
@@ -22,10 +23,7 @@ import CustomerProfilePage from './components/CustomerProfilePage';
 // import SignUp from './pages/Login/SignUp';
 import CustomerHomePage from './components/CustomerHomePage'; 
 import Admin from './pages/Admin';
-// import Rating from './pages/Rating';
-import Rating from './pages/Rating'; // Import the Rating component
-// import SignIn from './pages/Login/SignIn';
-// import SignUp from './pages/Login/SignUp';
+import Rating from './pages/Rating';
 import EditProduct from './pages/EditProduct';
 
 
@@ -47,7 +45,14 @@ function App() {
           <Route path="/view-ratings" element={<ViewRatings />} />
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/SellerHome" element={<Home />} />
+          <Route
+            path="/SellerHome"
+            element={
+              <RequireAuth>
+                <Home />
+              </RequireAuth>
+            }
+          />
           <Route path="/edit-product/:id" element={<EditProduct />} />
           <Route path="/products/:productId/rate" element={<Rating />} />
 
