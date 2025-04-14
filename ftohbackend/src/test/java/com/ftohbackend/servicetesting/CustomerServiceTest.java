@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -210,5 +211,78 @@ public class CustomerServiceTest {
         
         // then - verify the output
         verify(customerRepository, never()).save(any(Customer.class));
+    }
+    
+    // Added test cases for authenticateCustomer method
+    
+    @Test
+    @DisplayName("JUnit test for authenticateCustomer operation - successful authentication")
+    public void givenValidCredentials_whenAuthenticateCustomer_thenReturnCustomerObject() throws Exception {
+        // given - precondition or setup
+        String email = "john.doe@example.com";
+        String password = "password123";
+        
+        // Mock the Customer class to return true for verifyPassword
+        given(customerRepository.findByCustomerEmail(email)).willReturn(customer);
+        
+        // Mock the password verification
+        // We need this since we can't directly test the actual password verification in unit tests
+        // This assumes the Customer class has a verifyPassword method
+        Customer spyCustomer = org.mockito.Mockito.spy(customer);
+        given(spyCustomer.verifyPassword(password)).willReturn(true);
+        given(customerRepository.findByCustomerEmail(email)).willReturn(spyCustomer);
+        
+        // when - action or the behaviour
+        Customer authenticatedCustomer = customerService.authenticateCustomer(email, password);
+        
+        // then - verify the output
+        assertThat(authenticatedCustomer).isNotNull();
+        assertThat(authenticatedCustomer.getCustomerEmail()).isEqualTo(email);
+    }
+    
+    @Test
+    @DisplayName("JUnit test for authenticateCustomer operation - null credentials")
+    public void givenNullCredentials_whenAuthenticateCustomer_thenThrowCustomerException() {
+        // when - action or the behaviour
+        assertThrows(CustomerException.class, () -> {
+            customerService.authenticateCustomer(null, "password123");
+        });
+        
+        assertThrows(CustomerException.class, () -> {
+            customerService.authenticateCustomer("john.doe@example.com", null);
+        });
+    }
+    
+    @Test
+    @DisplayName("JUnit test for authenticateCustomer operation - customer not found")
+    public void givenInvalidEmail_whenAuthenticateCustomer_thenThrowCustomerException() {
+        // given - precondition or setup
+        String email = "nonexistent@example.com";
+        String password = "password123";
+        
+        given(customerRepository.findByCustomerEmail(email)).willReturn(null);
+        
+        // when - action or the behaviour
+        assertThrows(CustomerException.class, () -> {
+            customerService.authenticateCustomer(email, password);
+        });
+    }
+    
+    @Test
+    @DisplayName("JUnit test for authenticateCustomer operation - incorrect password")
+    public void givenInvalidPassword_whenAuthenticateCustomer_thenThrowCustomerException() throws Exception {
+        // given - precondition or setup
+        String email = "john.doe@example.com";
+        String password = "wrongpassword";
+        
+        // Mock the Customer class to return false for verifyPassword
+        Customer spyCustomer = org.mockito.Mockito.spy(customer);
+        given(spyCustomer.verifyPassword(password)).willReturn(false);
+        given(customerRepository.findByCustomerEmail(email)).willReturn(spyCustomer);
+        
+        // when - action or the behaviour
+        assertThrows(CustomerException.class, () -> {
+            customerService.authenticateCustomer(email, password);
+        });
     }
 }

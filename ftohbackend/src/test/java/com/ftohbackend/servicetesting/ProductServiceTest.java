@@ -43,7 +43,7 @@ import com.ftohbackend.service.SellerService;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceTest {
-
+//
     @Mock
     private ProductRepository productRepository;
     
@@ -261,7 +261,11 @@ public class ProductServiceTest {
     
     @Test
     @DisplayName("JUnit test for updateProduct operation")
+<<<<<<< HEAD
     public void givenProductIdAndUpdatedDetails_whenUpdateProduct_thenReturnSuccess() throws ProductException {
+=======
+    public void givenProductIdAndUpdatedDetails_whenUpdateProduct_thenReturnSuccess() throws Exception {
+>>>>>>> 1e50210611e8d75ba3e3df9cb8c21ab93144df7b
         // given - precondition or setup
         Product updatedProduct = new Product();
         updatedProduct.setProductName("Updated Product");

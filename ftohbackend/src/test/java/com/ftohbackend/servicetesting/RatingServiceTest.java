@@ -23,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.exception.RatingException;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.model.Product;
@@ -73,7 +74,7 @@ public class RatingServiceTest {
         rating.setRatingId(1);
         rating.setCustomer(customer);
         rating.setProduct(product);
-        rating.setRatingValue(5);
+        rating.setRatingValue(5.0);
         rating.setFeedback("Great product, would recommend!");
     }
 
@@ -86,7 +87,7 @@ public class RatingServiceTest {
 
     @Test
     @DisplayName("JUnit test for addRating operation")
-    public void givenRatingObject_whenAddRating_thenReturnSuccessMessage() throws RatingException {
+    public void givenRatingObject_whenAddRating_thenReturnSuccessMessage() throws ProductException, Exception {
         // given - precondition or setup
         given(ratingRepository.save(any(Rating.class))).willReturn(rating);
 
@@ -121,7 +122,7 @@ public class RatingServiceTest {
         rating2.setRatingId(2);
         rating2.setCustomer(customer);
         rating2.setProduct(product);
-        rating2.setRatingValue(4);
+        rating2.setRatingValue(4.0);
         rating2.setFeedback("Good product but could be better");
 
         given(ratingRepository.findAll()).willReturn(List.of(rating, rating2));
@@ -159,7 +160,7 @@ public class RatingServiceTest {
         rating2.setRatingId(2);
         rating2.setCustomer(customer);
         rating2.setProduct(product);
-        rating2.setRatingValue(4);
+        rating2.setRatingValue(4.0);
         rating2.setFeedback("Product meets expectations");
 
         given(ratingRepository.findByProductProductId(anyInt())).willReturn(List.of(rating, rating2));
@@ -208,7 +209,7 @@ public class RatingServiceTest {
         rating2.setRatingId(2);
         rating2.setCustomer(customer);
         rating2.setProduct(product);
-        rating2.setRatingValue(3);
+        rating2.setRatingValue(3.0);
         rating2.setFeedback("Average product");
 
         given(ratingRepository.findByCustomerCustomerId(anyInt())).willReturn(List.of(rating, rating2));
@@ -334,4 +335,4 @@ public class RatingServiceTest {
         verify(ratingRepository, never()).existsById(anyInt());
         verify(ratingRepository, never()).deleteById(anyInt());
     }
-}*/
+}

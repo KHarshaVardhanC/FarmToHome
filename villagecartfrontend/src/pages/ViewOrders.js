@@ -169,30 +169,35 @@ const ViewOrders = () => {
                         )}
                       </td>
                       <td>
-                        <div className="dropdown">
-                          <button
-                            className={`btn btn-sm badge ${getStatusBadgeClass(order.orderStatus)} dropdown-toggle`}
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                            disabled={updatingStatus}
-                          >
-                            {statusOptions.find(s => s.value.toLowerCase() === (order.orderStatus || '').toLowerCase())?.label || 'In Cart'}
-                          </button>
-                          <ul className="dropdown-menu">
-                            {statusOptions.map((status) => (
-                              <li key={status.value}>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() => handleStatusUpdate(order.orderId, status.value)}
-                                >
-                                  {status.label}
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </td>
+  <div className="dropdown">
+    <button
+      className={`btn btn-sm badge ${getStatusBadgeClass(order.orderStatus)} dropdown-toggle`}
+      type="button"
+      data-bs-toggle="dropdown"
+      aria-expanded="false"
+      disabled={updatingStatus || (order.orderStatus?.toLowerCase() === 'delivered')}
+    >
+      {statusOptions.find(s => s.value.toLowerCase() === (order.orderStatus || '').toLowerCase())?.label || 'In Cart'}
+    </button>
+
+    {/* Only show dropdown menu if not Delivered */}
+    {order.orderStatus?.toLowerCase() !== 'delivered' && (
+      <ul className="dropdown-menu">
+        {statusOptions.map((status) => (
+          <li key={status.value}>
+            <button
+              className="dropdown-item"
+              onClick={() => handleStatusUpdate(order.orderId, status.value)}
+            >
+              {status.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</td>
+
                       <td>
                         <button
                           className="btn btn-sm btn-outline-primary"
