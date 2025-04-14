@@ -1,31 +1,32 @@
-package com.ftohbackend.repositorytesting;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
-import com.ftohbackend.exception.RatingException;
-import com.ftohbackend.model.Customer;
-import com.ftohbackend.model.Product;
-import com.ftohbackend.model.Rating;
-import com.ftohbackend.model.Seller;
-import com.ftohbackend.repository.CustomerRepository;
-import com.ftohbackend.repository.ProductRepository;
-import com.ftohbackend.repository.RatingRepository;
-import com.ftohbackend.repository.SellerRepository;
-
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class RatingRepositoryTest {
+//package com.ftohbackend.repositorytesting;
+//
+//import static org.assertj.core.api.Assertions.assertThat;
+//
+//import java.time.LocalDateTime;
+//import java.time.Month;
+//import java.util.List;
+//
+//import org.junit.jupiter.api.AfterEach;
+//import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.DisplayName;
+//import org.junit.jupiter.api.Test;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+//
+//import com.ftohbackend.exception.RatingException;
+//import com.ftohbackend.model.Customer;
+//import com.ftohbackend.model.Product;
+//import com.ftohbackend.model.Rating;
+//import com.ftohbackend.model.Seller;
+//import com.ftohbackend.repository.CustomerRepository;
+//import com.ftohbackend.repository.ProductRepository;
+//import com.ftohbackend.repository.RatingRepository;
+//import com.ftohbackend.repository.SellerRepository;
+//
+//@DataJpaTest
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+//public class RatingRepositoryTest {
 //
 //    @Autowired
 //    private RatingRepository ratingRepository;
@@ -88,7 +89,7 @@ public class RatingRepositoryTest {
 //        testRating = new Rating();
 //        testRating.setProduct(testProduct);
 //        testRating.setCustomer(testCustomer);
-//        testRating.setRatingValue(4);
+//        testRating.setRatingValue(4.0);
 //        testRating.setFeedback("Good product, fast delivery");
 //        ratingRepository.save(testRating);
 //    }
@@ -107,14 +108,14 @@ public class RatingRepositoryTest {
 //        Rating rating = new Rating();
 //        rating.setProduct(testProduct);
 //        rating.setCustomer(testCustomer);
-//        rating.setRatingValue(5);
+//        rating.setRatingValue(5.0);
 //        rating.setFeedback("Excellent product, highly recommended");
 //        
 //        Rating savedRating = ratingRepository.save(rating);
 //        
 //        assertThat(savedRating).isNotNull();
 //        assertThat(savedRating.getRatingId()).isNotNull();
-//        assertThat(savedRating.getRatingValue()).isEqualTo(5);
+//        assertThat(savedRating.getRatingValue()).isEqualTo(5.0);
 //        assertThat(savedRating.getFeedback()).isEqualTo("Excellent product, highly recommended");
 //        assertThat(savedRating.getCreatedAt()).isNotNull();
 //    }
@@ -125,7 +126,7 @@ public class RatingRepositoryTest {
 //        Rating found = ratingRepository.findById(testRating.getRatingId()).orElse(null);
 //        
 //        assertThat(found).isNotNull();
-//        assertThat(found.getRatingValue()).isEqualTo(4);
+//        assertThat(found.getRatingValue()).isEqualTo(4.0);
 //        assertThat(found.getFeedback()).isEqualTo("Good product, fast delivery");
 //    }
 //    
@@ -136,14 +137,14 @@ public class RatingRepositoryTest {
 //        Rating anotherRating = new Rating();
 //        anotherRating.setProduct(testProduct);
 //        anotherRating.setCustomer(testCustomer);
-//        anotherRating.setRatingValue(3);
+//        anotherRating.setRatingValue(3.0);
 //        anotherRating.setFeedback("Average product");
 //        ratingRepository.save(anotherRating);
 //        
 //        List<Rating> ratings = ratingRepository.findByProductProductId(testProduct.getProductId());
 //        
 //        assertThat(ratings).hasSize(2);
-//        assertThat(ratings).extracting(Rating::getRatingValue).containsExactlyInAnyOrder(4, 3);
+//        assertThat(ratings).extracting(Rating::getRatingValue).containsExactlyInAnyOrder(4.0, 3.0);
 //        assertThat(ratings).extracting(Rating::getFeedback).containsExactlyInAnyOrder("Good product, fast delivery", "Average product");
 //    }
 //    
@@ -164,7 +165,7 @@ public class RatingRepositoryTest {
 //        Rating newRating = new Rating();
 //        newRating.setProduct(anotherProduct);
 //        newRating.setCustomer(testCustomer);
-//        newRating.setRatingValue(5);
+//        newRating.setRatingValue(5.0);
 //        newRating.setFeedback("Amazing headphones");
 //        ratingRepository.save(newRating);
 //        
@@ -190,7 +191,7 @@ public class RatingRepositoryTest {
 //        Rating anotherRating = new Rating();
 //        anotherRating.setProduct(testProduct);
 //        anotherRating.setCustomer(testCustomer);
-//        anotherRating.setRatingValue(2);
+//        anotherRating.setRatingValue(2.0);
 //        anotherRating.setFeedback("Not satisfied with the product");
 //        ratingRepository.save(anotherRating);
 //        
@@ -206,12 +207,12 @@ public class RatingRepositoryTest {
 //        Rating ratingToUpdate = ratingRepository.findById(testRating.getRatingId()).orElse(null);
 //        assertThat(ratingToUpdate).isNotNull();
 //        
-//        ratingToUpdate.setRatingValue(5);
+//        ratingToUpdate.setRatingValue(5.0);
 //        ratingToUpdate.setFeedback("Updated feedback: This product is excellent!");
 //        
 //        Rating updatedRating = ratingRepository.save(ratingToUpdate);
 //        
-//        assertThat(updatedRating.getRatingValue()).isEqualTo(5);
+//        assertThat(updatedRating.getRatingValue()).isEqualTo(5.0);
 //        assertThat(updatedRating.getFeedback()).isEqualTo("Updated feedback: This product is excellent!");
 //        assertThat(updatedRating.getRatingId()).isEqualTo(testRating.getRatingId());
 //    }
@@ -222,7 +223,7 @@ public class RatingRepositoryTest {
 //        Rating rating = new Rating();
 //        rating.setProduct(testProduct);
 //        rating.setCustomer(testCustomer);
-//        rating.setRatingValue(4);
+//        rating.setRatingValue(4.0);
 //        rating.setFeedback("Testing creation timestamp");
 //        
 //        Rating savedRating = ratingRepository.save(rating);
@@ -234,15 +235,16 @@ public class RatingRepositoryTest {
 //    @Test
 //    @DisplayName("Test rating constructor with parameters")
 //    public void testRatingConstructorWithParameters() {
-//        Rating rating = new Rating(null, testCustomer, testProduct, 5, "Great product!");
+//        LocalDateTime testDateTime = LocalDateTime.of(2019, Month.MARCH, 28, 14, 33);
+//        Rating rating = new Rating(null, testCustomer, testProduct, "Great product!", 4.0, testDateTime);
 //        Rating savedRating = ratingRepository.save(rating);
 //        
 //        assertThat(savedRating).isNotNull();
 //        assertThat(savedRating.getRatingId()).isNotNull();
-//        assertThat(savedRating.getRatingValue()).isEqualTo(5);
+//        assertThat(savedRating.getRatingValue()).isEqualTo(4.0);
 //        assertThat(savedRating.getFeedback()).isEqualTo("Great product!");
 //        assertThat(savedRating.getCustomer()).isEqualTo(testCustomer);
 //        assertThat(savedRating.getProduct()).isEqualTo(testProduct);
 //        assertThat(savedRating.getCreatedAt()).isNotNull();
 //    }
-}
+//}
