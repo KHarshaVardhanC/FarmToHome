@@ -41,8 +41,8 @@ const Signin = () => {
     setError("");
 
     try {
-      // Updated endpoint URLs
-      let endpoint = "http://localhost:8080"; // Base URL
+      // Determine the backend endpoint based on the selected role
+      let endpoint = "http://localhost:8080";
       if (formData.userType === "customer") {
         endpoint += "/customer/login";
       } else if (formData.userType === "seller") {
@@ -57,15 +57,14 @@ const Signin = () => {
       };
 
       console.log("Sending login request to:", endpoint);
-      console.log("Request body:", loginRequest);
-      console.log(`Attempting login to ${endpoint} with email: ${formData.email}`);
+      console.log("Request body:", requestBody);
 
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(loginRequest),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -76,31 +75,16 @@ const Signin = () => {
 
       const data = await response.json();
       console.log("Login successful:", data);
-        body: JSON.stringify(requestBody)
-      });
-
-      const responseText = await response.text();
-      console.log('Response text:', responseText);
-
-      let data;
-      try {
-        // Try to parse the response text as JSON
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        // If parsing fails, use the text as message
-        data = { message: responseText || 'Unknown error occurred' };
-      }
-
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid email or password");
-      }
 
       // Updated data handling for different user types
       if (formData.userType === "seller") {
         localStorage.setItem("token", data.token || "token"); // Store JWT token if provided
         localStorage.setItem("sellerId", data.sellerId);
         localStorage.setItem("sellerEmail", data.sellerEmail);
-        localStorage.setItem("sellerName", `${data.sellerFirstName || ""} ${data.sellerLastName || ""}`);
+        localStorage.setItem(
+          "sellerName",
+          `${data.sellerFirstName || ""} ${data.sellerLastName || ""}`
+        );
         localStorage.setItem("userType", "seller");
         navigate("/seller/dashboard");
       } else if (formData.userType === "customer") {
@@ -108,16 +92,7 @@ const Signin = () => {
         localStorage.setItem("customerId", data.customerId);
         localStorage.setItem("customerEmail", data.customerEmail);
         localStorage.setItem("userType", "customer");
-        navigate("/customer/dashboard");
-      } else if (formData.userType === "seller") {
-        localStorage.setItem("sellerId", data.sellerId);
-        localStorage.setItem("sellerEmail", data.sellerEmail);
-        localStorage.setItem(
-          "sellerName",
-          `${data.sellerFirstName} ${data.sellerLastName}`
-        );
-        localStorage.setItem("userType", "seller");
-        navigate("/SellerHome");
+        navigate("/customer-home");
       } else if (formData.userType === "admin") {
         localStorage.setItem("token", data.token || "token");
         localStorage.setItem("adminId", data.adminId);
@@ -125,58 +100,9 @@ const Signin = () => {
         localStorage.setItem("userType", "admin");
         navigate("/admin");
       }
-    }  
-  };
-
-  // Special admin login function
-  const attemptAdminLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const endpoint = "http://localhost:8080/admin/login";
-      const requestBody = {
-        email: formData.email,
-        password: formData.password
-      };
-
-      console.log(`Attempting admin login with email: ${formData.email}`);
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      const responseText = await response.text();
-      console.log('Admin response text:', responseText);
-
-      let data;
-      try {
-        // Try to parse the response text as JSON
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        // If parsing fails, use the text as message
-        data = { message: responseText || 'Unknown error occurred' };
-      }
-
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid admin credentials");
-      }
-
-      // Admin login successful
-      localStorage.setItem("token", data.token || "admin_token");
-      localStorage.setItem("adminId", data.adminId);
-      localStorage.setItem("adminEmail", data.adminEmail);
-      localStorage.setItem("userType", "admin");
-      navigate("/admin");
-
     } catch (error) {
-      console.error('Admin login error:', error);
-      setError(error.message || "Admin login failed. Please try again.");
+      console.error("Login error:", error);
+      setError(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -249,28 +175,6 @@ const Signin = () => {
               {isLoading ? "Logging in..." : "Login"}
             </button>
           </form>
-        )}
-
-        {/* Hidden admin login option */}
-        {!formData.userType && (
-          <div className="admin-login-section" style={{ marginTop: "20px" }}>
-            <p>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleRoleSelect("admin");
-                }}
-                style={{
-                  fontSize: "0.8rem",
-                  color: "#777",
-                  textDecoration: "none"
-                }}
-              >
-                Admin Login
-              </a>
-            </p>
-          </div>
         )}
 
         <div className="signup-link">
