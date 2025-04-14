@@ -69,6 +69,7 @@ public class OrderControllerImpl implements OrderController {
 				CustomerOrderDTO customerorderdto = new CustomerOrderDTO();
 				customerorderdto.setOrderId(order.getOrderId());
 				customerorderdto.setOrderQuantity(order.getOrderQuantity());
+				customerorderdto.setOrderStatus(order.getOrderStatus());
 				
 				Product product = order.getProduct();
 				customerorderdto.setProductName(product.getProductName());

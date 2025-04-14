@@ -1,7 +1,6 @@
 package com.ftohbackend.model;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,11 +14,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Table(name = "Seller")
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Seller {
 
 	@Id
