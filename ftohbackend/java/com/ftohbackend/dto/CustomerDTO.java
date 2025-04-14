@@ -1,6 +1,5 @@
 package com.ftohbackend.dto;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -28,17 +27,19 @@ public class CustomerDTO {
 	@NotNull(message = "Password cannot be null")
 	@Size(min = 4, message = "Password must be at least 8 characters long")
 	String customerPassword;
-	@Column(nullable = false)
+	@NotNull(message = "Place cannot be null")
 	String customerPlace;
-	@Column(nullable = false)
+	@NotNull(message = "City Name cannot be null")
 	String customerCity;
-	@Column(nullable = false)
+	@NotNull(message = "Pincode required")
 	String customerPincode;
-	@Column(nullable = false)
+	@NotNull(message = "State Name is required")
 	String customerState;
 
+	@NotNull(message = "Modbile Number required")
 	@Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid phone number format")
 	String customerPhoneNumber;
+	
 	Boolean customerIsActive;
 
 }
