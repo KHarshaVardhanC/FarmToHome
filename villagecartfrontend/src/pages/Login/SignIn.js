@@ -182,7 +182,12 @@ const Signin = () => {
   };
 
   return (
+    
     <div className="signin-container">
+      <button className="home-icon-btn" onClick={() => navigate("/")}>
+  ⌂ Home
+</button>
+
       <div className="signin-box">
         {formData.userType ? (
           <h1 className="signin-title">{`${formData.userType.charAt(0).toUpperCase() + formData.userType.slice(1)} Login`}</h1>

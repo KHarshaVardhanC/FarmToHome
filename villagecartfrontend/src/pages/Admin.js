@@ -723,7 +723,16 @@ const Admin = () => {
 
     return (
         <div className="admin-container">
-            {error && <div className="global-error">{error}</div>}
+             <div className="admin-navbar">
+            <h3 className="admin">Village Cart</h3>
+            <button className="logout-button" onClick={() => {
+                localStorage.clear(); // or remove specific token/localstorage key
+                window.location.href = '/login'; // redirect to Sign In
+            }}>
+                Logout
+            </button>
+        </div>
+        {error && <div className="global-error">{error}</div>}
 
             {view === 'home' && renderHome()}
             {view === 'products' && renderProducts()}

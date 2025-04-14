@@ -144,7 +144,7 @@ const Home = () => {
           <Link to="/SellerHome" className="text-decoration-none">
             <div className="logo text-dark d-flex align-items-center">
               <i className="fas fa-leaf text-success me-2 logo-icon"></i>
-              <span className="fw-bold">FarmToHome</span>
+              <span className="fw-bold">Village Cart</span>
             </div>
           </Link>
           <div className="search-container">

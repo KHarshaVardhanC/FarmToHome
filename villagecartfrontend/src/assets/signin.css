@@ -1,172 +1,270 @@
+/* Village Cart - Sign In Page Specific CSS */
+
+/* Base Styles */
 .signin-container {
-    background-image: url("https://1.bp.blogspot.com/-7GU_L8chfPU/XQuI7zFEEaI/AAAAAAAAAW0/Hz8aWDJAY7YUmxhAah6ryqufUxzc83MCgCLcBGAs/s1600/1.jpg");
-    background-size: cover;
-    background-position: center;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
+  background-image: url("https://1.bp.blogspot.com/-7GU_L8chfPU/XQuI7zFEEaI/AAAAAAAAAW0/Hz8aWDJAY7YUmxhAah6ryqufUxzc83MCgCLcBGAs/s1600/1.jpg");
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.signin-box {
+  width: 100%;
+  max-width: 420px;
+  padding: 40px 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  text-align: center;
+}
+
+.signin-title {
+  color: #333333;
+  font-size: 32px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.signin-subtitle {
+  color: #666666;
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+
+/* Role Toggle Buttons */
+.toggle-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.toggle-buttons button {
+  padding: 12px 24px;
+  border: 2px solid #e0e0e0;
+  background-color: #ffffff;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #666666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.toggle-buttons button:hover {
+  border-color: #4CAF50;
+  color: #4CAF50;
+}
+
+.toggle-buttons button.active {
+  background-color: #4CAF50;
+  border-color: #4CAF50;
+  color: white;
+}
+
+/* Form Elements */
+.input-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.input-group input::placeholder {
+  color: #aaaaaa;
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  padding: 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.submit-btn:hover {
+  background-color: #388E3C;
+}
+
+.submit-btn:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+
+/* Error Message */
+.error-message {
+  color: #f44336;
+  font-size: 14px;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+/* Forgot Password Link */
+.forgot-password {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #4CAF50;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  color: #388E3C;
+}
+
+/* Sign Up Link */
+.signup-link {
+  margin-top: 30px;
+  font-size: 15px;
+  color: #666666;
+}
+
+.signup-link a {
+  color: #4CAF50;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.signup-link a:hover {
+  text-decoration: underline;
+}
+
+/* Back Button - UPDATED to be more visible */
+.back-button {
+  background-color: #0e0a0a;
+  border: 1px solid #cccccc;
+  color: #444444;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+  display: inline-block;
+  text-align: center;
+}
+
+.back-button:hover {
+  background-color: #e8f5e9;
+  border-color: #4CAF50;
+  color: #4CAF50;
+}
+
+/* Admin Login Section */
+.admin-login-section {
+  margin-top: 20px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.admin-login-section:hover {
+  opacity: 1;
+}
+
+.admin-login-section a {
+  font-size: 14px;
+  color: #666666;
+  text-decoration: none;
+}
+
+/* Popup Styles */
+.verify-email-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Village Cart Logo (if needed) */
+.village-cart-logo {
+  height: 60px;
+  margin-bottom: 20px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
   .signin-box {
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(1px);
-    padding: 30px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    padding: 30px 20px;
   }
   
   .signin-title {
-    text-align: center;
-    font-size: 28px;
-    font-weight: bold;
-    color: #2d3748;
-    margin-bottom: 10px;
-  }
-  
-  .signin-subtitle {
-    text-align: center;
-    color: #ff4f0f;
-    margin-bottom: 20px;
-    font-weight: 500;
+    font-size: 26px;
   }
   
   .toggle-buttons {
-    display: flex;
-    justify-content: space-between;
-    /* background-color: #edf2f7; */
-  
-    border-radius: 12px;
-    padding: 5px;
-    margin-bottom: 20px;
+    flex-direction: column;
+    gap: 10px;
   }
   
   .toggle-buttons button {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 12px;
-    background: transparent;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s ease;
+    min-width: 100%;
   }
-  
-  .toggle-buttons button.active {
-    border: 2px solid #ff4f0f;
-    border-radius: 8px;
-    /*background-color: #3182ce;
-    color: white;*/
-  }
-  
-  .toggle-buttons button:not(.active):hover {
-    background-color: #bee3f8;
-  }
-  
-  .input-group {
-    display: flex;
-    align-items: center;
-    background-color: #edf2f7;
-  
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 15px;
-  }
-  
-  .input-icon {
-    color: white;
-    margin-right: 10px;
-    font-size: 18px;
-  }
-  
-  .input-group input {
-    border: none;
-    background: transparent;
-    width: 100%;
-    font-size: 16px;
-    outline: none;
-    color: white;
-  }
-  
-  .forgot-password {
-    text-align: right;
-    margin-bottom: 15px;
-  }
-  
-  .forgot-password a {
-    color: #3182ce;
-    font-size: 14px;
-    text-decoration: none;
-  }
-  
-  .submit-btn {
-    width: 100%;
-    padding: 12px;
-    background-color: #3182ce;
-    color: white;
-    font-weight: 600;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  
-  .submit-btn:hover {
-    background-color: #2b6cb0;
-  }
-  
-  .signup-link {
-    text-align: center;
-    margin-top: 20px;
-    color: #2d3748;
-  }
-  
-  .signup-link a {
-    color: red;
-    text-decoration: underline;
-  }
-  
-  .error-message {
-    color: red;
-    font-size: 13px;
-    margin-top: -10px;
-    margin-bottom: 10px;
-  }
-  
-  .success-message {
-    color: green;
-    text-align: center;
-    margin-bottom: 10px;
-  }
+}
+.home-icon-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 14px 22px; /* Increased padding */
+  border-radius: 10px; /* Slightly more rounded */
+  font-size: 16px; /* Increased font size */
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Stronger shadow */
+  transition: background-color 0.3s ease;
+}
 
-
-
-  .toggle-buttons {
-    display: flex;
-    justify-content: space-between;
-    border-radius: 12px;
-    padding: 5px;
-    margin-bottom: 20px;
-  }
-  
-  .toggle-buttons button {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 12px;
-    background: transparent;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  
-  .toggle-buttons button.active {
-    border: 2px solid #ff4f0f;
-    border-radius: 8px;
-  }
-  
-  .toggle-buttons button:not(.active):hover {
-    background-color: #bee3f8;
-  }
+.home-icon-btn:hover {
+  background-color: #388E3C;
+}

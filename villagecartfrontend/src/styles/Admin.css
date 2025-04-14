@@ -49,7 +49,7 @@
 /* Common elements */
 .back-button {
     background-color: #34495e;
-    color: white;
+    color: rgb(19, 5, 5);
     border: none;
     padding: 10px 15px;
     border-radius: 4px;
@@ -343,4 +343,34 @@
         padding: 15px;
         font-size: 16px;
     }
+}
+.admin-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 12px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admin-logo {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.logout-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+    background-color: #c82333;
 }
