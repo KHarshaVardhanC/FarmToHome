@@ -1,4 +1,4 @@
-/*package com.ftohbackend.controller;
+package com.ftohbackend.controller;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +58,6 @@ public class RatingControllerImpl implements RatingController {
 		System.out.println(rating.getProduct().getProductName());
 		
 		return ratingService.addRating(rating);
-//		return "hello";
 		
 	}
 	
@@ -121,4 +120,3 @@ public class RatingControllerImpl implements RatingController {
 	}
 	
 }
-*/
