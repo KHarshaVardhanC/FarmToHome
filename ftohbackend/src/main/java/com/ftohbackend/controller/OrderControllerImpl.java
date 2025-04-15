@@ -82,9 +82,6 @@ public class OrderControllerImpl implements OrderController {
 				customerorderdto.setProductDescription(product.getProductDescription());
 				customerorderdto.setProductQuantityType(product.getProductQuantityType());
 				customerorderdto.setOrderRatingStatus(ratingService.getRatingByOrderId(customerId)+"");
-				
-
-				
 				Seller seller = product.getSeller();
 				customerorderdto.setSellerName(seller.getSellerFirstName() + " " + seller.getSellerLastName());
 				customerorders.add(customerorderdto);
