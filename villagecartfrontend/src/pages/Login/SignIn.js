@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/signin.css"
+import "../../assets/signin.css";
 import VerifyEmailPopup from "./VerifyEmailPopup"; // Import the popup component
 
 const Signin = () => {
@@ -41,8 +41,8 @@ const Signin = () => {
     setError("");
 
     try {
-      // Updated endpoint URLs
-      let endpoint = "http://localhost:8080"; // Base URL
+      // Determine the backend endpoint based on the selected role
+      let endpoint = "http://localhost:8080";
       if (formData.userType === "customer") {
         endpoint += "/customer/login";
       } else if (formData.userType === "seller") {
@@ -53,130 +53,56 @@ const Signin = () => {
 
       const requestBody = {
         email: formData.email,
-        password: formData.password
+        password: formData.password,
       };
 
-      console.log(Attempting login to ${endpoint} with email: ${formData.email});
+      console.log(`Attempting login to ${endpoint} with email: ${formData.email}`);
 
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
-      // Log the raw response for debugging
-      console.log('Response status:', response.status);
-
-      const responseText = await response.text();
-      console.log('Response text:', responseText);
-
-      // Only try to parse as JSON if the response has content
-      let data = {};
-      if (responseText && responseText.trim()) {
-        try {
-          data = JSON.parse(responseText);
-          console.log('Parsed response data:', data);
-        } catch (e) {
-          console.error('Failed to parse response as JSON:', e);
-          data = { message: responseText || 'Unknown error occurred' };
-        }
-      }
-
       if (!response.ok) {
-        throw new Error(data.message || Login failed with status ${response.status});
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed.");
       }
 
-      // Updated data handling for different user types
-      if (formData.userType === "seller") {
-        localStorage.setItem("token", data.token || "token"); // Store JWT token if provided
-        localStorage.setItem("sellerId", data.sellerId);
-        localStorage.setItem("sellerEmail", data.sellerEmail);
-        localStorage.setItem("sellerName", ${data.sellerFirstName || ""} ${data.sellerLastName || ""});
-        localStorage.setItem("userType", "seller");
-        navigate("/SellerHome");
-      } else if (formData.userType === "customer") {
-        localStorage.setItem("token", data.token || "token");
-        localStorage.setItem("customerId", data.customerId);
+      const data = await response.json();
+      console.log("Login successful:", data);
+
+      // Handle login for different user types
+      if (formData.userType === "customer") {
+        localStorage.setItem("customerId", data.customerId); // Store customerId in local storage
         localStorage.setItem("customerEmail", data.customerEmail);
         localStorage.setItem("userType", "customer");
-        navigate("/customerHome");
+        navigate("/customer-home"); // Redirect to customer homepage
+      } else if (formData.userType === "seller") {
+        localStorage.setItem("sellerId", data.sellerId);
+        localStorage.setItem("sellerEmail", data.sellerEmail);
+        localStorage.setItem("userType", "seller");
+        navigate("/SellerHome"); // Redirect to seller homepage
       } else if (formData.userType === "admin") {
-        localStorage.setItem("token", data.token || "token");
         localStorage.setItem("adminId", data.adminId);
         localStorage.setItem("adminEmail", data.adminEmail);
         localStorage.setItem("userType", "admin");
-        navigate("/admin");
+        navigate("/admin"); // Redirect to admin dashboard
       }
-
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       setError(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Special admin login function
-  const attemptAdminLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const endpoint = "http://localhost:8080/admin/login";
-      const requestBody = {
-        email: formData.email,
-        password: formData.password
-      };
-
-      console.log(Attempting admin login with email: ${formData.email});
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      const responseText = await response.text();
-      console.log('Admin response text:', responseText);
-
-      let data = {};
-      if (responseText && responseText.trim()) {
-        try {
-          data = JSON.parse(responseText);
-        } catch (e) {
-          console.error('Failed to parse admin response as JSON:', e);
-          data = { message: responseText || 'Unknown error occurred' };
-        }
-      }
-
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid admin credentials");
-      }
-
-      // Admin login successful
-      localStorage.setItem("token", data.token || "admin_token");
-      localStorage.setItem("adminId", data.adminId);
-      localStorage.setItem("adminEmail", data.adminEmail);
-      localStorage.setItem("userType", "admin");
-      navigate("/admin");
-
-    } catch (error) {
-      console.error('Admin login error:', error);
-      setError(error.message || "Admin login failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const resetSelection = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      userType: ""
+      userType: "",
     }));
     setError("");
   };
@@ -185,7 +111,9 @@ const Signin = () => {
     <div className="signin-container">
       <div className="signin-box">
         {formData.userType ? (
-          <h1 className="signin-title">{${formData.userType.charAt(0).toUpperCase() + formData.userType.slice(1)} Login}</h1>
+          <h1 className="signin-title">
+            {`${formData.userType.charAt(0).toUpperCase() + formData.userType.slice(1)} Login`}
+          </h1>
         ) : (
           <h1 className="signin-title">Login</h1>
         )}
@@ -259,7 +187,7 @@ const Signin = () => {
                 border: "1px solid #ccc",
                 padding: "8px 15px",
                 borderRadius: "4px",
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
               Back to Selection
@@ -280,7 +208,7 @@ const Signin = () => {
                 style={{
                   fontSize: "0.8rem",
                   color: "#777",
-                  textDecoration: "none"
+                  textDecoration: "none",
                 }}
               >
                 Admin Login

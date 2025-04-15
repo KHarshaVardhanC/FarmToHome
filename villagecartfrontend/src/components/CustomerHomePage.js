@@ -27,52 +27,39 @@ function CustomerHomePage() {
     { name: 'Grains', image: '/images/grains.jpg' },
   ];
 
-  // In CustomerHomePage.js
-useEffect(() => {
-  // Fetch customer details after login
-  const fetchCustomerDetails = async () => {
-    const id = localStorage.getItem('customerId');
-    console.log("Customer ID from localStorage:", id);
-    
-    if (id) {
-      try {
-        const response = await axios.get(`http://localhost:8080/customer/${id}`);
-        console.log("Customer details response:", response.data);
-        
-        // Save customer name in localStorage for navbar
-        if (response.data && response.data.name) {
-          localStorage.setItem('userName', response.data.name);
-          // Force a refresh of the navbar
-          window.dispatchEvent(new Event('storage'));
+  useEffect(() => {
+    const fetchCustomerDetails = async () => {
+      const id = localStorage.getItem('customerId');
+      if (id) {
+        try {
+          const response = await axios.get(`http://localhost:8080/customer/${id}`);
+          if (response.data && response.data.name) {
+            localStorage.setItem('userName', response.data.name);
+            window.dispatchEvent(new Event('storage'));
+          }
+          setCustomerId(id);
+        } catch (err) {
+          console.error('Error fetching customer details:', err);
         }
-        setCustomerId(id);
-      } catch (err) {
-        console.error('Error fetching customer details:', err);
+      }
+    };
+
+    fetchCustomerDetails();
+    fetchProducts();
+
+    const id = localStorage.getItem('customerId');
+    if (id) {
+      fetchCustomerCart(id);
+    } else {
+      try {
+        const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
+        setCartItems(savedCart);
+      } catch (e) {
+        localStorage.removeItem('cart');
+        setCartItems([]);
       }
     }
-  };
-
-  fetchCustomerDetails();
-  fetchProducts();
-
-  // Get cart items
-  const id = localStorage.getItem('customerId');
-  if (id) {
-    fetchCustomerCart(id);
-  } else {
-    try {
-      const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
-      setCartItems(savedCart);
-    } catch (e) {
-      console.warn('Invalid cart data in localStorage:', e);
-      localStorage.removeItem('cart');
-      setCartItems([]);
-    }
-  }
-}, []);
-
-  // Rest of component remains the same...
-  // ... (fetchProducts, fetchCustomerCart, etc.)
+  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -81,7 +68,6 @@ useEffect(() => {
       setProducts(response.data);
       setFilteredProducts(response.data);
     } catch (err) {
-      console.error('Error fetching products:', err);
       setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
@@ -93,8 +79,6 @@ useEffect(() => {
       const response = await axios.get(`http://localhost:8080/order/orders/incart/${id}`);
       setCartItems(response.data);
     } catch (err) {
-      console.error('Error fetching customer cart:', err);
-      // If API fails, fallback to localStorage
       try {
         const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
         setCartItems(savedCart);
@@ -111,39 +95,92 @@ useEffect(() => {
       const response = await axios.get(`http://localhost:8080/products/${category}`);
       setFilteredProducts(response.data);
     } catch (err) {
-      console.error('Error fetching category products:', err);
       setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const addToCart = (product) => {
-    const existingItemIndex = cartItems.findIndex(
-      (item) => item.productId === product.productId
-    );
-
-    let updatedCart;
-    if (existingItemIndex !== -1) {
-      updatedCart = [...cartItems];
-      updatedCart[existingItemIndex].quantity += 1;
-    } else {
-      const cartItem = {
-        productId: product.productId,
-        name: product.productName,
-        price: product.productPrice,
-        image: product.imageUrl,
-        quantity: 1,
-      };
-      updatedCart = [...cartItems, cartItem];
-    }
-
-    setCartItems(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
+  const addToCart = async (product) => {
+    const customerId = localStorage.getItem("customerId");
     
-    // If customer is logged in, update cart in backend too
-    if (customerId) {
-      // This would typically be an API call to update the cart in the backend
+    // First check if product already exists in cart
+    const existingCartItems = [...cartItems];
+    const existingItemIndex = existingCartItems.findIndex(
+      item => item.productId === product.productId
+    );
+    
+    if (existingItemIndex >= 0) {
+      // Product exists in cart - update quantity instead of adding new item
+      try {
+        // Get the existing order ID
+        const orderId = existingCartItems[existingItemIndex].orderId;
+        const newQuantity = existingCartItems[existingItemIndex].orderQuantity + 1;
+        
+        // Update the quantity on the server
+        const response = await axios.put(`http://localhost:8080/order/updateQuantity/${orderId}`, {
+          orderQuantity: newQuantity
+        });
+        
+        if (response.status === 200) {
+          // Update local state
+          const updatedCartItems = [...existingCartItems];
+          updatedCartItems[existingItemIndex].orderQuantity = newQuantity;
+          setCartItems(updatedCartItems);
+          
+          // Also update localStorage
+          localStorage.setItem("cart", JSON.stringify(updatedCartItems));
+          
+          alert("Item quantity updated in cart!");
+        }
+      } catch (error) {
+        console.error("Error updating cart item quantity:", error);
+      }
+    } else {
+      // Product doesn't exist in cart - add new item
+      const orderData = {
+        productId: product.productId,
+        orderQuantity: 1, // Set default to 1kg
+        customerId: parseInt(customerId),
+        orderStatus: "IN_CART"
+      };
+
+      try {
+        const response = await fetch("http://localhost:8080/order/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const orderId = result.orderId;
+
+          // Create a new cart item with full product details for UI
+          const newCartItem = {
+            orderId,
+            productId: product.productId,
+            productName: product.productName,
+            productPrice: product.productPrice,
+            imageUrl: product.imageUrl,
+            orderQuantity: 1,
+            orderStatus: "IN_CART"
+          };
+
+          // Update the state with the new item
+          const updatedCartItems = [...cartItems, newCartItem];
+          setCartItems(updatedCartItems);
+
+          // Update localStorage
+          localStorage.setItem("cart", JSON.stringify(updatedCartItems));
+
+          alert("Item added to cart!");
+        } else {
+          console.error("Failed to add to cart");
+        }
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+      }
     }
   };
 
@@ -157,9 +194,7 @@ useEffect(() => {
 
   const handleProductClick = async (product) => {
     setSelectedProduct(product);
-    
     try {
-      // Fetch additional product details including seller info
       const response = await axios.get(`http://localhost:8080/product2/${product.productId}`);
       setProductDetails(response.data);
       setShowModal(true);
@@ -195,12 +230,12 @@ useEffect(() => {
   return (
     <div className="customer-home">
       <Navbar
-        cartCount={cartItems.reduce((total, item) => total + item.quantity, 0)}
+        cartCount={cartItems.length}
         searchTerm={searchTerm}
         onSearch={handleSearch}
+        userName={localStorage.getItem('userName')}
       />
 
-      {/* Enlarged category carousel */}
       <div className="category-carousel-container">
         <Slider {...carouselSettings}>
           {categories.map((category) => (
@@ -216,7 +251,6 @@ useEffect(() => {
         </Slider>
       </div>
 
-      {/* Rest of component remains the same... */}
       {selectedCategory && (
         <div className="selected-category">
           <h2>{selectedCategory}</h2>
@@ -241,9 +275,9 @@ useEffect(() => {
 
         <div className="products-grid">
           {filteredProducts.map((product) => (
-            <div 
-              key={product.productId} 
-              className="product-card" 
+            <div
+              key={product.productId}
+              className="product-card"
               onClick={() => handleProductClick(product)}
             >
               <div className="product-image">
@@ -256,7 +290,7 @@ useEffect(() => {
                 <button
                   className="add-to-cart-btn"
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent triggering the card click
+                    e.stopPropagation();
                     addToCart(product);
                   }}
                 >
@@ -268,9 +302,8 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Product Detail Modal */}
       {showModal && selectedProduct && productDetails && (
-        <ProductDetailModal 
+        <ProductDetailModal
           product={selectedProduct}
           productDetails={productDetails}
           onClose={closeModal}

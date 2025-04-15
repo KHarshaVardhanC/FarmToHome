@@ -1,122 +1,210 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import CustomerNavbar from './CustomerNavbar';
+import Navbar from './CustomerNavbar';
 import '../styles/MyOrders.css';
 
 function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [customerId, setCustomerId] = useState(null);
-  const [userName, setUserName] = useState('');
+  const navigate = useNavigate();
+  const customerId = localStorage.getItem('customerId');
 
   useEffect(() => {
-    // Get user data from localStorage
-    const storedUserName = localStorage.getItem('userName');
-    const storedCustomerId = localStorage.getItem('customerId');
-    
-    setUserName(storedUserName || '');
-    setCustomerId(storedCustomerId || null);
-
-    if (storedCustomerId) {
-      fetchOrders(storedCustomerId);
-    } else {
-      setLoading(false);
-      setError("Customer ID not found. Please login again.");
-    }
+    fetchOrders();
   }, []);
 
-  const fetchOrders = async (id) => {
+  const fetchOrders = async () => {
+    if (!customerId) {
+      setError('Please login to view your orders');
+      setLoading(false);
+      return;
+    }
+
     try {
-      setLoading(true);
-      const response = await axios.get(`http://localhost:8080/order/customer/${id}`);
-      
-      // Sort orders by date (most recent first)
-      const sortedOrders = response.data.sort((a, b) => 
-        new Date(b.orderDate) - new Date(a.orderDate)
-      );
-      
+      const response = await axios.get(`http://localhost:8080/order/customer/${customerId}`);
+      // Sort orders by status - Placed orders first, then Processing, then Delivered
+      const sortedOrders = response.data.sort((a, b) => {
+        const statusOrder = { 'ordered': 1, 'Processing': 2, 'Delivered': 3 };
+        return statusOrder[a.orderStatus] - statusOrder[b.orderStatus];
+      });
       setOrders(sortedOrders);
     } catch (err) {
       console.error('Error fetching orders:', err);
-      setError(err.response?.data?.message || "Failed to load orders");
+      setError('Failed to load orders. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Format date for better readability
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'ordered':
+        return 'status-ordered';
+      case 'Processing':
+        return 'status-processing';
+      case 'Delivered':
+        return 'status-delivered';
+      default:
+        return '';
+    }
   };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric' 
+    });
+  };
+
+  const handleGetInvoice = (orderId) => {
+    navigate(`/invoice/${orderId}`);
+  };
+
+  const handleWriteReview = (productId) => {
+    if (!productId) {
+      console.error('Product ID is missing');
+      alert('Cannot write review: Product ID is missing');
+      return;
+    }
+    navigate(`/review/${productId}`); // Navigate to the updated route
+  };
+
+  // Function to handle buying again
+  const handleBuyAgain = (order) => {
+    // Store product info in localStorage for adding to cart
+    const productToAdd = {
+      productId: order.productId,
+      productName: order.productName,
+      productPrice: order.productPrice,
+      imageUrl: order.imageUrl,
+      orderQuantity: order.orderQuantity,
+      productQuantityType: order.productQuantityType || 'kg',
+      sellerId: order.sellerId
+    };
+
+    // Add to cart or navigate to product page
+    try {
+      // Get current cart from localStorage
+      const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+      
+      // Check if product already exists in cart
+      const existingItemIndex = cartItems.findIndex(item => item.productId === productToAdd.productId);
+      
+      if (existingItemIndex !== -1) {
+        // Update quantity if product already in cart
+        cartItems[existingItemIndex].orderQuantity += productToAdd.orderQuantity;
+      } else {
+        // Add new product to cart
+        cartItems.push(productToAdd);
+      }
+      
+      // Save updated cart to localStorage
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+      
+      // Show success message or redirect to cart
+      alert(`${productToAdd.productName} added to your cart!`);
+      navigate('/cart');
+    } catch (err) {
+      console.error('Error adding product to cart:', err);
+      alert('Failed to add product to cart. Please try again.');
+    }
+  };
+
+  if (loading) return (
+    <div className="my-orders-page">
+      <Navbar />
+      <div className="loading">Loading your orders...</div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="my-orders-page">
+      <Navbar />
+      <div className="error-message">{error}</div>
+    </div>
+  );
 
   return (
     <div className="my-orders-page">
-      <CustomerNavbar userName={userName} />
-      
-      <div className="my-orders-container">
-        <h1>My Orders</h1>
-
-        {loading && <div className="loading-spinner">Loading orders...</div>}
+      <Navbar />
+      <div className="orders-container">
+        <h1 className="orders-title">My Orders</h1>
         
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-            {customerId && (
-              <button onClick={() => fetchOrders(customerId)} className="retry-btn">
-                Try Again
-              </button>
-            )}
-          </div>
-        )}
-
-        {!loading && !error && orders.length === 0 && (
-          <div className="no-orders">
-            <h3>You haven't placed any orders yet</h3>
-            <p>Browse our products and place your first order!</p>
-            <button onClick={() => window.location.href = '/customer-home'} className="shop-now-btn">
+        {orders.length === 0 ? (
+          <div className="empty-orders">
+            <p>You haven't placed any orders yet</p>
+            <button className="shop-now-btn" onClick={() => navigate('/customer-home')}>
               Shop Now
             </button>
           </div>
-        )}
-
-        {orders.length > 0 && (
+        ) : (
           <div className="orders-list">
-            {orders.map((order) => (
+            {orders.map(order => (
               <div key={order.orderId} className="order-card">
                 <div className="order-header">
-                  <div className="order-info">
-                    <h3>Order #{order.orderId}</h3>
-                    <p className="order-date">Placed on: {formatDate(order.orderDate)}</p>
-                    <p className="order-status">Status: <span className={`status-${order.orderStatus.toLowerCase()}`}>{order.orderStatus}</span></p>
-                  </div>
-                  <div className="order-total">
-                    <p>Total: ₹{order.totalAmount.toFixed(2)}</p>
+                  <div className="order-id">Order #{order.orderId}</div>
+                  <div className={`order-status ${getStatusClass(order.orderStatus)}`}>
+                    {order.orderStatus}
                   </div>
                 </div>
                 
-                <div className="order-items">
-                  {order.orderItems.map((item, index) => (
-                    <div key={index} className="order-item">
-                      <div className="item-image">
-                        <img src={item.product.imageUrl || '/images/placeholder.jpg'} alt={item.product.productName} />
-                      </div>
-                      <div className="item-details">
-                        <h4>{item.product.productName}</h4>
-                        <p>Quantity: {item.quantity}</p>
-                        <p>Price: ₹{item.price.toFixed(2)}/kg</p>
-                      </div>
+                <div className="order-content">
+                  <div className="order-image">
+                    <img src={order.imageUrl} alt={order.productName} />
+                  </div>
+                  
+                  <div className="order-details">
+                    <h3 className="product-name">{order.productName}</h3>
+                    <p className="order-quantity">Quantity: {order.orderQuantity.toFixed(1)} {order.productQuantityType || 'kg'}</p>
+                    <p className="order-price">Price: ₹{order.productPrice}/{order.productQuantityType || 'kg'}</p>
+                    <p className="order-total">Total: ₹{(order.productPrice * order.orderQuantity).toFixed(2)}</p>
+                    
+                    {order.productDescription && (
+                      <p className="product-description">{order.productDescription}</p>
+                    )}
+                    
+                    <div className="seller-info">
+                      <p className="seller-name">Seller: {order.sellerName || 'N/A'}</p>
+                      {order.sellerPlace && order.sellerCity && (
+                        <p className="seller-location">
+                          Location: {order.sellerPlace}, {order.sellerCity}, {order.sellerState} - {order.sellerPincode}
+                        </p>
+                      )}
                     </div>
-                  ))}
+                  </div>
                 </div>
                 
                 <div className="order-actions">
-                  {order.orderStatus === 'DELIVERED' && (
-                    <button className="review-btn">Write Review</button>
-                  )}
-                  {order.orderStatus === 'PROCESSING' && (
-                    <button className="cancel-btn">Cancel Order</button>
+                  {/* Get Invoice button appears for all orders */}
+                  <button 
+                    className="invoice-btn"
+                    onClick={() => handleGetInvoice(order.orderId)}
+                  >
+                    Get Invoice
+                  </button>
+                  
+                  {/* Both Write a Review and Buy Again buttons only appear for delivered orders */}
+                  {order.orderStatus === 'Delivered' && (
+                    <>
+                      <button 
+                        className="review-btn"
+                        onClick={() => handleWriteReview(order.orderId)}
+                      >
+                        Write a Review
+                      </button>
+                      
+                      <button 
+                        className="reorder-btn"
+                        onClick={() => handleBuyAgain(order)}
+                      >
+                        Buy Again
+                      </button>
+                    </>
                   )}
                 </div>
               </div>

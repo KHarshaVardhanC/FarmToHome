@@ -54,7 +54,7 @@ function App() {
             }
           />
           <Route path="/edit-product/:id" element={<EditProduct />} />
-          <Route path="/products/:productId/rate" element={<Rating />} />
+          <Route path="review/:productId" element={<Rating />} />
 
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
@@ -67,7 +67,7 @@ function App() {
           <Route path="/customer-home" element={<CustomerHomePage />} /> 
           <Route path="/cart" element={<CartPage />} />
           <Route path="/my-orders" element={<MyOrders />} />
-          <Route path="/customerprofile" element={<CustomerProfilePage />}/>
+          <Route path="/myprofile" element={<MyProfile />}/>
           
 
           {/* ✅ Auth Routes */}

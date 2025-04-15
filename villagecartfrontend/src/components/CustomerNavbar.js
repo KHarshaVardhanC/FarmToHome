@@ -94,7 +94,7 @@ function CustomerNavbar({ cartCount = 0, searchTerm = '', onSearch, userName = '
 
           {userName && (
             <div className="welcome-text">
-              Welcome, {userName}
+              Welcome, user
             </div>
           )}
 
@@ -112,7 +112,7 @@ function CustomerNavbar({ cartCount = 0, searchTerm = '', onSearch, userName = '
 
             {showProfileDropdown && (
               <div className="profile-dropdown">
-                <Link to="/customer-profile" className="dropdown-item">
+                <Link to="/myProfile" className="dropdown-item">
                   <i className="fas fa-user-circle"></i> My Profile
                 </Link>
                 <Link to="/my-orders" className="dropdown-item">
