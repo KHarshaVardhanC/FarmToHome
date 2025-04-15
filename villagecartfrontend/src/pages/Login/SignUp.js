@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+
+
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-import '../../assets/signup.css';
+import '../../assets/signupp.css';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -153,29 +155,65 @@ const Signup = () => {
         data = { message: responseText || 'Unknown error occurred' };
       }
 
-      if (!response.ok) {
-        throw new Error(data.message || `Registration failed with status ${response.status}`);
-      }
+   // Check if response includes email already exists message
+//    if (responseText.toLowerCase().includes('already exists') || 
+//    responseText.toLowerCase().includes('already registered')) {
+//  setErrors({
+//    general: "An account with this email already exists. Please login."
+//  });
 
-      console.log('Registration successful:', data);
+    // Replace the email exists check section in handleSubmit
+if (responseText.toLowerCase().includes('already exists') || 
+responseText.toLowerCase().includes('already registered')) {
 
-      // Success case
-      navigate("/login", {
-        state: {
-          message: "Registration successful! Please log in.",
-          userType: formData.userType
-        }
-      });
+// Show alert with user type
+alert(`You already have an account as a ${formData.userType}. Please login to continue.`);
 
-    } catch (error) {
-      console.error('Registration error:', error);
-      setErrors({
-        general: error.message || "Registration failed. Please try again."
-      });
-    } finally {
-      setIsLoading(false);
+// Navigate to login page after alert
+navigate("/login", {
+    state: {
+        email: formData.email,
+        userType: formData.userType,
+        message: "Please login with your existing account"
     }
-  };
+});
+return;
+}
+ 
+ // Auto-redirect to signin after 3 seconds
+//  setTimeout(() => {
+//    navigate("/login", {
+//      state: {
+//        email: formData.email,
+//        userType: formData.userType,
+//        message: "Please login with your existing account"
+//      }
+//    });
+//  }, 3000);
+//  return;
+// }
+
+if (!response.ok) {
+ throw new Error(data.message || `Registration failed with status ${response.status}`);
+}
+
+// Success case
+navigate("/login", {
+ state: {
+   message: "Registration successful! Please log in.",
+   userType: formData.userType
+ }
+});
+
+} catch (error) {
+console.error('Registration error:', error);
+setErrors({
+ general: error.message || "Registration failed. Please try again."
+});
+} finally {
+setIsLoading(false);
+}
+};
   return (
     <motion.div
       className="signup-page"
@@ -185,13 +223,11 @@ const Signup = () => {
     >
       <div className="signup-container">
         <div className="signup-header">
-          <h1>Registration Page</h1>
-          <h2>Create Account</h2>
-          <p>Join Village Cart today!</p>
+          <h1>Village Cart!!</h1>
         </div>
 
         <div className="signup-form-group">
-          <label htmlFor="userType">Choose Role:</label>
+          <label htmlFor="userType" id="lab">Choose Role:</label>
           <select
             name="userType"
             value={formData.userType}
@@ -199,6 +235,7 @@ const Signup = () => {
             className="signup-role-dropdown"
           >
             <option value="customer">Customer</option>
+            <option value="seller">Seller</option>
             <option value="seller">Seller</option>
           </select>
         </div>
@@ -355,14 +392,32 @@ const Signup = () => {
         <div className="signup-footer">
           <p>
             Already have an account?{" "}
-            <Link to="/login" className="signup-link">
+            <Link to="/login" className="signup-link" id="signup">
               Login
             </Link>
           </p>
         </div>
       </div>
+      <motion.div 
+        className="right-content"
+        initial={{ opacity: 0, x: 100 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.9, delay: 0.4 }}>
+        <h1>"Join Today,</h1>
+        <h1>Experience Freshness Everyday"</h1>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.8 }}>
+        </motion.p>
+      </motion.div>
     </motion.div>
   );
 };
 
 export default Signup;
+
+
+
+
+
