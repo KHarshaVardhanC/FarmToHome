@@ -24,13 +24,23 @@ function CartPage() {
       setLoading(false);
       return;
     }
-
+  
     try {
       const response = await axios.get(`http://localhost:8080/order/orders/incart/${customerId}`);
-      setCartItems(response.data);
+     
+      if (Array.isArray(response.data)) {
+        setCartItems(response.data);
+        setError(null); 
+      } else {
+        // Handle case where response is not in expected format
+        setCartItems([]);
+        setError(null); // Don't show error for empty cart
+      }
     } catch (err) {
       console.error('Error fetching cart items:', err);
-      setError('Failed to load cart items. Please try again.');
+      
+      setCartItems([]);
+      setError(null);
     } finally {
       setLoading(false);
     }

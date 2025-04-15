@@ -21,18 +21,29 @@ function MyOrders() {
       setLoading(false);
       return;
     }
-
+  
     try {
       const response = await axios.get(`http://localhost:8080/order/customer/${customerId}`);
-      // Sort orders by status - Placed orders first, then Processing, then Delivered
-      const sortedOrders = response.data.sort((a, b) => {
-        const statusOrder = { 'ordered': 1, 'Processing': 2, 'Delivered': 3 };
-        return statusOrder[a.orderStatus] - statusOrder[b.orderStatus];
-      });
-      setOrders(sortedOrders);
+      
+    
+      if (Array.isArray(response.data)) {
+       
+        const sortedOrders = response.data.sort((a, b) => {
+          const statusOrder = { 'ordered': 1, 'Processing': 2, 'Delivered': 3 };
+          return statusOrder[a.orderStatus] - statusOrder[b.orderStatus];
+        });
+        setOrders(sortedOrders);
+        setError(null); 
+      } else {
+        
+        setOrders([]);
+        setError(null);
+      }
     } catch (err) {
       console.error('Error fetching orders:', err);
-      setError('Failed to load orders. Please try again.');
+      
+      setOrders([]);
+      setError(null);
     } finally {
       setLoading(false);
     }
@@ -71,12 +82,12 @@ function MyOrders() {
       alert('Cannot write review: Product ID is missing');
       return;
     }
-    navigate(`/review/${orderId}`); // Navigate to the updated route
+    navigate(`/review/${orderId}`); 
   };
 
-  // Function to handle buying again
+ 
   const handleBuyAgain = (order) => {
-    // Store product info in localStorage for adding to cart
+ 
     const productToAdd = {
       productId: order.productId,
       productName: order.productName,
@@ -87,26 +98,22 @@ function MyOrders() {
       sellerId: order.sellerId
     };
 
-    // Add to cart or navigate to product page
     try {
-      // Get current cart from localStorage
       const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
       
-      // Check if product already exists in cart
+      
       const existingItemIndex = cartItems.findIndex(item => item.productId === productToAdd.productId);
       
       if (existingItemIndex !== -1) {
-        // Update quantity if product already in cart
+        
         cartItems[existingItemIndex].orderQuantity += productToAdd.orderQuantity;
       } else {
-        // Add new product to cart
+        
         cartItems.push(productToAdd);
       }
       
-      // Save updated cart to localStorage
-      localStorage.setItem('cartItems', JSON.stringify(cartItems));
       
-      // Show success message or redirect to cart
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
       alert(`${productToAdd.productName} added to your cart!`);
       navigate('/cart');
     } catch (err) {
