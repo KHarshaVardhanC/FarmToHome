@@ -80,7 +80,7 @@ const AddProduct = () => {
         <div className="container-fluid px-4">
           <Link to="/SellerHome" className="text-decoration-none d-flex align-items-center">
             <i className="fas fa-leaf text-success me-2" style={{ fontSize: '24px' }}></i>
-            <span className="fw-bold">FarmToHome</span>
+            <span className="fw-bold">Village Cart</span>
           </Link>
           <div className="d-flex flex-grow-1 mx-4">
             <div className="input-group">

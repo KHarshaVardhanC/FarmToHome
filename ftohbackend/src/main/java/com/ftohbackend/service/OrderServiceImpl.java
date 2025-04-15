@@ -65,7 +65,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public String addOrder(Order order) throws OrderException, ProductException {
+	public String addOrder(Order order) throws OrderException, ProductException, Exception {
 		if (order == null || order.getCustomer() == null || order.getProduct() == null) {
 			throw new OrderException("Order, customer, or product details cannot be null");
 		}
@@ -75,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
 
 		if (order.getOrderQuantity() <= product.getProductQuantity()) {
 //    		 product.setProductQuantity( product.getProductQuantity() - order.getOrderQuantity());
-//    		 productService.updateProduct(product.getProductId(), product);
+    		 productService.updateProduct(product.getProductId(), product);
 			orderRepository.save(order);
 			return "Order Successful";
 		} else {

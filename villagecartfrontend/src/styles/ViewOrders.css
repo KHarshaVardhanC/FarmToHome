@@ -38,3 +38,76 @@
     text-align: center;
   }
   
+  /* Fix for dropdown menu visibility */
+  .dropdown-menu {
+    position: absolute;
+    z-index: 1000;
+    max-height: 250px;
+    overflow-y: auto;
+    transform: none !important;
+    margin-top: 0.125rem !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  /* Special handling for right-aligned dropdowns */
+  .dropdown-menu-end, 
+  .dropdown:last-child .dropdown-menu,
+  .navbar .dropdown .dropdown-menu,
+  .d-flex:last-child .dropdown .dropdown-menu {
+    right: 0 !important;
+    left: auto !important;
+  }
+  
+  /* For table cells specifically */
+  .table td {
+    position: relative;
+  }
+  
+  .table td .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .table td .dropdown-menu {
+    position: absolute;
+    min-width: 120px;
+    transform: none !important;
+    inset: auto !important;
+    right: auto;
+    left: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Bootstrap Override */
+  .dropdown-menu[data-bs-popper] {
+    margin-top: 0.125rem;
+  }
+  
+  /* Make sure dropdown doesn't get cut off by table container */
+  .table-responsive {
+    overflow: visible !important;
+  }
+  
+  /* Make parent card have proper overflow handling for dropdowns */
+  .card {
+    overflow: visible !important;
+  }
+  
+  .container-fluid {
+    overflow: visible !important;
+  }
+  
+  /* Fix horizontal overflow */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+  
+  /* Make sure right-side dropdowns don't overflow */
+  @media (max-width: 992px) {
+    .dropdown-menu {
+      max-width: 90vw;
+    }
+  }
+  

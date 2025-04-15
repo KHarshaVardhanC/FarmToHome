@@ -272,20 +272,22 @@ const Signin = () => {
         {!formData.userType && (
           <div className="admin-login-section" style={{ marginTop: "20px" }}>
             <p>
-              <a
-                href="#"
+              <button
                 onClick={(e) => {
-                  e.preventDefault();
                   handleRoleSelect("admin");
                 }}
                 style={{
                   fontSize: "0.8rem",
                   color: "#777",
-                  textDecoration: "none"
+                  textDecoration: "none",
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer"
                 }}
               >
                 Admin Login
-              </a>
+              </button>
             </p>
           </div>
         )}

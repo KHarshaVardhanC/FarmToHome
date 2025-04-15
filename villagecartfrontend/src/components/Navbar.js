@@ -9,7 +9,7 @@ const Navbar = () => {
       <div className="container">
         <Link className="navbar-brand" to="/dashboard">
           <i className="fas fa-store me-2"></i>
-          FarmToHome Seller
+          Village Cart Seller
         </Link>
         <button
           className="navbar-toggler"

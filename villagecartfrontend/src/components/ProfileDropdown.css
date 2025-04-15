@@ -1,0 +1,47 @@
+/* ProfileDropdown Styles */
+.dropdown {
+  position: relative;
+}
+
+.profile-icon {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  color: #495057;
+}
+
+.profile-icon i {
+  font-size: 1.5rem;
+}
+
+.dropdown-menu-end {
+  right: 0 !important;
+  left: auto !important;
+}
+
+.dropdown-menu.show {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  right: 0;
+  left: auto;
+  transform: none !important;
+  position: absolute;
+  top: 100%;
+  margin-top: 0.125rem;
+  z-index: 1000;
+  max-width: 200px;
+}
+
+/* Fix for right edge overflow */
+@media (max-width: 576px) {
+  .dropdown-menu.show {
+    right: 0;
+    left: auto;
+    max-width: 180px;
+  }
+}

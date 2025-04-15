@@ -129,8 +129,18 @@ public class ProductControllerImpl implements ProductController {
 			sellerproductDTO.setProductPrice(product.getProductPrice());
 			sellerproductDTO.setImageUrl(product.getImageUrl());
 			sellerproductDTO.setProductDescription(product.getProductDescription());
-			sellerproductDTO.setProductRatingValue(product.getProductRatingValue());
-			sellerproductDTO.setProductRatingCount(product.getProductRatingCount());
+			if(product.getProductRatingValue() == null)
+			{
+				sellerproductDTO.setProductRatingValue(0.0);
+				sellerproductDTO.setProductRatingCount(0);
+				
+			}
+			else
+			{
+				
+				sellerproductDTO.setProductRatingValue(product.getProductRatingValue());
+				sellerproductDTO.setProductRatingCount(product.getProductRatingCount());
+			}
 			
 			sellerproductdtos.add(sellerproductDTO);
 			
