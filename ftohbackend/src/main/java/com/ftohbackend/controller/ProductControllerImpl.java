@@ -130,7 +130,7 @@ public class ProductControllerImpl implements ProductController {
 			sellerproductDTO.setImageUrl(product.getImageUrl());
 			sellerproductDTO.setProductDescription(product.getProductDescription());
 			if(product.getProductRatingValue() == null)
-			{
+			{  
 				sellerproductDTO.setProductRatingValue(0.0);
 				sellerproductDTO.setProductRatingCount(0);
 				
