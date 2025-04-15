@@ -77,6 +77,10 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/customer-home" element={<CustomerHomePage />} /> 
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/my-orders" element={<MyOrders />} />
+          <Route path="/myprofile" element={<MyProfile />}/>
 
           <Route path="/invoice/:orderId" element={<OrderInvoice />} />
          
