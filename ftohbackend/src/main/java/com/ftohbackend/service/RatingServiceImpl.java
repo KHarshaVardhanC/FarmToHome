@@ -53,9 +53,9 @@ public class RatingServiceImpl implements RatingService {
 			throw new RatingException("Product ID cannot be null");
 		}
 		List<Rating> ratings = ratingRepository.findByProductProductId(productId);
-		if (ratings.isEmpty()) {
-			throw new RatingException("No ratings found for product ID: " + productId);
-		}
+//		if (ratings.isEmpty()) {
+//			throw new RatingException("No ratings found for product ID: " + productId);
+//		}
 		return ratings;
 	}
 
