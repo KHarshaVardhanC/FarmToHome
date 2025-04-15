@@ -26,7 +26,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ftohbackend.dto.CustomerOrderDTO;
 import com.ftohbackend.exception.OrderException;
-import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.model.Order;
 import com.ftohbackend.model.Product;
@@ -242,7 +241,7 @@ public class OrderServiceTest {
     
     @Test
     @DisplayName("JUnit test for addOrder operation")
-    public void givenOrderObject_whenAddOrder_thenReturnSuccessMessage() throws OrderException, ProductException {
+    public void givenOrderObject_whenAddOrder_thenReturnSuccessMessage() throws Exception {
         // given - precondition or setup
         when(productService.getProduct(anyInt())).thenReturn(product);
         when(orderRepository.save(order)).thenReturn(order);
@@ -461,7 +460,7 @@ public class OrderServiceTest {
     }
     @Test
     @DisplayName("JUnit test for addOrder operation - insufficient quantity")
-    public void givenOrderWithInsufficientQuantity_whenAddOrder_thenReturnUnsuccessfulMessage() throws OrderException, ProductException {
+    public void givenOrderWithInsufficientQuantity_whenAddOrder_thenReturnUnsuccessfulMessage() throws Exception {
         // given
         order.setOrderQuantity(15.0); // More than product quantity (10.0)
         when(productService.getProduct(anyInt())).thenReturn(product);
