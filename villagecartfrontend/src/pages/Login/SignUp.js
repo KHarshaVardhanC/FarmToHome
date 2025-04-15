@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-
-
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -84,6 +82,40 @@ const Signup = () => {
 
     return newErrors;
   };
+  
+  // Function to check if email already exists
+  const checkEmailExists = async () => {
+    try {
+      // First check customer endpoint
+      const customerResponse = await fetch(`http://localhost:8080/customer`);
+      const customerData = await customerResponse.json();
+      
+      // Check if email exists in customer data
+      const customerExists = customerData.some(
+        customer => customer.customerEmail.toLowerCase() === formData.email.toLowerCase()
+      );
+      
+      if (customerExists) {
+        return true;
+      }
+      
+      // Then check seller endpoint
+      const sellerResponse = await fetch(`http://localhost:8080/seller`);
+      const sellerData = await sellerResponse.json();
+      
+      // Check if email exists in seller data
+      const sellerExists = sellerData.some(
+        seller => seller.sellerEmail.toLowerCase() === formData.email.toLowerCase()
+      );
+      
+      return sellerExists;
+      
+    } catch (error) {
+      console.error("Error checking email existence:", error);
+      return false;
+    }
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
@@ -97,6 +129,23 @@ const Signup = () => {
     setErrors({});
 
     try {
+      // First check if email already exists
+      const emailExists = await checkEmailExists();
+      
+      if (emailExists) {
+        // Show alert and set error
+        alert(`This email is already registered. Please use a different email or login with your existing account.`);
+        
+        // Set a specific email error
+        setErrors({
+          email: `Email already registered`
+        });
+        
+        setIsLoading(false);
+        return; // Stop execution here
+      }
+      
+      // If email doesn't exist, proceed with registration
       let endpoint;
       let requestBody;
 
@@ -146,67 +195,54 @@ const Signup = () => {
       const responseText = await response.text();
       console.log('Response text:', responseText);
 
+      // Fallback check for already exists message in response
+      if (responseText.toLowerCase().includes('already exists') || 
+          responseText.toLowerCase().includes('already registered')) {
+          
+          // Show alert with user type and stay on the same page
+          alert(`This email is already registered. Please use a different email or login with your existing account.`);
+          
+          // Set a specific email error
+          setErrors({
+            email: `Email already registered`
+          });
+          
+          setIsLoading(false);
+          return; // Important: stop execution here to prevent navigation
+      }
+
       let data;
       try {
-        // Try to parse the response text as JSON
+        // Try to parse response as JSON
         data = responseText ? JSON.parse(responseText) : {};
       } catch (e) {
         // If parsing fails, use the text as message
         data = { message: responseText || 'Unknown error occurred' };
       }
 
-    // Replace the email exists check section in handleSubmit
-if (responseText.toLowerCase().includes('already exists') || 
-responseText.toLowerCase().includes('already registered')) {
+      if (!response.ok) {
+        throw new Error(data.message || `Registration failed with status ${response.status}`);
+      }
 
-// Show alert with user type
-alert(`You already have an account as a ${formData.userType}. Please login to continue.`);
+      // Only navigate on success
+      navigate("/login", {
+        state: {
+          message: "Registration successful! Please log in.",
+          userType: formData.userType
+        }
+      });
 
-// Navigate to login page after alert
-navigate("/login", {
-    state: {
-        email: formData.email,
-        userType: formData.userType,
-        message: "Please login with your existing account"
+    } catch (error) {
+      console.error('Registration error:', error);
+      setErrors({
+        general: error.message || "Registration failed. Please try again."
+      });
+      // No navigation on error
+    } finally {
+      setIsLoading(false);
     }
-});
-return;
-}
- 
- // Auto-redirect to signin after 3 seconds
-//  setTimeout(() => {
-//    navigate("/login", {
-//      state: {
-//        email: formData.email,
-//        userType: formData.userType,
-//        message: "Please login with your existing account"
-//      }
-//    });
-//  }, 3000);
-//  return;
-// }
-
-if (!response.ok) {
- throw new Error(data.message || `Registration failed with status ${response.status}`);
-}
-
-// Success case
-navigate("/login", {
- state: {
-   message: "Registration successful! Please log in.",
-   userType: formData.userType
- }
-});
-
-} catch (error) {
-console.error('Registration error:', error);
-setErrors({
- general: error.message || "Registration failed. Please try again."
-});
-} finally {
-setIsLoading(false);
-}
-};
+  };
+  
   return (
     <motion.div
       className="signup-page"
@@ -229,7 +265,6 @@ setIsLoading(false);
           >
             <option value="customer">Customer</option>
             <option value="seller">Seller</option>
-          
           </select>
         </div>
 
@@ -409,8 +444,3 @@ setIsLoading(false);
 };
 
 export default Signup;
-
-
-
-
-
