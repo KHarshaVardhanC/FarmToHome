@@ -7,6 +7,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,6 +50,9 @@ public class CustomerControllerImpl implements CustomerController {
 
 		if (!mailServiceImpl.isMailExists(customerdto.getCustomerEmail())) {
 			Customer customer = modelmapper.map(customerdto, Customer.class);
+			BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+			customer.setCustomerPassword(passwordEncoder.encode( customerdto.getCustomerPassword()));
 			customerService.addCustomer(customer);
 			mailServiceImpl.addMail(new Mails(customerdto.getCustomerEmail()));
 
