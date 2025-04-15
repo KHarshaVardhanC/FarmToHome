@@ -188,23 +188,34 @@ function MyOrders() {
                     Get Invoice
                   </button>
                   
-                  {/* Both Write a Review and Buy Again buttons only appear for delivered orders */}
+                  {/* Write a Review button only appears for delivered orders that haven't been rated yet */}
+                  {order.orderStatus === 'Delivered' && order.orderRatingStatus !== 'Rated' && (
+                    <button 
+                      className="review-btn"
+                      onClick={() => handleWriteReview(order.orderId)}
+                    >
+                      Write a Review
+                    </button>
+                  )}
+                  
+                  {/* Show a disabled button if already rated */}
+                  {order.orderStatus === 'Delivered' && order.orderRatingStatus === 'Rated' && (
+                    <button 
+                      className="review-btn rated-btn"
+                      disabled
+                    >
+                      Already Reviewed
+                    </button>
+                  )}
+                  
+                  {/* Buy Again button only appears for delivered orders */}
                   {order.orderStatus === 'Delivered' && (
-                    <>
-                      <button 
-                        className="review-btn"
-                        onClick={() => handleWriteReview(order.orderId)}
-                      >
-                        Write a Review
-                      </button>
-                      
-                      <button 
-                        className="reorder-btn"
-                        onClick={() => handleBuyAgain(order)}
-                      >
-                        Buy Again
-                      </button>
-                    </>
+                    <button 
+                      className="reorder-btn"
+                      onClick={() => handleBuyAgain(order)}
+                    >
+                      Buy Again
+                    </button>
                   )}
                 </div>
               </div>
