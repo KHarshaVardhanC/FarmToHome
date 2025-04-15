@@ -1,0 +1,403 @@
+.my-orders-page {
+  min-height: 100vh;
+  background-color: #f7f9fc;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  padding-bottom: 40px;
+}
+
+.orders-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.orders-title {
+  font-size: 32px;
+  margin-bottom: 30px;
+  color: #2c3e50;
+  text-align: center;
+  font-weight: 600;
+  position: relative;
+}
+
+.orders-title:after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background-color: #4caf50;
+  margin: 10px auto 0;
+  border-radius: 3px;
+}
+
+.loading, .error-message, .empty-orders {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 18px;
+  color: #7f8c8d;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.loading {
+  position: relative;
+}
+
+.loading:after {
+  content: '...';
+  position: absolute;
+  animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+.error-message {
+  color: #e74c3c;
+  border-left: 4px solid #e74c3c;
+}
+
+.shop-now-btn {
+  display: block;
+  margin: 25px auto 0;
+  padding: 12px 28px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(76, 175, 80, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.shop-now-btn:hover {
+  background-color: #388e3c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+}
+
+.shop-now-btn:active {
+  transform: translateY(0);
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.order-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.order-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.order-id {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 15px;
+}
+
+.order-status {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-ordered {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #bbdefb;
+}
+
+.status-processing {
+  background-color: #fff8e1;
+  color: #ff8f00;
+  border: 1px solid #ffe082;
+}
+
+.status-delivered {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.order-content {
+  display: flex;
+  padding: 25px 20px;
+}
+
+.order-image {
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+  margin-right: 25px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.order-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.order-card:hover .order-image img {
+  transform: scale(1.05);
+}
+
+.order-details {
+  flex-grow: 1;
+}
+
+.product-name {
+  font-size: 20px;
+  margin-bottom: 12px;
+  color: #2c3e50;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.order-quantity, .order-price, .order-total {
+  margin: 8px 0;
+  color: #505a62;
+  font-size: 15px;
+}
+
+.order-total {
+  font-weight: 700;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.product-description {
+  margin: 15px 0;
+  color: #7f8c8d;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.seller-info {
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid #eef2f7;
+}
+
+.seller-name, .seller-location {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin: 5px 0;
+}
+
+.seller-name {
+  font-weight: 500;
+}
+
+.order-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  background-color: #fafbfc;
+  border-top: 1px solid #eef2f7;
+  gap: 12px;
+}
+
+.review-btn, .reorder-btn, .invoice-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.review-btn {
+  background-color: #ecf0f1;
+  color: #34495e;
+  border: 1px solid #dde4e6;
+}
+
+.review-btn:hover {
+  background-color: #dde4e6;
+  color: #2c3e50;
+}
+
+.invoice-btn {
+  background-color: #3498db;
+  color: white;
+  border: 1px solid #2980b9;
+  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+}
+
+.invoice-btn:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.invoice-btn:active {
+  transform: translateY(0);
+}
+
+.reorder-btn {
+  background-color: #4caf50;
+  color: white;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.reorder-btn:hover {
+  background-color: #388e3c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.reorder-btn:active {
+  transform: translateY(0);
+}
+
+/* Add icons before button text */
+.review-btn:before, .reorder-btn:before, .invoice-btn:before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.review-btn:before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%2334495e' viewBox='0 0 24 24'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
+}
+
+.invoice-btn:before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z'/%3E%3C/svg%3E");
+}
+
+.reorder-btn:before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M17 18a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2c0-1.11.89-2 2-2M1 2h3.27l.94 2H20a1 1 0 0 1 1 1c0 .17-.05.34-.12.5l-3.58 6.47c-.34.61-1 1.03-1.75 1.03H8.1l-.9 1.63l-.03.12a.25.25 0 0 0 .25.25H19v2H7a2 2 0 0 1-2-2c0-.35.09-.68.24-.96l1.36-2.45L3 4H1V2m6 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2c0-1.11.89-2 2-2z'/%3E%3C/svg%3E");
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .orders-container {
+    padding: 20px 15px;
+  }
+  
+  .order-content {
+    padding: 20px 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .orders-title {
+    font-size: 28px;
+  }
+  
+  .order-content {
+    flex-direction: column;
+  }
+  
+  .order-image {
+    width: 100%;
+    height: 220px;
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+  
+  .product-name {
+    font-size: 18px;
+  }
+  
+  .order-actions {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  
+  .review-btn, .reorder-btn, .invoice-btn {
+    flex: 1 0 auto;
+    min-width: 120px;
+    margin: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .orders-title {
+    font-size: 24px;
+  }
+  
+  .order-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .order-status {
+    align-self: flex-start;
+  }
+  
+  .order-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .review-btn, .reorder-btn, .invoice-btn {
+    width: 100%;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.order-card {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.orders-list .order-card:nth-child(1) { animation-delay: 0.1s; }
+.orders-list .order-card:nth-child(2) { animation-delay: 0.2s; }
+.orders-list .order-card:nth-child(3) { animation-delay: 0.3s; }
+.orders-list .order-card:nth-child(4) { animation-delay: 0.4s; }
+.orders-list .order-card:nth-child(5) { animation-delay: 0.5s; }

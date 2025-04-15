@@ -115,7 +115,17 @@ public class OrderControllerImpl implements OrderController {
 				customerorderdto.setProductDescription(product.getProductDescription());
 				customerorderdto.setOrderStatus(order.getOrderStatus());
 				customerorderdto.setProductQuantityType(product.getProductQuantityType());
-
+				
+				if(ratingService.getRatingByOrderId(order.getOrderId()))
+				{
+					customerorderdto.setOrderRatingStatus("Rated");
+				}
+				else
+				{
+					customerorderdto.setOrderRatingStatus("Not Rated");
+					
+				}
+				
 				Seller seller = product.getSeller();
 				customerorderdto.setSellerName(seller.getSellerFirstName() + " " + seller.getSellerLastName());
 				customerorders.add(customerorderdto);
@@ -174,6 +184,7 @@ public class OrderControllerImpl implements OrderController {
 		Order order = modelMapper.map(orderDTO, Order.class);
 		order.setOrderStatus("Incart");
 
+		
 		return orderService.addOrder(order);
 	}
 

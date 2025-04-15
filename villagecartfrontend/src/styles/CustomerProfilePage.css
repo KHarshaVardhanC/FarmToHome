@@ -1,0 +1,117 @@
+.profile-page {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+  }
+  
+  .profile-container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .profile-container h1 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+  }
+  
+  .profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .profile-avatar {
+    font-size: 70px;
+    color: #3498db;
+    margin-right: 20px;
+  }
+  
+  .profile-name {
+    flex: 1;
+  }
+  
+  .profile-name h2 {
+    margin: 0;
+    color: #2c3e50;
+  }
+  
+  .member-since {
+    color: #7f8c8d;
+    margin: 5px 0 0;
+  }
+  
+  .profile-section {
+    margin-bottom: 30px;
+  }
+  
+  .profile-section h3 {
+    color: #3498db;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .info-row {
+    display: flex;
+    margin-bottom: 10px;
+    padding: 5px 0;
+  }
+  
+  .info-label {
+    width: 120px;
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .info-value {
+    flex: 1;
+    color: #333;
+  }
+  
+  .profile-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+  }
+  
+  .edit-profile-btn, .change-password-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
+  }
+  
+  .edit-profile-btn {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .edit-profile-btn:hover {
+    background-color: #2980b9;
+  }
+  
+  .change-password-btn {
+    background-color: #f1f1f1;
+    color: #333;
+  }
+  
+  .change-password-btn:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .profile-loading, .profile-error {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+  }
+  
+  .profile-error {
+    color: #e74c3c;
+  }

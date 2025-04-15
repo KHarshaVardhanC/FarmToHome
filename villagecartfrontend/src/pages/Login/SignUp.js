@@ -155,13 +155,6 @@ const Signup = () => {
         data = { message: responseText || 'Unknown error occurred' };
       }
 
-   // Check if response includes email already exists message
-//    if (responseText.toLowerCase().includes('already exists') || 
-//    responseText.toLowerCase().includes('already registered')) {
-//  setErrors({
-//    general: "An account with this email already exists. Please login."
-//  });
-
     // Replace the email exists check section in handleSubmit
 if (responseText.toLowerCase().includes('already exists') || 
 responseText.toLowerCase().includes('already registered')) {
@@ -236,7 +229,7 @@ setIsLoading(false);
           >
             <option value="customer">Customer</option>
             <option value="seller">Seller</option>
-            <option value="seller">Seller</option>
+          
           </select>
         </div>
 

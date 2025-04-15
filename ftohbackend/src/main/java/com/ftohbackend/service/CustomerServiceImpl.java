@@ -3,6 +3,7 @@ package com.ftohbackend.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,10 +61,13 @@ public class CustomerServiceImpl implements CustomerService {
 			existingCustomer.setCustomerLastName(customer.getCustomerLastName());
 		}
 		if (customer.getCustomerEmail() != null) {
+			
 			existingCustomer.setCustomerEmail(customer.getCustomerEmail());
 		}
 		if (customer.getCustomerPassword() != null) {
-			existingCustomer.setCustomerPassword(customer.getCustomerPassword());
+			BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+			existingCustomer.setCustomerPassword(passwordEncoder.encode( customer.getCustomerPassword()));
 		}
 		if (customer.getCustomerCity() != null) {
 			existingCustomer.setCustomerCity(customer.getCustomerCity());
