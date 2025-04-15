@@ -96,7 +96,7 @@ const ProductDetails = () => {
         <div className="container-fluid px-4 py-2 d-flex justify-content-between align-items-center">
           <Link to="/SellerHome" className="text-decoration-none d-flex align-items-center">
             <i className="fas fa-leaf text-success me-2 fs-4"></i>
-            <span className="fw-bold fs-4 text-success">FarmToHome</span>
+            <span className="fw-bold fs-4 text-success">Village Cart</span>
           </Link>
           <div className="d-flex gap-3">
             <Link to="/view-products" className="btn btn-outline-primary">
