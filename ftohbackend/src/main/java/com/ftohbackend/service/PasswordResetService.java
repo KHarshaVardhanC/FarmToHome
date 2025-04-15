@@ -8,6 +8,7 @@ import com.ftohbackend.model.Seller;
 
 @Service
 public class PasswordResetService {
+	
 
 	public void updatePassword(Object user, String newPassword) {
 		if (user instanceof Customer) {

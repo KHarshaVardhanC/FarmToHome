@@ -1,6 +1,9 @@
 import React from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
+import CartPage from "./components/CartPage";
+import MyOrders from './components/MyOrders';
+import MyProfile from './components/MyProfile';
 import About from './pages/About';
 import AddProduct from './pages/AddProduct';
 import Admin from './pages/Admin';
@@ -11,21 +14,19 @@ import SignIn from './pages/Login/SignIn';
 import SignUp from './pages/Login/SignUp';
 import MainHome from './pages/MainHome';
 import OrderInvoice from './pages/OrderInvoice';
-import CartPage from "./components/CartPage";
-import MyOrders from './components/MyOrders';
-import MyProfile from './components/MyProfile';
 
 import CustomerProfilePage from './components/CustomerProfilePage';
 // import SignUp from './pages/Login/SignUp';
 import CustomerHomePage from './components/CustomerHomePage'; 
 
+
+import RequireAuthSeller from './components/RequireAuth';
 import ProductDetails from './pages/ProductDetails';
 import Profile from './pages/Profile';
 import Rating from './pages/Rating';
 import ViewOrders from './pages/ViewOrders';
 import ViewProducts from './pages/ViewProducts';
 import ViewRatings from './pages/ViewRatings';
-import RequireAuthSeller from './components/RequireAuth';
 
 
 // Styles
@@ -79,6 +80,10 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/customer-home" element={<CustomerHomePage />} /> 
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/my-orders" element={<MyOrders />} />
+          <Route path="/myprofile" element={<MyProfile />}/>
 
           <Route path="/invoice/:orderId" element={<OrderInvoice />} />
          

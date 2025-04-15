@@ -3,6 +3,7 @@ package com.ftohbackend.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ftohbackend.exception.SellerException;
@@ -23,6 +24,8 @@ public class SellerServiceimpl implements SellerService {
 		if (seller == null) {
 			throw new SellerException("Seller object cannot be null.");
 		}
+		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        seller.setSellerPassword( passwordEncoder.encode(seller.getSellerPassword()));
 		sellerRepository.save(seller);
 		return "Seller Added Successfully";
 	}
@@ -76,8 +79,11 @@ public class SellerServiceimpl implements SellerService {
 		sl.setSellerFirstName(seller.getSellerFirstName());
 		sl.setSellerLastName(seller.getSellerLastName());
 		sl.setSellerEmail(seller.getSellerEmail());
+//		sl.setSellerEmail("kattaharshavardhan67@gmail.com");
 		sl.setSellerMobileNumber(seller.getSellerMobileNumber());
-		sl.setSellerPassword(seller.getSellerPassword());
+//		sl.setSellerPassword(seller.getSellerPassword());
+		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        sl.setSellerPassword( passwordEncoder.encode(seller.getSellerPassword()));
 		sl.setSellerStatus(seller.getSellerStatus());
 		sellerRepository.save(sl);
 		return "Updated Seller Details Successfully";
