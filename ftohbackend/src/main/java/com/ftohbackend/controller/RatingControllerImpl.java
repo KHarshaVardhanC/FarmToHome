@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ftohbackend.dto.ProductRatingDTO;
 import com.ftohbackend.dto.RatingDTO;
 import com.ftohbackend.exception.RatingException;
+import com.ftohbackend.model.Order;
 import com.ftohbackend.model.Rating;
 import com.ftohbackend.service.CustomerService;
+import com.ftohbackend.service.OrderService;
 import com.ftohbackend.service.RatingService;
 @CrossOrigin(origins = "*")
 
@@ -36,6 +38,9 @@ public class RatingControllerImpl implements RatingController {
 	@Autowired
 	private ModelMapper modelMapper;
 	
+	@Autowired 
+	OrderService orderService;
+	
 	@Override
 	@PostMapping("")
 	public String addRating(@RequestBody RatingDTO ratingDTO) throws Exception {
@@ -44,10 +49,15 @@ public class RatingControllerImpl implements RatingController {
 		
 		
 		
-		Rating rating = modelMapper.map(ratingDTO, Rating.class);
+		Rating rating =modelMapper.map(ratingDTO, Rating.class);
+		Order order=orderService.getOrderById(ratingDTO.getOrderId());
+		rating.setCustomer(order.getCustomer());
+		rating.setProduct(order.getProduct());
+		
+		System.out.println(rating.getCustomer().getCustomerFirstName());
+		System.out.println(rating.getProduct().getProductName());
 		
 		return ratingService.addRating(rating);
-		
 		
 	}
 	

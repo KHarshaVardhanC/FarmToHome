@@ -26,6 +26,7 @@ public class CustomerOrderDTO {
 	String customerCity;
 	String customerState;
 	String customerPincode;
-	String ProductQuantityType;
+	String productQuantityType;
+	String orderRatingStatus;
 
 }

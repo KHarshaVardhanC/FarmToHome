@@ -10,7 +10,6 @@ import com.ftohbackend.exception.CustomerException;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.repository.CustomerRepository;
 
-//service
 @Service
 public class CustomerServiceImpl implements CustomerService {
 

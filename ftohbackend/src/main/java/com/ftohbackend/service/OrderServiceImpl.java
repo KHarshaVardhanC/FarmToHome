@@ -65,7 +65,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public String addOrder(Order order) throws OrderException, ProductException {
+	public String addOrder(Order order) throws OrderException, ProductException, Exception {
 		if (order == null || order.getCustomer() == null || order.getProduct() == null) {
 			throw new OrderException("Order, customer, or product details cannot be null");
 		}
@@ -75,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
 
 		if (order.getOrderQuantity() <= product.getProductQuantity()) {
 //    		 product.setProductQuantity( product.getProductQuantity() - order.getOrderQuantity());
-//    		 productService.updateProduct(product.getProductId(), product);
+			productService.updateProduct(product.getProductId(), product);
 			orderRepository.save(order);
 			return "Order Successful";
 		} else {
@@ -90,8 +90,13 @@ public class OrderServiceImpl implements OrderService {
 		if (sellerId == null) {
 			throw new OrderException("Seller ID cannot be null");
 		}
-		List<Order> orders = orderRepository.findAll().stream()
-				.filter(x -> x.getProduct().getSeller().getSellerId() == sellerId).toList();
+//		List<Order> orders = orderRepository.findAll().stream()
+//				.filter(x -> x.getProduct().getSeller().getSellerId() == sellerId).toList();
+
+		
+		List<Order> orders = orderRepository.findByProductSellerSellerId(sellerId);
+		
+		
 
 		if (orders.isEmpty()) {
 			throw new OrderException("No orders found for seller ID: " + sellerId);
@@ -110,7 +115,8 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public String updateOrderStatus(Integer orderId, String newStatus) throws Exception, OrderException, ProductException {
+	public String updateOrderStatus(Integer orderId, String newStatus)
+			throws Exception, OrderException, ProductException {
 		if (orderId == null) {
 			throw new OrderException("Order ID cannot be null");
 		}
@@ -122,7 +128,7 @@ public class OrderServiceImpl implements OrderService {
 		if (!isValidOrderStatus(newStatus)) {
 			throw new OrderException("Invalid order status: " + newStatus);
 		}
-		if (newStatus.equalsIgnoreCase("ordered")) {
+		if (newStatus.equalsIgnoreCase("ordered") || newStatus.equalsIgnoreCase("Ordered")) {
 
 //        System.out.println(order.getOrderStatus());
 			Product product = order.getProduct();
@@ -139,13 +145,11 @@ public class OrderServiceImpl implements OrderService {
 				orderRepository.save(order);
 				return "Quantity Exceeded! \n  Order failed \n try Again";
 			}
-		}
-		else if(newStatus.equalsIgnoreCase("delivered"))
-		{
+		} else if (newStatus.equalsIgnoreCase("delivered") || newStatus.equalsIgnoreCase("Delivered")) {
 			order.setOrderStatus(newStatus);
 			orderRepository.save(order);
 			return "Ordered Delivered Successfully";
-			
+
 		}
 
 		return "success";
@@ -161,33 +165,33 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public CustomerOrderDTO getOrderInvoice(Integer orderId) throws Exception {
 
-		CustomerOrderDTO customerOrderDTO=new CustomerOrderDTO();
-		Order order=orderRepository.findById(orderId).get();
+		CustomerOrderDTO customerOrderDTO = new CustomerOrderDTO();
+		Order order = orderRepository.findById(orderId).get();
 		customerOrderDTO.setOrderId(order.getOrderId());
 		customerOrderDTO.setOrderQuantity(order.getOrderQuantity());
 		customerOrderDTO.setOrderStatus(order.getOrderStatus());
-		
-		Product product=order.getProduct();
+
+		Product product = order.getProduct();
 		customerOrderDTO.setProductName(product.getProductName());
 		customerOrderDTO.setProductDescription(product.getProductDescription());
 		customerOrderDTO.setProductPrice(product.getProductPrice());
 		customerOrderDTO.setProductQuantityType(product.getProductQuantityType());
 		customerOrderDTO.setImageUrl(product.getImageUrl());
-		
-		Customer customer=order.getCustomer();
-		customerOrderDTO.setCustomerName(customer.getCustomerFirstName() + " "+ customer.getCustomerLastName());
+
+		Customer customer = order.getCustomer();
+		customerOrderDTO.setCustomerName(customer.getCustomerFirstName() + " " + customer.getCustomerLastName());
 		customerOrderDTO.setCustomerCity(customer.getCustomerCity());
 		customerOrderDTO.setCustomerPlace(customer.getCustomerPlace());
 		customerOrderDTO.setCustomerPincode(customer.getCustomerPincode());
 		customerOrderDTO.setCustomerState(customer.getCustomerState());
 
-		Seller seller=order.getProduct().getSeller();
-		customerOrderDTO.setSellerName(seller.getSellerFirstName() + " "+ seller.getSellerLastName());
+		Seller seller = order.getProduct().getSeller();
+		customerOrderDTO.setSellerName(seller.getSellerFirstName() + " " + seller.getSellerLastName());
 		customerOrderDTO.setSellerCity(seller.getSellerCity());
 		customerOrderDTO.setSellerPlace(seller.getSellerPlace());
 		customerOrderDTO.setSellerPincode(seller.getSellerPincode());
 		customerOrderDTO.setSellerState(seller.getSellerState());
-		
+
 		return customerOrderDTO;
 	}
 }

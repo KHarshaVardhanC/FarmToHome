@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { submitRating } from '../utils/api';
 import '../styles/Rating.css';
@@ -14,8 +14,6 @@ const Rating = () => {
     // Get customer ID from localStorage
     // const customerId = localStorage.getItem('customerId');
     const customerId = 1;
-
-
 
     const handleRatingChange = (value) => {
         setRating(value);
@@ -47,7 +45,7 @@ const Rating = () => {
 
         try {
             setIsSubmitting(true);
-            const response = await submitRating(ratingData);
+            await submitRating(ratingData);
             setMessage('Thank you for your feedback!');
             // Reset form
             setRating(0);
