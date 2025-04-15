@@ -187,6 +187,7 @@ public class ForgotPasswordController {
             }
 
             passwordResetService.updatePassword(seller, request.getNewPassword());
+            
             sellerRepo.save(seller);
 
         } 

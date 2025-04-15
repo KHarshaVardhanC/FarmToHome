@@ -10,7 +10,7 @@ import vegetablesImg from '../images/vegetables.jpg';
 import dairyImg from '../images/dairy.jpg';
 import seedsImg from '../images/grains.jpg';
 
-const Home = () => {
+const MainHome = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]); // Added state for filtered products
   const [searchTerm, setSearchTerm] = useState(''); // Added state for search term
@@ -61,7 +61,7 @@ const Home = () => {
     dots: true,
     infinite: true,
     speed: 1000,
-    slidesToShow: 1, // Show all 4 categories at once
+    slidesToShow: 1, // Show one category at a time
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
@@ -69,13 +69,13 @@ const Home = () => {
       {
         breakpoint: 992,
         settings: {
-          slidesToShow: 3,
+          slidesToShow: 1,
         },
       },
       {
         breakpoint: 768,
         settings: {
-          slidesToShow: 2,
+          slidesToShow: 1,
         },
       },
       {
@@ -117,7 +117,7 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="loading-screen">
+      <div className="mainhome-loading-screen">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -130,38 +130,37 @@ const Home = () => {
   }
 
   return (
-    <div className="home-page">
-      {/* Navbar */}
-      <nav className="navbar navbar-light bg-white shadow-sm">
+    <div className="mainhome-container">
+      {/* Top Nav */}
+      <nav className="navbar navbar-light bg-white shadow-sm mainhome-navbar">
         <div className="container-fluid px-4 py-2 d-flex justify-content-between align-items-center">
           <Link to="/" className="text-decoration-none d-flex align-items-center">
-            <i className="fas fa-leaf text-success me-2 logo-icon"></i>
+            <i className="fas fa-leaf text-success me-2 mainhome-logo-icon"></i>
             <span className="fw-bold fs-4 text-success">Village Cart</span>
           </Link>
           <div className="d-flex gap-4">
             <Link className="nav-link" to="/">Home</Link>
             <Link className="nav-link" to="/login">Login</Link>
-            <Link className="nav-link" to="/signup">Register</Link> {/* Changed from /register to /signup */}
+            <Link className="nav-link" to="/signup">Register</Link>
             <Link className="nav-link" to="/about">About Us</Link>
             <Link className="nav-link" to="/contact">Contact Us</Link>
           </div>
         </div>
       </nav>
 
-      {/* Category Carousel */}
-      <div className="category-carousel-container">
+      {/* Category Carousel using react-slick */}
+      <div className="mainhome-category-carousel">
         <div className="container">
-          <h3 className="section-title">Shop by Category</h3>
+          <h3 className="mainhome-section-title">Shop by Category</h3>
           <Slider {...carouselSettings}>
             {categories.map(category => (
               <div
                 key={category.id}
-                className="category-card cursor-pointer"
+                className="mainhome-category-card"
                 onClick={() => handleCategorySelect(category.slug)}
-                style={{ cursor: 'pointer' }}
               >
-                <img src={category.image} alt={category.name} className="category-image" />
-                <h5 className="category-name">{category.name}</h5>
+                <img src={category.image} alt={category.name} className="mainhome-category-image" />
+                <h5 className="mainhome-category-name">{category.name}</h5>
               </div>
             ))}
           </Slider>
@@ -173,11 +172,11 @@ const Home = () => {
         {selectedCategory ? (
           <div className="container py-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2 className="text-capitalize fw-bold">
+              <h2 className="text-capitalize fw-bold mainhome-section-title">
                 {selectedCategory} Products
               </h2>
               <button
-                className="btn btn-outline-secondary"
+                className="btn mainhome-category-filter-btn"
                 onClick={() => setSelectedCategory(null)}
               >
                 Show All Products
@@ -194,17 +193,17 @@ const Home = () => {
               <div className="row g-4">
                 {categoryProducts.map((product, index) => (
                   <div key={index} className="col-sm-6 col-md-4 col-lg-3">
-                    <div className="card h-100 shadow-sm product-card">
-                      <div className="product-img-container">
+                    <div className="card h-100 shadow-sm mainhome-product-card">
+                      <div className="mainhome-product-img-container">
                         <img
                           src={product.imageUrl}
-                          className="card-img-top product-img"
+                          className="mainhome-product-img"
                           alt={product.productName}
                         />
                       </div>
-                      <div className="card-body d-flex flex-column">
-                        <h5 className="card-title text-center">{product.productName}</h5>
-                        <p className="card-text text-center fw-bold mt-auto">₹{product.productPrice}/{product.productQuantityType || 'kg'}
+                      <div className="mainhome-card-body">
+                        <h5 className="mainhome-card-title text-center">{product.productName}</h5>
+                        <p className="mainhome-card-price text-center">₹{product.productPrice}/{product.productQuantityType || 'kg'}
                         </p>
                       </div>
                     </div>
@@ -220,24 +219,22 @@ const Home = () => {
         ) : (
           /* All Products */
           <div className="container py-5">
-            <h2 className="mb-4 fw-bold">All Products</h2>
+            <h2 className="mb-4 fw-bold mainhome-section-title">All Products</h2>
             <div className="row g-4">
               {filteredProducts.map((product, index) => (
                 <div key={index} className="col-sm-6 col-md-4 col-lg-3">
-                  <div className="card h-100 shadow-sm product-card">
-                    <div className="product-img-container">
+                  <div className="card h-100 shadow-sm mainhome-product-card">
+                    <div className="mainhome-product-img-container">
                       <img
                         src={product.imageUrl}
-                        className="card-img-top product-img"
+                        className="mainhome-product-img"
                         alt={product.productName}
                       />
                     </div>
-                    <div className="card-body d-flex flex-column">
-                      <h5 className="card-title text-center">{product.productName}</h5>
-                      <p className="card-text text-center fw-bold mt-auto">₹{product.productPrice}/{product.productQuantityType || 'kg'}
+                    <div className="mainhome-card-body">
+                      <h5 className="mainhome-card-title text-center">{product.productName}</h5>
+                      <p className="mainhome-card-price text-center">₹{product.productPrice}/{product.productQuantityType || 'kg'}
                       </p>
-
-
                     </div>
                   </div>
                 </div>
@@ -248,11 +245,11 @@ const Home = () => {
       </div>
 
       {/* Footer */}
-      <footer className="footer text-white text-center py-3 mt-5">
+      <footer className="mainhome-footer text-white text-center py-3">
         © 2025 Village Cart. All rights reserved.
       </footer>
     </div>
   );
 };
 
-export default Home;
+export default MainHome;

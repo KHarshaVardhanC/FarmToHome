@@ -1,79 +1,161 @@
-/* Add these styles to your MainHome.css file */
+/* MainHome.css - Specific styles with namespaced classes for the Village Cart home page */
 
-.product-img-container {
-  height: 200px;
-  overflow: hidden;
+/* Main container styling */
+.mainhome-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar styling */
+.mainhome-navbar {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.mainhome-logo-icon {
+  font-size: 1.5rem;
+}
+
+/* Loading spinner */
+.mainhome-loading-screen {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-.product-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* Section title styling */
+.mainhome-section-title {
+  position: relative;
+  font-weight: 600;
+  color: #2c3e50;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
-.product-card {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  transition: transform 0.3s ease;
+.mainhome-section-title:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 50px;
+  height: 3px;
+  background-color: #4CAF50;
 }
 
-.product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-}
-
-.card-body {
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.card-title {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-}
-
-.card-text.fw-bold {
-  font-size: 1.2rem;
-  color: #4a4a4a;
-  margin-top: auto;
-}
-
-.category-carousel-container {
+/* Category carousel styling */
+.mainhome-category-carousel {
   padding: 2rem 0;
   background-color: #f9f9f9;
 }
 
-.category-card {
+.mainhome-category-card {
   padding: 10px;
   cursor: pointer;
   text-align: center;
   transition: transform 0.3s ease;
 }
 
-.category-card:hover {
+.mainhome-category-card:hover {
   transform: scale(1.05);
 }
 
-.category-image {
+.mainhome-category-image {
   height: 400px;
   width: 100%;
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.category-name {
+.mainhome-category-name {
   font-size: 1.1rem;
   font-weight: 600;
   color: #333;
 }
 
-.footer {
+/* Product card styling */
+.mainhome-product-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 8px;
+  overflow: hidden;
+  border: none;
+}
+
+.mainhome-product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.mainhome-product-img-container {
+  height: 200px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+}
+
+.mainhome-product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.mainhome-product-card:hover .mainhome-product-img {
+  transform: scale(1.05);
+}
+
+.mainhome-card-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.mainhome-card-title {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+
+.mainhome-card-price {
+  font-size: 1.2rem;
+  color: #4CAF50;
+  margin-top: auto;
+  font-weight: bold;
+}
+
+/* Footer styling */
+.mainhome-footer {
   background-color: #2c3e50;
+  padding: 1.5rem 0;
+  margin-top: 2rem;
+}
+
+/* Category filter button */
+.mainhome-category-filter-btn {
+  background-color: transparent;
+  border: 1px solid #4CAF50;
+  color: #4CAF50;
+  transition: all 0.3s ease;
+}
+
+.mainhome-category-filter-btn:hover {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mainhome-category-image {
+    height: 250px;
+  }
+
+  .mainhome-product-img-container {
+    height: 150px;
+  }
 }

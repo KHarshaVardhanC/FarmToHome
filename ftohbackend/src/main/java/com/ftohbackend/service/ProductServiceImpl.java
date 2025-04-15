@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.ftohbackend.dto.CustomerProductDTO;
+import com.ftohbackend.dto.ProductCity;
 import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
 import com.ftohbackend.exception.ProductException;
@@ -277,6 +278,14 @@ public class ProductServiceImpl implements ProductService {
 
 		return productRepository.findByProductCategory(productCategory);
 
+	}
+
+	@Override
+	public List<CustomerProductDTO> searchProductsWithSellerDetails(ProductCity productCity) {
+		// TODO Auto-generated method stub
+		String productName=productCity.getProductName();
+		String cityName=productCity.getCityName();
+		return null;
 	}
 
 }
