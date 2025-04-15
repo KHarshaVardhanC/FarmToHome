@@ -1,6 +1,7 @@
 
 package com.ftohbackend.service;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ftohbackend.model.Customer;
@@ -11,10 +12,14 @@ public class PasswordResetService {
 	
 
 	public void updatePassword(Object user, String newPassword) {
+		
+		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		if (user instanceof Customer) {
-			((Customer) user).setCustomerPassword(newPassword);
+			
+			
+			((Customer) user).setCustomerPassword(passwordEncoder.encode(newPassword) );
 		} else if (user instanceof Seller) {
-			((Seller) user).setSellerPassword(newPassword);
+			((Seller) user).setSellerPassword(passwordEncoder.encode(newPassword));
 		} else {
 			throw new IllegalArgumentException("Unsupported user type");
 		}

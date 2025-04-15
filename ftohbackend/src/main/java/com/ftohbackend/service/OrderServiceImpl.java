@@ -70,7 +70,8 @@ public class OrderServiceImpl implements OrderService {
 			throw new OrderException("Order, customer, or product details cannot be null");
 		}
 		Product product = productService.getProduct(order.getProduct().getProductId());
-
+		
+//		Order order=OrderService
 //    	 System.out.println(product);
 
 		if (order.getOrderQuantity() <= product.getProductQuantity()) {

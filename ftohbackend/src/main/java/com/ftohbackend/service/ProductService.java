@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.ftohbackend.dto.CustomerProductDTO;
+import com.ftohbackend.dto.ProductCity;
 import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
 import com.ftohbackend.exception.ProductException;
@@ -36,6 +37,8 @@ public interface ProductService {
 	public ProductDTO addProduct(ProductRequest productRequest) throws IOException, Exception;
 
 	List<Product> getCategoryProducts(String productCategory) throws ProductException;
+
+	public List<CustomerProductDTO> searchProductsWithSellerDetails(ProductCity productCity);
 
 
 

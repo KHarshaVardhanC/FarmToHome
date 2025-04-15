@@ -67,7 +67,9 @@ public class CustomerServiceImpl implements CustomerService {
 		if (customer.getCustomerPassword() != null) {
 			BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-			existingCustomer.setCustomerPassword(passwordEncoder.encode( customer.getCustomerPassword()));
+			existingCustomer.setCustomerPassword(passwordEncoder.encode(customer.getCustomerPassword()));
+			
+			System.out.println( passwordEncoder.encode(customer.getCustomerPassword()));
 		}
 		if (customer.getCustomerCity() != null) {
 			existingCustomer.setCustomerCity(customer.getCustomerCity());
@@ -88,6 +90,7 @@ public class CustomerServiceImpl implements CustomerService {
 			existingCustomer.setCustomerIsActive(customer.getCustomerIsActive());
 		}
 
+		System.out.println("Hello");
 		customerRepository.save(existingCustomer);
 		return "Customer updated successfully";
 	}

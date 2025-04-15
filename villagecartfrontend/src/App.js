@@ -15,7 +15,10 @@ import SignUp from './pages/Login/SignUp';
 import MainHome from './pages/MainHome';
 import OrderInvoice from './pages/OrderInvoice';
 
-import CustomerHomePage from './components/CustomerHomePage';
+import CustomerProfilePage from './components/CustomerProfilePage';
+// import SignUp from './pages/Login/SignUp';
+import CustomerHomePage from './components/CustomerHomePage'; 
+
 
 import RequireAuthSeller from './components/RequireAuth';
 import ProductDetails from './pages/ProductDetails';
@@ -30,6 +33,8 @@ import ViewRatings from './pages/ViewRatings';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './assets/styles.css';
+import RequireAuthCustomer from './components/RequireAuthCustomer';
+import RequireAuthAdmin from './components/RequireAuthAdmin';
 
 
 function App() {
@@ -63,37 +68,47 @@ function App() {
             <RequireAuthSeller> <Profile />           </RequireAuthSeller>
           } />
           <Route
-            path="/SellerHome"
-            element={
-              <RequireAuthSeller>
-                <Home />
-              </RequireAuthSeller>
-            }
-          />
-          <Route path="/edit-product/:id" element={<EditProduct />} />
+            path="/SellerHome" element={<RequireAuthSeller> <Home /> </RequireAuthSeller>
+            } />
+          <Route path="/edit-product/:id" element={<RequireAuthSeller><EditProduct /></RequireAuthSeller>} />
           <Route path="review/:productId" element={<Rating />} />
 
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/add-product" element={<AddProduct />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/customer-home" element={<CustomerHomePage />} /> 
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/my-orders" element={<MyOrders />} />
-          <Route path="/myprofile" element={<MyProfile />}/>
-
-          <Route path="/invoice/:orderId" element={<OrderInvoice />} />
-         
-          <Route path="/login" element={<SignIn />} />
-          <Route path="/customer-home" element={<CustomerHomePage />} /> 
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/my-orders" element={<MyOrders />} />
-          <Route path="/myprofile" element={<MyProfile />}/>
           
+          <Route path="/admin" element={
+            <RequireAuthAdmin><Admin /></RequireAuthAdmin>
+          } />
+
+
+          {/* <Route path="/add-product" element={<AddProduct />} /> */}
+          {/* <Route path="/customer-home" element={<CustomerHomePage />} /> */}
+          {/* <Route path="/cart" element={<CartPage />} /> */}
+          {/* <Route path="/my-orders" element={<MyOrders />} /> */}
+          {/* <Route path="/myprofile" element={<MyProfile />} /> */}
+
+          <Route path="/invoice/:orderId" element={
+            <RequireAuthCustomer> <OrderInvoice /> </RequireAuthCustomer>
+          } />
+
+          <Route path="/login" element={<SignIn />} />
+          <Route path="/customer-home" element={
+            <RequireAuthCustomer><CustomerHomePage /></RequireAuthCustomer>
+          } />
+          <Route path="/cart" element={
+            <RequireAuthCustomer> <CartPage /></RequireAuthCustomer>
+          } />
+          <Route path="/my-orders" element={
+            <RequireAuthCustomer> <MyOrders /></RequireAuthCustomer>
+          } />
+          <Route path="/myprofile" element={
+            <RequireAuthCustomer> <MyProfile /></RequireAuthCustomer>
+          } />
+
 
           {/* ✅ Auth Routes */}
-        <Route path="/signup" element={<SignUp />} /> 
-        <Route path="/login" element={<SignIn/>}/>
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<SignIn />} />
 
           {/* Rating Route */}
           {/* <Route

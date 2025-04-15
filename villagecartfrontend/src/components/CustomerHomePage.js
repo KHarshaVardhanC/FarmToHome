@@ -77,8 +77,10 @@ function CustomerHomePage() {
   const fetchCustomerCart = async (id) => {
     try {
       const response = await axios.get(`http://localhost:8080/order/orders/incart/${id}`);
+      // Store the cart items returned from the API
       setCartItems(response.data);
     } catch (err) {
+      console.error('Error fetching cart:', err);
       try {
         const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
         setCartItems(savedCart);
@@ -107,7 +109,10 @@ function CustomerHomePage() {
     // First check if product already exists in cart
     const existingCartItems = [...cartItems];
     const existingItemIndex = existingCartItems.findIndex(
-      item => item.productId === product.productId
+      item => item.productId === product.productId || 
+              (item.orderId && item.orderStatus && 
+               item.orderStatus.toLowerCase() === "incart" && 
+               parseInt(item.productId) === parseInt(product.productId))
     );
     
     if (existingItemIndex >= 0) {
@@ -129,31 +134,30 @@ function CustomerHomePage() {
           setCartItems(updatedCartItems);
           
           // Also update localStorage
-          localStorage.setItem("cart", JSON.stringify(updatedCartItems));
+          if (!customerId) {
+            localStorage.setItem("cart", JSON.stringify(updatedCartItems));
+          }
           
-          alert("Item quantity updated in cart!");
+          
         }
       } catch (error) {
         console.error("Error updating cart item quantity:", error);
+        
       }
     } else {
       // Product doesn't exist in cart - add new item
       const orderData = {
         productId: product.productId,
         orderQuantity: 1, // Set default to 1kg
-        customerId: parseInt(customerId),
+        customerId: customerId ? parseInt(customerId) : null,
         orderStatus: "IN_CART"
       };
 
       try {
-        const response = await fetch("http://localhost:8080/order/add", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(orderData)
-        });
+        const response = await axios.post("http://localhost:8080/order/add", orderData);
 
-        if (response.ok) {
-          const result = await response.json();
+        if (response.status === 200 || response.status === 201) {
+          const result = response.data;
           const orderId = result.orderId;
 
           // Create a new cart item with full product details for UI
@@ -164,22 +168,25 @@ function CustomerHomePage() {
             productPrice: product.productPrice,
             imageUrl: product.imageUrl,
             orderQuantity: 1,
-            orderStatus: "IN_CART"
+            orderStatus: "Incart" // Match the case from API response
           };
 
           // Update the state with the new item
           const updatedCartItems = [...cartItems, newCartItem];
           setCartItems(updatedCartItems);
 
-          // Update localStorage
-          localStorage.setItem("cart", JSON.stringify(updatedCartItems));
+          // Update localStorage for non-logged in users
+          if (!customerId) {
+            localStorage.setItem("cart", JSON.stringify(updatedCartItems));
+          }
 
-          alert("Item added to cart!");
         } else {
           console.error("Failed to add to cart");
+          alert("Failed to add item to cart. Please try again.");
         }
       } catch (error) {
         console.error("Error adding to cart:", error);
+        alert("Error adding item to cart. Please try again.");
       }
     }
   };

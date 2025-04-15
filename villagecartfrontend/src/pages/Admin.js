@@ -728,7 +728,9 @@ const Admin = () => {
             <h2 className="admin-title">VillageCart Admin</h2>
             <button
                 className="admin-login-button"
-                onClick={() => window.location.href = '/login'}
+                onClick={() => {
+                    localStorage.clear()
+                    window.location.href = '/login'}}
             >
                 Admin Logout
             </button>
