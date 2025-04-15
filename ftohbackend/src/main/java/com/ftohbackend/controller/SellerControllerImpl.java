@@ -42,7 +42,7 @@ public class SellerControllerImpl implements SellerController {
 	MailServiceImpl mailServiceImpl;
 	
 	// Create a single instance of BCryptPasswordEncoder for consistent encoding
-	private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//	private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 	@Override
 	@PostMapping("")
@@ -54,7 +54,7 @@ public class SellerControllerImpl implements SellerController {
 			Seller seller = modelMapper.map(sellerdto, Seller.class);
 			// Don't encode the password here, as the Seller class already does it
 			// Just set the password directly
-			seller.setSellerPassword(sellerdto.getSellerPassword());
+//			seller.setSellerPassword(sellerdto.getSellerPassword()); 
 			sellerService.addSeller(seller);
 			mailServiceImpl.addMail(new Mails(sellerdto.getSellerEmail()));
 			
