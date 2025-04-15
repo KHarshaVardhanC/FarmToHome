@@ -730,7 +730,7 @@ const Admin = () => {
                 className="admin-login-button"
                 onClick={() => window.location.href = '/login'}
             >
-                Admin Login
+                Admin Logout
             </button>
         </div>
     );

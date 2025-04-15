@@ -226,7 +226,7 @@ const Home = () => {
         <div className="card-body">
           <h5 className="card-title">{product.productName}</h5>
           <p className="card-text mb-1 text-muted">
-            Stock remaining: {product.productQuantity} /{product.productQuantityType || 'kg'}
+            Stock remaining: {product.productQuantity} 
           </p>
           {product.productQuantity === 0 && (
             <div className="mb-2">
@@ -234,13 +234,18 @@ const Home = () => {
             </div>
           )}
           <p className="card-text mb-1">
-            <strong>Price: ₹{product.productPrice}</strong>
+            <strong>Price: ₹{product.productPrice} /{product.productQuantityType || 'kg'}</strong>
           </p>
           {productRatings[product.productId] ? (
             <p className="card-text mb-1">
               <span>{renderStars(parseFloat(productRatings[product.productId].average))}</span>
               <small className="text-muted ms-2">
-                ({productRatings[product.productId].average} / 5)
+              {!productRatings[product.productId]?.average ? (
+  <p>No ratings yet</p>
+) : (
+  <p>({productRatings[product.productId].average} / 5)</p>
+)}
+
               </small>
             </p>
           ) : (

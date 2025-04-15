@@ -42,7 +42,7 @@ public class ForgotPasswordController {
     private PasswordResetService passwordResetService;
 
     private final Random random = new Random();
-    private final int otpValidityInMillis = 5 * 60 * 1000; // 5 minutes
+    private final int otpValidityInMillis = 1 * 60 * 1000; // 1 minutes
 
     // In-memory OTP store
     private final Map<String, Integer> otpStore = new HashMap<>();
@@ -123,6 +123,45 @@ public class ForgotPasswordController {
         return new ResponseEntity<>("OTP verified successfully.", HttpStatus.OK);
     }
 
+//    @PostMapping("/resetPassword")
+//    public ResponseEntity<String> resetPassword(@RequestBody PasswordResetRequest request) throws SellerException {
+//        String userType = request.getUserType().toLowerCase();
+//        String email = request.getEmail();
+//
+//        if (!otpStore.containsKey(email)) {
+//            return new ResponseEntity<>("OTP not verified for this email.", HttpStatus.FORBIDDEN);
+//        }
+//
+//        if (userType.equals("customer")) {
+//            Customer customer = customerRepo.findByCustomerEmail(email);
+//            if (customer == null) {
+//                return new ResponseEntity<>("Customer not found.", HttpStatus.NOT_FOUND);
+//            }
+//            passwordResetService.updatePassword(customer, request.getNewPassword());
+//            customerRepo.save(customer);
+//
+//        } else if (userType.equals("seller")) {
+//            Seller seller = sellerRepo.findBySellerEmail(email);
+//            if (seller == null) {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                                     .body("Seller with email " + email + " not found.");
+//            }
+//
+//            passwordResetService.updatePassword(seller, request.getNewPassword());
+//            sellerRepo.save(seller);
+//
+//        } 
+//        else {
+//            return new ResponseEntity<>("Invalid user type.", HttpStatus.BAD_REQUEST);
+//        }
+//
+//        otpStore.remove(email);
+//        otpExpiry.remove(email);
+//
+//        return new ResponseEntity<>("Password reset successful.", HttpStatus.OK);
+//    }
+
+    
     @PostMapping("/resetPassword")
     public ResponseEntity<String> resetPassword(@RequestBody PasswordResetRequest request) throws SellerException {
         String userType = request.getUserType().toLowerCase();
