@@ -41,28 +41,40 @@ const Admin = () => {
         const loadData = async () => {
             setLoading(true);
             setError(null);
-
+    
             try {
                 if (view === 'sellers' || view === 'home') {
                     try {
                         const sellersData = await fetchSellers();
+                        console.log("Fetched sellers:", sellersData); // 👈 debug
                         setSellers(sellersData || []);
                     } catch (err) {
                         console.error('Error fetching sellers:', err);
-                        setError(err.message || 'Failed to load sellers');
+                        setError(prev => prev ? `${prev}; Failed to load sellers` : 'Failed to load sellers');
                     }
                 }
-
+    
                 if (view === 'customers' || view === 'home') {
                     try {
                         const customersData = await fetchCustomers();
-                        setCustomers(customersData || []);
+                        const enrichedCustomers = await Promise.all(
+                            (customersData || []).map(async (customer) => {
+                                try {
+                                    const customerOrders = await fetchCustomerOrders(customer.id || customer.customerId);
+                                    return { ...customer, orders: customerOrders || [] };
+                                } catch (orderErr) {
+                                    console.error('Error fetching orders for customer:', customer.id || customer.customerId, orderErr);
+                                    return { ...customer, orders: [] };
+                                }
+                            })
+                        );
+                        setCustomers(enrichedCustomers);
                     } catch (err) {
                         console.error('Error fetching customers:', err);
                         setError(prev => prev ? `${prev}; Failed to load customers` : 'Failed to load customers');
                     }
                 }
-
+    
                 if (view === 'products' || view === 'home') {
                     try {
                         const productsData = await fetchProducts();
@@ -72,6 +84,7 @@ const Admin = () => {
                         setError(prev => prev ? `${prev}; Failed to load products` : 'Failed to load products');
                     }
                 }
+    
             } catch (err) {
                 console.error('General error:', err);
                 setError('Failed to load data - please check your connection');
@@ -79,9 +92,10 @@ const Admin = () => {
                 setLoading(false);
             }
         };
-
+    
         loadData();
     }, [view]);
+    
 
     const handleSellerClick = async (seller) => {
         setLoading(true);
@@ -709,18 +723,31 @@ const Admin = () => {
         );
     };
 
-    return (
-        <div className="admin-container">
-            {error && <div className="global-error">{error}</div>}
-
-            {view === 'home' && renderHome()}
-            {view === 'products' && renderProducts()}
-            {view === 'sellers' && renderSellers()}
-            {view === 'seller-details' && renderSellerDetails()}
-            {view === 'customers' && renderCustomers()}
-            {view === 'customer-details' && renderCustomerDetails()}
+    const renderTopBar = () => (
+        <div className="admin-topbar">
+            <h2 className="admin-title">VillageCart Admin</h2>
+            <button
+                className="admin-login-button"
+                onClick={() => window.location.href = '/login'}
+            >
+                Admin Logout
+            </button>
         </div>
     );
+    
+    return (
+        <div className="admin-container">
+        {renderTopBar()}
+        {error && <div className="global-error">{error}</div>}
+
+        {view === 'home' && renderHome()}
+        {view === 'products' && renderProducts()}
+        {view === 'sellers' && renderSellers()}
+        {view === 'seller-details' && renderSellerDetails()}
+        {view === 'customers' && renderCustomers()}
+        {view === 'customer-details' && renderCustomerDetails()}
+    </div>
+);
 };
 
 export default Admin;

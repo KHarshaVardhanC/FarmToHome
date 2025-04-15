@@ -45,10 +45,7 @@ public class Customer {
 	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Rating> ratings = new ArrayList<>();
 
-	public void setCustomerPassword(String customerPassword) {
-		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-		this.customerPassword = passwordEncoder.encode(customerPassword);
-	}
+	
 
 	public boolean verifyPassword(String rawPassword) {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();

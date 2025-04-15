@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ftohbackend.controller.ProductController;
 import com.ftohbackend.controller.ProductControllerImpl;
 import com.ftohbackend.dto.CustomerProductDTO;
 import com.ftohbackend.dto.ProductDTO;
@@ -40,10 +41,10 @@ import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Product;
 import com.ftohbackend.model.Seller;
 import com.ftohbackend.service.ProductService;
-@WebMvcTest
-@ContextConfiguration(classes = { ProductControllerImpl.class })//@AutoConfigureMockMvc
-//@AutoConfigureMockMvc(addFilters = false)
+import com.ftohbackend.service.ProductServiceImpl;
 
+@WebMvcTest(ProductControllerImpl.class)
+@ContextConfiguration(classes = { ProductController.class})
 public class ProductControllerTest {
 
     @Autowired
@@ -55,8 +56,8 @@ public class ProductControllerTest {
     @MockBean
     private ProductService productService;
 
-//    @MockBean
-//    private ProductServiceImpl productServiceImpl;
+    @MockBean
+    private ProductServiceImpl productServiceImpl;
 
     @MockBean
     private ModelMapper modelMapper;
@@ -121,7 +122,6 @@ public class ProductControllerTest {
         productRequest.setProductQuantityType("kg");
         productRequest.setProductDescription("A test product description");
         productRequest.setProductCategory("Grocery");
-        // Note: MultipartFile can't be directly set here, it will be mocked in the test
 
         // Setup CustomerProductDTO
         customerProductDTO = new CustomerProductDTO();
@@ -162,8 +162,8 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("JUnit test for addProduct operation")
-    public void givenProductRequest_whenAddProduct_thenReturnProductDTO() throws Exception {
+    @DisplayName("Test addProduct method")
+    public void testAddProduct() throws Exception {
         // given - precondition or setup
         MockMultipartFile imageFile = new MockMultipartFile(
             "image", 
@@ -197,8 +197,8 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("JUnit test for getCustomerProductByProductId operation")
-    public void givenProductId_whenGetCustomerProductByProductId_thenReturnCustomerProductDTO() throws Exception {
+    @DisplayName("Test getCustomerProductByProductId method")
+    public void testGetCustomerProductByProductId() throws Exception {
         // given - precondition or setup
         given(productService.getProduct(anyInt())).willReturn(product);
 
@@ -214,8 +214,8 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("JUnit test for getProductByName operation")
-    public void givenProductName_whenGetProductByName_thenReturnListOfCustomerProductDTO() throws Exception {
+    @DisplayName("Test getProductByName method")
+    public void testGetProductByName() throws Exception {
         // given - precondition or setup
         List<CustomerProductDTO> customerProducts = Arrays.asList(customerProductDTO);
         given(productService.searchProductsWithSellerDetails(anyString())).willReturn(customerProducts);
@@ -232,8 +232,8 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("JUnit test for updateProduct operation")
-    public void givenProductIdAndProductDTO_whenUpdateProduct_thenReturnSuccessMessage() throws Exception {
+    @DisplayName("Test updateProduct method")
+    public void testUpdateProduct() throws Exception {
         // given - precondition or setup
         given(modelMapper.map(any(ProductDTO.class), any())).willReturn(product);
         given(productService.updateProduct(anyInt(), any(Product.class))).willReturn("Product updated successfully");
@@ -250,8 +250,8 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("JUnit test for deleteProduct operation")
-    public void givenProductId_whenDeleteProduct_thenReturnSuccessMessage() throws Exception {
+    @DisplayName("Test deleteProduct method")
+    public void testDeleteProduct() throws Exception {
         // given - precondition or setup
         given(productService.deleteProduct(anyInt())).willReturn("Product deleted successfully");
 
@@ -265,8 +265,8 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("JUnit test for getAllProducts operation")
-    public void givenProductsList_whenGetAllProducts_thenReturnProductsList() throws Exception {
+    @DisplayName("Test getAllProducts method")
+    public void testGetAllProducts() throws Exception {
         // given - precondition or setup
         List<Product> products = Arrays.asList(product);
         List<ProductDTO> productDTOs = Arrays.asList(productDTO);
@@ -284,8 +284,8 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("JUnit test for getCategoryProducts operation")
-    public void givenProductCategory_whenGetCategoryProducts_thenReturnProductsList() throws Exception {
+    @DisplayName("Test getCategoryProducts method")
+    public void testGetCategoryProducts() throws Exception {
         // given - precondition or setup
         List<Product> products = Arrays.asList(product);
         List<ProductDTO> productDTOs = Arrays.asList(productDTO);
@@ -303,8 +303,8 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("JUnit test for getProducts operation")
-    public void givenSellerId_whenGetProducts_thenReturnSellerProductDTOsList() throws Exception {
+    @DisplayName("Test getProducts method for seller")
+    public void testGetProductsBySellerId() throws Exception {
         // given - precondition or setup
         List<Product> products = Arrays.asList(product);
         given(productService.getAllProduct(anyInt())).willReturn(products);
@@ -321,8 +321,8 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("JUnit test for getProduct operation")
-    public void givenProductId_whenGetProduct_thenReturnProductDTO() throws Exception {
+    @DisplayName("Test getProduct method by ID")
+    public void testGetProductById() throws Exception {
         // given - precondition or setup
         given(productService.getProduct(anyInt())).willReturn(product);
         given(modelMapper.map(any(Product.class), any())).willReturn(productDTO);
@@ -338,8 +338,8 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("JUnit test for getProduct operation - ProductException")
-    public void givenInvalidProductId_whenGetProduct_thenThrowProductException() throws Exception {
+    @DisplayName("Test getProduct method throws ProductException")
+    public void testGetProductByIdThrowsException() throws Exception {
         // given - precondition or setup
         given(productService.getProduct(anyInt())).willThrow(new ProductException("Product not found"));
 
@@ -352,8 +352,8 @@ public class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("JUnit test for addProduct operation - Exception")
-    public void givenInvalidProductRequest_whenAddProduct_thenThrowException() throws Exception {
+    @DisplayName("Test addProduct method throws Exception")
+    public void testAddProductThrowsException() throws Exception {
         // given - precondition or setup
         MockMultipartFile imageFile = new MockMultipartFile(
             "image", 

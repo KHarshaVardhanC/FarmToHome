@@ -172,8 +172,9 @@ public class OrderControllerImpl implements OrderController {
 	public String addOrder(@RequestBody OrderDTO orderDTO) throws Exception, OrderException {
 
 		Order order = modelMapper.map(orderDTO, Order.class);
-		order.setOrderStatus("In Cart");
+		order.setOrderStatus("Incart");
 
+		
 		return orderService.addOrder(order);
 	}
 
