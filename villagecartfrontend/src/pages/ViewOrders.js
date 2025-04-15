@@ -43,6 +43,14 @@ const ViewOrders = () => {
   };
 
   const handleStatusUpdate = async (orderId, newStatus) => {
+    // Check if current order is delivered before making API call
+    const currentOrder = orders.find(o => o.orderId === orderId);
+    
+    if (currentOrder && currentOrder.orderStatus?.toLowerCase() === 'delivered') {
+      window.alert('❌ Order is already delivered. Status cannot be changed.');
+      return;
+    }
+    
     try {
       setUpdatingStatus(true);
       await ordersApi.updateOrderStatus(orderId, newStatus);
@@ -64,7 +72,9 @@ const ViewOrders = () => {
         }
       }
 
-      if (errorMessage.includes('Quantity Exceeded')) {
+      if (errorMessage.includes('already delivered')) {
+        window.alert('❌ Order is already delivered. Status cannot be changed.');
+      } else if (errorMessage.includes('Quantity Exceeded')) {
         window.alert('❌ Quantity exceeds stock! Please update the quantity or restock.');
       } else {
         window.alert('⚠️ ' + errorMessage);
@@ -125,7 +135,7 @@ const ViewOrders = () => {
         <div className="container-fluid px-4 py-2 d-flex justify-content-between align-items-center">
           <Link to="/SellerHome" className="text-decoration-none d-flex align-items-center">
             <i className="fas fa-leaf text-success me-2 fs-4"></i>
-            <span className="fw-bold fs-4 text-success">FarmToHome</span>
+            <span className="fw-bold fs-4 text-success">Village Cart</span>
           </Link>
           <div className="d-flex gap-3">
             <Link to="/SellerHome" className="btn btn-outline-primary">
@@ -143,7 +153,7 @@ const ViewOrders = () => {
         {orders.length === 0 ? (
           <div className="alert alert-info">No orders found.</div>
         ) : (
-          <div className="card">
+          <div className="card position-relative">
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead className="table-light">
@@ -174,19 +184,24 @@ const ViewOrders = () => {
                             className={`btn btn-sm badge ${getStatusBadgeClass(order.orderStatus)} dropdown-toggle`}
                             type="button"
                             data-bs-toggle="dropdown"
+                            data-bs-auto-close="true"
                             aria-expanded="false"
-                            disabled={updatingStatus}
+                            disabled={updatingStatus || order.orderStatus?.toLowerCase() === 'delivered'}
                           >
                             {statusOptions.find(s => s.value.toLowerCase() === (order.orderStatus || '').toLowerCase())?.label || 'In Cart'}
                           </button>
-                          <ul className="dropdown-menu">
+                          <ul className="dropdown-menu" data-bs-popper="static">
                             {statusOptions.map((status) => (
                               <li key={status.value}>
                                 <button
                                   className="dropdown-item"
                                   onClick={() => handleStatusUpdate(order.orderId, status.value)}
+                                  disabled={order.orderStatus?.toLowerCase() === 'delivered'}
                                 >
                                   {status.label}
+                                  {order.orderStatus?.toLowerCase() === 'delivered' && status.value === 'Delivered' && (
+                                    <i className="fas fa-check ms-2 text-success"></i>
+                                  )}
                                 </button>
                               </li>
                             ))}
