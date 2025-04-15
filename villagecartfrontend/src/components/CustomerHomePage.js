@@ -102,87 +102,90 @@ function CustomerHomePage() {
   };
 
   const addToCart = async (product) => {
-    const customerId = localStorage.getItem("customerId");
-    
-    // First check if product already exists in cart
-    const existingCartItems = [...cartItems];
-    const existingItemIndex = existingCartItems.findIndex(
-      item => item.productId === product.productId
-    );
-    
-    if (existingItemIndex >= 0) {
-      // Product exists in cart - update quantity instead of adding new item
-      try {
-        // Get the existing order ID
-        const orderId = existingCartItems[existingItemIndex].orderId;
-        const newQuantity = existingCartItems[existingItemIndex].orderQuantity + 1;
+  const customerId = localStorage.getItem("customerId");
+  
+  // First check if product already exists in cart
+  const existingCartItems = [...cartItems];
+  const existingItemIndex = existingCartItems.findIndex(
+    item => item.productId === product.productId
+  );
+  
+  if (existingItemIndex >= 0) {
+    // Product exists in cart - update quantity instead of adding new item
+    try {
+      // Get the existing order ID
+      const orderId = existingCartItems[existingItemIndex].orderId;
+      const newQuantity = existingCartItems[existingItemIndex].orderQuantity + 1;
+      
+      // Update the quantity on the server
+      const response = await axios.put(`http://localhost:8080/order/updateQuantity/${orderId}`, {
+        orderQuantity: newQuantity
+      });
+      
+      if (response.status === 200) {
+        // Update local state
+        const updatedCartItems = [...existingCartItems];
+        updatedCartItems[existingItemIndex].orderQuantity = newQuantity;
+        setCartItems(updatedCartItems);
         
-        // Update the quantity on the server
-        const response = await axios.put(`http://localhost:8080/order/updateQuantity/${orderId}`, {
-          orderQuantity: newQuantity
-        });
+        // Also update localStorage
+        if (!customerId) {
+          localStorage.setItem("cart", JSON.stringify(updatedCartItems));
+        }
         
-        if (response.status === 200) {
-          // Update local state
-          const updatedCartItems = [...existingCartItems];
-          updatedCartItems[existingItemIndex].orderQuantity = newQuantity;
-          setCartItems(updatedCartItems);
-          
-          // Also update localStorage
-          localStorage.setItem("cart", JSON.stringify(updatedCartItems));
-          
-          alert("Item quantity updated in cart!");
-        }
-      } catch (error) {
-        console.error("Error updating cart item quantity:", error);
+        alert(`${product.productName} quantity updated in cart!`);
       }
-    } else {
-      // Product doesn't exist in cart - add new item
-      const orderData = {
-        productId: product.productId,
-        orderQuantity: 1, // Set default to 1kg
-        customerId: parseInt(customerId),
-        orderStatus: "IN_CART"
-      };
-
-      try {
-        const response = await fetch("http://localhost:8080/order/add", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(orderData)
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          const orderId = result.orderId;
-
-          // Create a new cart item with full product details for UI
-          const newCartItem = {
-            orderId,
-            productId: product.productId,
-            productName: product.productName,
-            productPrice: product.productPrice,
-            imageUrl: product.imageUrl,
-            orderQuantity: 1,
-            orderStatus: "IN_CART"
-          };
-
-          // Update the state with the new item
-          const updatedCartItems = [...cartItems, newCartItem];
-          setCartItems(updatedCartItems);
-
-          // Update localStorage
-          localStorage.setItem("cart", JSON.stringify(updatedCartItems));
-
-          alert("Item added to cart!");
-        } else {
-          console.error("Failed to add to cart");
-        }
-      } catch (error) {
-        console.error("Error adding to cart:", error);
-      }
+    } catch (error) {
+      console.error("Error updating cart item quantity:", error);
+      alert("Failed to update quantity. Please try again.");
     }
-  };
+  } else {
+    // Product doesn't exist in cart - add new item
+    const orderData = {
+      productId: product.productId,
+      orderQuantity: 1, // Set default to 1kg
+      customerId: customerId ? parseInt(customerId) : null,
+      orderStatus: "IN_CART"
+    };
+
+    try {
+      const response = await axios.post("http://localhost:8080/order/add", orderData);
+
+      if (response.status === 200 || response.status === 201) {
+        const result = response.data;
+        const orderId = result.orderId;
+
+        // Create a new cart item with full product details for UI
+        const newCartItem = {
+          orderId,
+          productId: product.productId,
+          productName: product.productName,
+          productPrice: product.productPrice,
+          imageUrl: product.imageUrl,
+          orderQuantity: 1,
+          orderStatus: "IN_CART"
+        };
+
+        // Update the state with the new item
+        const updatedCartItems = [...cartItems, newCartItem];
+        setCartItems(updatedCartItems);
+
+        // Update localStorage for non-logged in users
+        if (!customerId) {
+          localStorage.setItem("cart", JSON.stringify(updatedCartItems));
+        }
+
+        alert(`${product.productName} added to cart!`);
+      } else {
+        console.error("Failed to add to cart");
+        alert("Failed to add item to cart. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Error adding item to cart. Please try again.");
+    }
+  }
+};
 
   const handleSearch = (term) => {
     setSearchTerm(term);

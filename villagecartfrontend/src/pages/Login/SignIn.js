@@ -352,7 +352,7 @@ const Signin = () => {
         localStorage.setItem("customerId", data.customerId);
         localStorage.setItem("customerEmail", data.customerEmail);
         localStorage.setItem("userType", "customer");
-        navigate("/customerHome");
+        navigate("/customer-home");
       } else if (formData.userType === "admin") {
         localStorage.setItem("token", data.token || "token");
         localStorage.setItem("adminId", data.adminId);

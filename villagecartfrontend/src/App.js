@@ -18,7 +18,7 @@ import MyProfile from './components/MyProfile';
 import CustomerProfilePage from './components/CustomerProfilePage';
 // import SignUp from './pages/Login/SignUp';
 import CustomerHomePage from './components/CustomerHomePage'; 
-import Admin from './pages/Admin';
+
 import ProductDetails from './pages/ProductDetails';
 import Profile from './pages/Profile';
 import Rating from './pages/Rating';
@@ -73,7 +73,7 @@ function App() {
             }
           />
           <Route path="/edit-product/:id" element={<EditProduct />} />
-          <Route path="review/:productId" element={<Rating />} />
+          <Route path="review/:orderId" element={<Rating />} />
 
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />

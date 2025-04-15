@@ -65,13 +65,13 @@ function MyOrders() {
     navigate(`/invoice/${orderId}`);
   };
 
-  const handleWriteReview = (productId) => {
-    if (!productId) {
+  const handleWriteReview = (orderId) => {
+    if (!orderId) {
       console.error('Product ID is missing');
       alert('Cannot write review: Product ID is missing');
       return;
     }
-    navigate(`/review/${productId}`); // Navigate to the updated route
+    navigate(`/review/${orderId}`); // Navigate to the updated route
   };
 
   // Function to handle buying again
