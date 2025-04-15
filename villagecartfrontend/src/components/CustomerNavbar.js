@@ -62,8 +62,8 @@ function CustomerNavbar({ cartCount = 0, searchTerm = '', onSearch, userName = '
     <nav className="customer-navbar">
       <div className="navbar-container">
         <Link to="/customer-home" className="navbar-logo">
-          <span className="logo-text">Fresh</span>
-          <span className="logo-text-accent">Market</span>
+          <span className="logo-text">Village Cart</span>
+          {/* <span className="logo-text-accent">Cart</span> */}
         </Link>
 
         <div className="navbar-search-container">
