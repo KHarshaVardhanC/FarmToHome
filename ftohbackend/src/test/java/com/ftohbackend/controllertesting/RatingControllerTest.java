@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,6 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ftohbackend.controller.RatingController;
 import com.ftohbackend.controller.RatingControllerImpl;
 import com.ftohbackend.dto.ProductRatingDTO;
 import com.ftohbackend.dto.RatingDTO;
@@ -40,10 +42,8 @@ import com.ftohbackend.model.Product;
 import com.ftohbackend.model.Rating;
 import com.ftohbackend.service.CustomerService;
 import com.ftohbackend.service.RatingService;
-
-@WebMvcTest
-@ContextConfiguration(classes = { RatingControllerImpl.class })//@AutoConfigureMockMvc
-
+@WebMvcTest(RatingControllerImpl.class)
+@ContextConfiguration(classes = { RatingController.class })
 public class RatingControllerTest {
 
     @Autowired
@@ -51,6 +51,9 @@ public class RatingControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+    
+    @MockBean
+    private RatingController ratingController;
 
     @MockBean
     private RatingService ratingService;
