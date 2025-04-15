@@ -90,8 +90,11 @@ public class OrderServiceImpl implements OrderService {
 		if (sellerId == null) {
 			throw new OrderException("Seller ID cannot be null");
 		}
-		List<Order> orders = orderRepository.findAll().stream()
-				.filter(x -> x.getProduct().getSeller().getSellerId() == sellerId).toList();
+//		List<Order> orders = orderRepository.findAll().stream()
+//				.filter(x -> x.getProduct().getSeller().getSellerId() == sellerId).toList();
+
+		
+		List<Order> orders = orderRepository.findByProductSellerSellerId(sellerId);
 		
 		
 
