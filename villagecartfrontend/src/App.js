@@ -15,7 +15,10 @@ import SignUp from './pages/Login/SignUp';
 import MainHome from './pages/MainHome';
 import OrderInvoice from './pages/OrderInvoice';
 
-import CustomerHomePage from './components/CustomerHomePage';
+import CustomerProfilePage from './components/CustomerProfilePage';
+// import SignUp from './pages/Login/SignUp';
+import CustomerHomePage from './components/CustomerHomePage'; 
+
 
 import RequireAuthSeller from './components/RequireAuth';
 import ProductDetails from './pages/ProductDetails';
