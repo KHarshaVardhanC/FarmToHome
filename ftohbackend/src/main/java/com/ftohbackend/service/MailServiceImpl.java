@@ -26,6 +26,7 @@ public class MailServiceImpl {
 	
 	public void addMail(Mails mails)
 	{
+		
 		mailRepository.save(mails);
 		
 	}
