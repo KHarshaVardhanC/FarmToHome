@@ -11,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
@@ -39,7 +41,10 @@ import com.ftohbackend.model.Seller;
 import com.ftohbackend.repository.ProductRepository;
 import com.ftohbackend.repository.SellerRepository;
 import com.ftohbackend.service.ProductServiceImpl;
+import com.ftohbackend.service.RatingServiceImpl;
 import com.ftohbackend.service.SellerService;
+
+import java.lang.reflect.Method;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceTest {
@@ -64,6 +69,9 @@ public class ProductServiceTest {
     
     @Mock
     private MultipartFile mockMultipartFile;
+    
+    @Mock
+    private RatingServiceImpl ratingServiceImpl;
 
     @InjectMocks
     private ProductServiceImpl productService;
@@ -80,6 +88,8 @@ public class ProductServiceTest {
         seller.setSellerEmail("test@example.com");
         seller.setSellerFirstName("John");
         seller.setSellerLastName("Doe");
+        seller.setSellerCity("Test City");
+        seller.setSellerPlace("Test Place");
         
         product = new Product();
         product.setProductId(1);
@@ -88,6 +98,7 @@ public class ProductServiceTest {
         product.setProductQuantity(10.0);
         product.setImageUrl("http://example.com/image.jpg");
         product.setProductDescription("Test Description");
+        product.setProductCategory("Fruits");
         product.setSeller(seller);
         
         productRequest = new ProductRequest();
@@ -95,6 +106,7 @@ public class ProductServiceTest {
         productRequest.setProductPrice(100.0);
         productRequest.setProductQuantity(10.0);
         productRequest.setProductDescription("Test Description");
+        productRequest.setProductCategory("Fruits");
         productRequest.setSellerId(1);
         productRequest.setImage(mockMultipartFile);
         
@@ -297,6 +309,25 @@ public class ProductServiceTest {
     }
     
     @Test
+    @DisplayName("JUnit test for updateProduct operation with rating value")
+    public void givenProductIdAndUpdatedDetailsWithRating_whenUpdateProduct_thenReturnSuccess() throws Exception {
+        // given - precondition or setup
+        Product updatedProduct = new Product();
+        updatedProduct.setProductRatingValue(4.5);
+        
+        given(productRepository.findById(anyInt())).willReturn(Optional.of(product));
+        given(productRepository.save(any(Product.class))).willReturn(product);
+        given(ratingServiceImpl.getRatingsByProductId(anyInt())).willReturn(Collections.emptyList());
+        
+        // when - action or behavior
+        String result = productService.updateProduct(1, updatedProduct);
+        
+        // then - verify the output
+        assertThat(result).isEqualTo("Product updated successfully");
+        verify(productRepository, times(1)).save(any(Product.class));
+    }
+    
+    @Test
     @DisplayName("JUnit test for deleteProduct operation")
     public void givenProductId_whenDeleteProduct_thenReturnSuccess() throws ProductException {
         // given - precondition or setup
@@ -348,6 +379,7 @@ public class ProductServiceTest {
     @DisplayName("JUnit test for searchProductsWithSellerDetails operation")
     public void givenProductName_whenSearchProductsWithSellerDetails_thenReturnCustomerProductDTOs() throws ProductException {
         // given - precondition or setup
+        product.setProductQuantity(0.0);
         given(productRepository.findProductsByNameWithSeller(any(String.class))).willReturn(List.of(product));
         
         // when - action or behavior
@@ -394,5 +426,121 @@ public class ProductServiceTest {
         assertThrows(ProductException.class, () -> {
             productService.getProduct(999);
         });
+    }
+    
+    @Test
+    @DisplayName("JUnit test for getCategoryProducts operation")
+    public void givenProductCategory_whenGetCategoryProducts_thenReturnProductsList() throws ProductException {
+        // given - precondition or setup
+        Product product1 = new Product();
+        product1.setProductId(1);
+        product1.setProductName("Apple");
+        product1.setProductCategory("Fruits");
+        
+        Product product2 = new Product();
+        product2.setProductId(2);
+        product2.setProductName("Orange");
+        product2.setProductCategory("Fruits");
+        
+        given(productRepository.findByProductCategory("Fruits")).willReturn(List.of(product1, product2));
+        
+        // when - action or behavior
+        List<Product> products = productService.getCategoryProducts("Fruits");
+        
+        // then - verify the output
+        assertThat(products).isNotNull();
+        assertThat(products.size()).isEqualTo(2);
+        assertThat(products.get(0).getProductCategory()).isEqualTo("Fruits");
+        assertThat(products.get(1).getProductCategory()).isEqualTo("Fruits");
+        verify(productRepository, times(1)).findByProductCategory("Fruits");
+    }
+    
+    @Test
+    @DisplayName("JUnit test for getCategoryProducts operation - Empty List")
+    public void givenProductCategory_whenGetCategoryProductsReturnsEmpty_thenReturnEmptyList() throws ProductException {
+        // given - precondition or setup
+        given(productRepository.findByProductCategory("NonExistentCategory")).willReturn(Collections.emptyList());
+        
+        // when - action or behavior
+        List<Product> products = productService.getCategoryProducts("NonExistentCategory");
+        
+        // then - verify the output
+        assertThat(products).isNotNull();
+        assertThat(products).isEmpty();
+        verify(productRepository, times(1)).findByProductCategory("NonExistentCategory");
+    }
+    
+    @Test
+    @DisplayName("JUnit test for uploadImage method")
+    public void givenMultipartFile_whenUploadImage_thenReturnImageUrl() throws Exception {
+        // given - precondition or setup
+        byte[] content = "test image content".getBytes();
+        MockMultipartFile file = new MockMultipartFile(
+            "file", "test-image.jpg", "image/jpeg", content
+        );
+        
+        given(cloudinary.uploader()).willReturn(uploader);
+        Map<String, Object> uploadResult = Map.of("url", "http://example.com/image.jpg");
+        given(uploader.upload(any(byte[].class), any())).willReturn(uploadResult);
+        
+        // Using reflection to access private method
+        Method uploadImageMethod = ProductServiceImpl.class.getDeclaredMethod("uploadImage", MultipartFile.class);
+        uploadImageMethod.setAccessible(true);
+        
+        // when - action or behavior
+        String imageUrl = (String) uploadImageMethod.invoke(productService, file);
+        
+        // then - verify the output
+        assertThat(imageUrl).isEqualTo("http://example.com/image.jpg");
+        verify(uploader, times(1)).upload(any(byte[].class), any());
+    }
+    
+    @Test
+    @DisplayName("JUnit test for uploadImage method - Upload Failure")
+    public void givenMultipartFile_whenUploadImageFails_thenThrowsIOException() throws Exception {
+        // given - precondition or setup
+        byte[] content = "test image content".getBytes();
+        MockMultipartFile file = new MockMultipartFile(
+            "file", "test-image.jpg", "image/jpeg", content
+        );
+        
+        given(cloudinary.uploader()).willReturn(uploader);
+        given(uploader.upload(any(byte[].class), any())).willThrow(new IOException("Upload failed"));
+        
+        // Using reflection to access private method
+        Method uploadImageMethod = ProductServiceImpl.class.getDeclaredMethod("uploadImage", MultipartFile.class);
+        uploadImageMethod.setAccessible(true);
+        
+        // when - action or behavior & then - verify the output
+        assertThrows(IOException.class, () -> {
+            uploadImageMethod.invoke(productService, file);
+        });
+    }
+    
+    @Test
+    @DisplayName("JUnit test for convertToDTO method")
+    public void givenProduct_whenConvertToDTO_thenReturnProductDTO() throws Exception {
+        // given - precondition or setup
+        Product testProduct = new Product();
+        testProduct.setProductId(10);
+        testProduct.setProductName("Test Product");
+        testProduct.setProductPrice(200.0);
+        testProduct.setProductQuantity(5.0);
+        testProduct.setImageUrl("http://example.com/test.jpg");
+        
+        // Using reflection to access private method
+        Method convertToDTOMethod = ProductServiceImpl.class.getDeclaredMethod("convertToDTO", Product.class);
+        convertToDTOMethod.setAccessible(true);
+        
+        // when - action or behavior
+        ProductDTO result = (ProductDTO) convertToDTOMethod.invoke(productService, testProduct);
+        
+        // then - verify the output
+        assertThat(result).isNotNull();
+        assertThat(result.getProductId()).isEqualTo(testProduct.getProductId());
+        assertThat(result.getProductName()).isEqualTo(testProduct.getProductName());
+        assertThat(result.getProductPrice()).isEqualTo(testProduct.getProductPrice());
+        assertThat(result.getProductQuantity()).isEqualTo(testProduct.getProductQuantity());
+        assertThat(result.getImageUrl()).isEqualTo(testProduct.getImageUrl());
     }
 }
