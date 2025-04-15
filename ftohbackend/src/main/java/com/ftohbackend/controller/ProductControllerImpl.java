@@ -19,11 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ftohbackend.dto.CustomerProductDTO;
+import com.ftohbackend.dto.ProductCity;
 import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
 import com.ftohbackend.dto.SellerProductDTO;
 import com.ftohbackend.exception.ProductException;
-import com.ftohbackend.exception.RatingException;
 import com.ftohbackend.model.Product;
 import com.ftohbackend.service.ProductService;
 import com.ftohbackend.service.ProductServiceImpl;
@@ -85,6 +85,15 @@ public class ProductControllerImpl implements ProductController {
 		return products;
 	}
 
+	@Override
+	@PostMapping("/NameCity") 
+	public List<CustomerProductDTO> getProductByNameAndCity(@RequestBody ProductCity productCity) throws Exception
+	{
+		List<CustomerProductDTO> products=productService.searchProductsWithSellerDetails(productCity);
+		
+		return products;
+	}
+	
 	@PutMapping("/product/{productId}")
 	@Override
 	public String updateProduct(@PathVariable Integer productId, @RequestBody ProductDTO updatedDetails)

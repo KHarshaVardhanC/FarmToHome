@@ -12,6 +12,7 @@ public class PasswordResetService {
 
 	public void updatePassword(Object user, String newPassword) {
 		if (user instanceof Customer) {
+			
 			((Customer) user).setCustomerPassword(newPassword);
 		} else if (user instanceof Seller) {
 			((Seller) user).setSellerPassword(newPassword);

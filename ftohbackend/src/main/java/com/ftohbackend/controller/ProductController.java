@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 
 import com.ftohbackend.dto.CustomerProductDTO;
+import com.ftohbackend.dto.ProductCity;
 import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
 import com.ftohbackend.dto.SellerProductDTO;
@@ -33,6 +34,8 @@ public interface ProductController {
 	List<ProductDTO> getAllProducts() throws ProductException;
 
 	CustomerProductDTO getCustomerProductByProductId(Integer productId) throws ProductException;
+
+	List<CustomerProductDTO> getProductByNameAndCity(ProductCity productCity) throws Exception;
 
 	
 }
