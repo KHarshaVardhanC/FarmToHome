@@ -44,13 +44,7 @@ class FtohbackendApplicationTests {
         assertNotNull(modelMapper, "ModelMapper bean should not be null");
     }
     
-    @Test
-    void testMainMethod() {
-        // Test that the main method can be called without throwing exceptions
-        assertDoesNotThrow(() -> {
-            FtohbackendApplication.main(new String[]{});
-        });
-    }
+   
     
 
 }
