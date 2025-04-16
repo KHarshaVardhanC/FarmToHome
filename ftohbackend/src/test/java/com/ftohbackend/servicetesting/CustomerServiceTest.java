@@ -1,21 +1,24 @@
 package com.ftohbackend.servicetesting;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,256 +35,235 @@ public class CustomerServiceTest {
 
     @Mock
     private CustomerRepository customerRepository;
-    
+
     @InjectMocks
     private CustomerServiceImpl customerService;
 
-    Customer customer;
+    private Customer testCustomer;
+    private List<Customer> customerList;
 
     @BeforeEach
-    public void setUp() {
-        customer = new Customer();
-        customer.setCustomerId(1);
-        customer.setCustomerFirstName("John");
-        customer.setCustomerLastName("Doe");
-        customer.setCustomerEmail("john.doe@example.com");
-        customer.setCustomerPassword("password123");
-        customer.setCustomerCity("New York");
-        customer.setCustomerPlace("Manhattan");
-        customer.setCustomerPincode("10001");
-        customer.setCustomerState("New York");
-        customer.setCustomerPhoneNumber("1234567890");
-        customer.setCustomerIsActive(true);
-    }
+    void setUp() {
+        testCustomer = new Customer();
+        testCustomer.setCustomerId(1);
+        testCustomer.setCustomerFirstName("John");
+        testCustomer.setCustomerLastName("Doe");
+        testCustomer.setCustomerEmail("john.doe@example.com");
+        testCustomer.setCustomerPassword("password123");
+        testCustomer.setCustomerPlace("Downtown");
+        testCustomer.setCustomerCity("Metropolis");
+        testCustomer.setCustomerState("State");
+        testCustomer.setCustomerPincode("123456");
+        testCustomer.setCustomerPhoneNumber("9876543210");
+        testCustomer.setCustomerIsActive(true);
 
-    @AfterEach
-    public void tearDown() {
-        customer = null;
-    }
+        customerList = new ArrayList<>();
+        customerList.add(testCustomer);
 
-    @Test
-    @DisplayName("JUnit test for addCustomer operation")
-    public void givenCustomerObject_whenAddCustomer_thenReturnSuccessMessage() throws CustomerException {
-        // given - precondition or setup
-        given(customerRepository.save(customer)).willReturn(customer);
-        
-        // when - action or the behaviour
-        String result = customerService.addCustomer(customer);
-        
-        // then - verify the output
-        assertThat(result).isEqualTo("customer added successfully");
-        verify(customerRepository, times(1)).save(customer);
+        Customer customer2 = new Customer();
+        customer2.setCustomerId(2);
+        customer2.setCustomerFirstName("Jane");
+        customer2.setCustomerLastName("Smith");
+        customer2.setCustomerEmail("jane.smith@example.com");
+        customerList.add(customer2);
     }
 
     @Test
-    @DisplayName("JUnit test for addCustomer operation with null customer")
-    public void givenNullCustomerObject_whenAddCustomer_thenThrowCustomerException() {
-        // when - action or the behaviour
-        assertThrows(CustomerException.class, () -> {
+    void testAddCustomer_Success() throws CustomerException {
+        when(customerRepository.save(any(Customer.class))).thenReturn(testCustomer);
+
+        String result = customerService.addCustomer(testCustomer);
+
+        assertEquals("customer added successfully", result);
+        verify(customerRepository, times(1)).save(testCustomer);
+    }
+
+    @Test
+    void testAddCustomer_NullCustomer() {
+        Exception exception = assertThrows(CustomerException.class, () -> {
             customerService.addCustomer(null);
         });
-        
-        // then - verify the output
+
+        assertEquals("Customer object cannot be null.", exception.getMessage());
         verify(customerRepository, never()).save(any(Customer.class));
     }
 
     @Test
-    @DisplayName("JUnit test for getCustomer operation")
-    public void givenCustomerId_whenGetCustomer_thenReturnCustomerObject() throws CustomerException {
-        // given - precondition or setup
-        given(customerRepository.findById(customer.getCustomerId())).willReturn(Optional.of(customer));
-        
-        // when - action or the behaviour
-        Customer foundCustomer = customerService.getCustomer(customer.getCustomerId());
-        
-        // then - verify the output
-        assertThat(foundCustomer).isNotNull();
-        assertThat(foundCustomer.getCustomerId()).isEqualTo(customer.getCustomerId());
+    void testGetCustomer_Success() throws CustomerException {
+        when(customerRepository.findById(anyInt())).thenReturn(Optional.of(testCustomer));
+
+        Customer result = customerService.getCustomer(1);
+
+        assertNotNull(result);
+        assertEquals(testCustomer.getCustomerId(), result.getCustomerId());
+        assertEquals(testCustomer.getCustomerEmail(), result.getCustomerEmail());
+        verify(customerRepository, times(1)).findById(1);
     }
 
     @Test
-    @DisplayName("JUnit test for getCustomer operation - throw CustomerException when ID is null")
-    public void givenNullCustomerId_whenGetCustomer_thenThrowCustomerException() {
-        // when - action or the behaviour
-        assertThrows(CustomerException.class, () -> {
+    void testGetCustomer_NullId() {
+        Exception exception = assertThrows(CustomerException.class, () -> {
             customerService.getCustomer(null);
         });
+
+        assertEquals("Customer ID cannot be null.", exception.getMessage());
+        verify(customerRepository, never()).findById(anyInt());
     }
 
     @Test
-    @DisplayName("JUnit test for getCustomer operation - throw CustomerException when customer not found")
-    public void givenCustomerId_whenGetCustomer_thenThrowCustomerException() {
-        // given - precondition or setup
-        given(customerRepository.findById(anyInt())).willReturn(Optional.empty());
-        
-        // when - action or the behaviour
-        assertThrows(CustomerException.class, () -> {
-            customerService.getCustomer(1);
+    void testGetCustomer_NotFound() {
+        when(customerRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(CustomerException.class, () -> {
+            customerService.getCustomer(999);
         });
+
+        assertEquals("Customer not found with ID: 999", exception.getMessage());
+        verify(customerRepository, times(1)).findById(999);
     }
 
     @Test
-    @DisplayName("JUnit test for getAllCustomers operation")
-    public void givenCustomersList_whenGetAllCustomers_thenReturnCustomersList() throws CustomerException {
-        // given - precondition or setup
-        Customer customer1 = new Customer();
-        customer1.setCustomerId(2);
-        customer1.setCustomerFirstName("Jane");
-        customer1.setCustomerLastName("Smith");
-        customer1.setCustomerEmail("jane.smith@example.com");
-        
-        given(customerRepository.findAll()).willReturn(List.of(customer, customer1));
-        
-        // when - action or the behaviour
-        List<Customer> customers = customerService.getAllCustomers();
-        
-        // then - verify the output
-        assertThat(customers).isNotNull();
-        assertThat(customers.size()).isEqualTo(2);
+    void testGetAllCustomers_Success() throws CustomerException {
+        when(customerRepository.findAll()).thenReturn(customerList);
+
+        List<Customer> result = customerService.getAllCustomers();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(testCustomer.getCustomerId(), result.get(0).getCustomerId());
+        verify(customerRepository, times(1)).findAll();
     }
 
     @Test
-    @DisplayName("JUnit test for getAllCustomers operation - throw CustomerException when no customers found")
-    public void givenEmptyCustomersList_whenGetAllCustomers_thenThrowCustomerException() {
-        // given - precondition or setup
-        given(customerRepository.findAll()).willReturn(Collections.emptyList());
-        
-        // when - action or the behaviour
-        assertThrows(CustomerException.class, () -> {
+    void testGetAllCustomers_EmptyList() {
+        when(customerRepository.findAll()).thenReturn(new ArrayList<>());
+
+        Exception exception = assertThrows(CustomerException.class, () -> {
             customerService.getAllCustomers();
         });
+
+        assertEquals("No customers found.", exception.getMessage());
+        verify(customerRepository, times(1)).findAll();
     }
 
     @Test
-    @DisplayName("JUnit test for updateCustomer operation")
-    public void givenCustomer_whenUpdateCustomer_thenReturnSuccessMessage() throws CustomerException {
-        // given - precondition or setup
+    void testUpdateCustomer_Success() throws CustomerException {
         Customer updatedCustomer = new Customer();
+        updatedCustomer.setCustomerFirstName("JohnUpdated");
         updatedCustomer.setCustomerEmail("john.updated@example.com");
-        updatedCustomer.setCustomerCity("Los Angeles");
-        
-        given(customerRepository.findById(customer.getCustomerId())).willReturn(Optional.of(customer));
-        given(customerRepository.save(any(Customer.class))).willReturn(customer);
-        
-        // when - action or the behaviour
-        String result = customerService.updateCustomer(customer.getCustomerId(), updatedCustomer);
-        
-        // then - verify the output
-        assertThat(result).isEqualTo("Customer updated successfully");
-        assertThat(customer.getCustomerEmail()).isEqualTo(updatedCustomer.getCustomerEmail());
-        assertThat(customer.getCustomerCity()).isEqualTo(updatedCustomer.getCustomerCity());
-        verify(customerRepository, times(1)).save(customer);
+        updatedCustomer.setCustomerPassword("newPassword");
+
+        when(customerRepository.findById(anyInt())).thenReturn(Optional.of(testCustomer));
+        when(customerRepository.save(any(Customer.class))).thenReturn(testCustomer);
+
+        String result = customerService.updateCustomer(1, updatedCustomer);
+
+        assertEquals("Customer updated successfully", result);
+        assertEquals("JohnUpdated", testCustomer.getCustomerFirstName());
+        assertEquals("john.updated@example.com", testCustomer.getCustomerEmail());
+        // Password should be encoded, so we can't directly check the value
+        assertNotEquals("newPassword", testCustomer.getCustomerPassword());
+        verify(customerRepository, times(1)).findById(1);
+        verify(customerRepository, times(1)).save(testCustomer);
     }
 
     @Test
-    @DisplayName("JUnit test for updateCustomer operation - throw CustomerException when ID is null")
-    public void givenNullCustomerId_whenUpdateCustomer_thenThrowCustomerException() {
-        // when - action or the behaviour
-        assertThrows(CustomerException.class, () -> {
-            customerService.updateCustomer(null, customer);
+    void testUpdateCustomer_NullId() {
+        Exception exception = assertThrows(CustomerException.class, () -> {
+            customerService.updateCustomer(null, testCustomer);
         });
-        
-        // then - verify the output
+
+        assertEquals("Customer ID and customer data cannot be null.", exception.getMessage());
+        verify(customerRepository, never()).findById(anyInt());
         verify(customerRepository, never()).save(any(Customer.class));
     }
 
     @Test
-    @DisplayName("JUnit test for updateCustomer operation - throw CustomerException when customer object is null")
-    public void givenNullCustomerObject_whenUpdateCustomer_thenThrowCustomerException() {
-        // when - action or the behaviour
-        assertThrows(CustomerException.class, () -> {
+    void testUpdateCustomer_NullCustomer() {
+        Exception exception = assertThrows(CustomerException.class, () -> {
             customerService.updateCustomer(1, null);
         });
-        
-        // then - verify the output
+
+        assertEquals("Customer ID and customer data cannot be null.", exception.getMessage());
+        verify(customerRepository, never()).findById(anyInt());
         verify(customerRepository, never()).save(any(Customer.class));
     }
 
     @Test
-    @DisplayName("JUnit test for updateCustomer operation - throw CustomerException when customer not found")
-    public void givenCustomerId_whenUpdateCustomer_thenThrowCustomerException() {
-        // given - precondition or setup
-        given(customerRepository.findById(anyInt())).willReturn(Optional.empty());
-        
-        // when - action or the behaviour
-        assertThrows(CustomerException.class, () -> {
-            customerService.updateCustomer(1, customer);
+    void testUpdateCustomer_NotFound() {
+        when(customerRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(CustomerException.class, () -> {
+            customerService.updateCustomer(999, testCustomer);
         });
-        
-        // then - verify the output
+
+        assertEquals("Customer not found with ID: 999", exception.getMessage());
+        verify(customerRepository, times(1)).findById(999);
         verify(customerRepository, never()).save(any(Customer.class));
     }
-    
-    // Added test cases for authenticateCustomer method
-    
+
     @Test
-    @DisplayName("JUnit test for authenticateCustomer operation - successful authentication")
-    public void givenValidCredentials_whenAuthenticateCustomer_thenReturnCustomerObject() throws Exception {
-        // given - precondition or setup
-        String email = "john.doe@example.com";
-        String password = "password123";
-        
-        // Mock the Customer class to return true for verifyPassword
-        given(customerRepository.findByCustomerEmail(email)).willReturn(customer);
-        
-        // Mock the password verification
-        // We need this since we can't directly test the actual password verification in unit tests
-        // This assumes the Customer class has a verifyPassword method
-        Customer spyCustomer = org.mockito.Mockito.spy(customer);
-        given(spyCustomer.verifyPassword(password)).willReturn(true);
-        given(customerRepository.findByCustomerEmail(email)).willReturn(spyCustomer);
-        
-        // when - action or the behaviour
-        Customer authenticatedCustomer = customerService.authenticateCustomer(email, password);
-        
-        // then - verify the output
-        assertThat(authenticatedCustomer).isNotNull();
-        assertThat(authenticatedCustomer.getCustomerEmail()).isEqualTo(email);
+    void testAuthenticateCustomer_Success() throws Exception {
+        // Create a mock implementation of verifyPassword
+        Customer mockCustomer = spy(testCustomer);
+        doReturn(true).when(mockCustomer).verifyPassword(anyString());
+
+        when(customerRepository.findByCustomerEmail(anyString())).thenReturn(mockCustomer);
+
+        Customer result = customerService.authenticateCustomer("john.doe@example.com", "password123");
+
+        assertNotNull(result);
+        assertEquals(testCustomer.getCustomerId(), result.getCustomerId());
+        verify(customerRepository, times(1)).findByCustomerEmail("john.doe@example.com");
+        verify(mockCustomer, times(1)).verifyPassword("password123");
     }
-    
+
     @Test
-    @DisplayName("JUnit test for authenticateCustomer operation - null credentials")
-    public void givenNullCredentials_whenAuthenticateCustomer_thenThrowCustomerException() {
-        // when - action or the behaviour
-        assertThrows(CustomerException.class, () -> {
+    void testAuthenticateCustomer_NullEmail() {
+        Exception exception = assertThrows(CustomerException.class, () -> {
             customerService.authenticateCustomer(null, "password123");
         });
-        
-        assertThrows(CustomerException.class, () -> {
+
+        assertEquals("Email and password must not be null.", exception.getMessage());
+        verify(customerRepository, never()).findByCustomerEmail(anyString());
+    }
+
+    @Test
+    void testAuthenticateCustomer_NullPassword() {
+        Exception exception = assertThrows(CustomerException.class, () -> {
             customerService.authenticateCustomer("john.doe@example.com", null);
         });
+
+        assertEquals("Email and password must not be null.", exception.getMessage());
+        verify(customerRepository, never()).findByCustomerEmail(anyString());
     }
-    
+
     @Test
-    @DisplayName("JUnit test for authenticateCustomer operation - customer not found")
-    public void givenInvalidEmail_whenAuthenticateCustomer_thenThrowCustomerException() {
-        // given - precondition or setup
-        String email = "nonexistent@example.com";
-        String password = "password123";
-        
-        given(customerRepository.findByCustomerEmail(email)).willReturn(null);
-        
-        // when - action or the behaviour
-        assertThrows(CustomerException.class, () -> {
-            customerService.authenticateCustomer(email, password);
+    void testAuthenticateCustomer_CustomerNotFound() {
+        when(customerRepository.findByCustomerEmail(anyString())).thenReturn(null);
+
+        Exception exception = assertThrows(CustomerException.class, () -> {
+            customerService.authenticateCustomer("nonexistent@example.com", "password123");
         });
+
+        assertEquals("Customer not found with email: nonexistent@example.com", exception.getMessage());
+        verify(customerRepository, times(1)).findByCustomerEmail("nonexistent@example.com");
     }
-    
+
     @Test
-    @DisplayName("JUnit test for authenticateCustomer operation - incorrect password")
-    public void givenInvalidPassword_whenAuthenticateCustomer_thenThrowCustomerException() throws Exception {
-        // given - precondition or setup
-        String email = "john.doe@example.com";
-        String password = "wrongpassword";
-        
-        // Mock the Customer class to return false for verifyPassword
-        Customer spyCustomer = org.mockito.Mockito.spy(customer);
-        given(spyCustomer.verifyPassword(password)).willReturn(false);
-        given(customerRepository.findByCustomerEmail(email)).willReturn(spyCustomer);
-        
-        // when - action or the behaviour
-        assertThrows(CustomerException.class, () -> {
-            customerService.authenticateCustomer(email, password);
+    void testAuthenticateCustomer_IncorrectPassword() {
+        // Create a mock implementation of verifyPassword
+        Customer mockCustomer = spy(testCustomer);
+        doReturn(false).when(mockCustomer).verifyPassword(anyString());
+
+        when(customerRepository.findByCustomerEmail(anyString())).thenReturn(mockCustomer);
+
+        Exception exception = assertThrows(CustomerException.class, () -> {
+            customerService.authenticateCustomer("john.doe@example.com", "wrongPassword");
         });
+
+        assertEquals("Incorrect password.", exception.getMessage());
+        verify(customerRepository, times(1)).findByCustomerEmail("john.doe@example.com");
+        verify(mockCustomer, times(1)).verifyPassword("wrongPassword");
     }
 }
