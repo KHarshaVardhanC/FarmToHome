@@ -58,13 +58,7 @@ public class Seller {
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products = new ArrayList<>();
     
-    // Use a single static instance of BCryptPasswordEncoder for consistency
-//    private static final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    
-//    public void setSellerPassword(String sellerPassword) {
-//		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-//        this.sellerPassword = passwordEncoder.encode(sellerPassword);
-//    }
+
     
     public boolean verifyPassword(String rawPassword) {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
