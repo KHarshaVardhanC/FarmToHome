@@ -52,7 +52,7 @@ pipeline {
             }
         }
         stage('Docker deploy'){
-            steps {d
+            steps {
                 bat 'docker run -itd -p  8080:8080 villagecart'
              }
         }
