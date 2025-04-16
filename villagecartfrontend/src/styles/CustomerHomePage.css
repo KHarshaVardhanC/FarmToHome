@@ -294,3 +294,37 @@
     width: 95%;
   }
 }
+/* Add these styles to your existing CustomerHomePage.css file */
+
+.product-quantity {
+  font-size: 0.9rem;
+  color: #2e7d32;
+  margin: 5px 0;
+}
+
+.low-stock {
+  color: #f57c00;
+  font-weight: bold;
+}
+
+.out-of-stock .product-image {
+  position: relative;
+  opacity: 0.7;
+}
+
+.out-of-stock-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(244, 67, 54, 0.8);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.add-to-cart-btn.disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}

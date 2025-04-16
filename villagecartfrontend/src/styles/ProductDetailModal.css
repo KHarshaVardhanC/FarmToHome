@@ -219,3 +219,135 @@
     font-size: 20px;
   }
 }
+
+/* Replace or add these styles to your ProductDetailModal.css file */
+
+/* Rating Stars */
+.stars-container {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.star-icon {
+  font-size: 24px;
+  margin-right: 2px;
+  display: inline-block;
+}
+
+.filled-star {
+  color: #FFD700 !important; /* Gold yellow */
+}
+
+.half-filled {
+  position: relative;
+  color: #FFD700 !important; /* Gold yellow */
+}
+
+.empty-star {
+  color: #D3D3D3 !important; /* Light gray */
+}
+
+/* Rating Summary */
+.rating-summary {
+  display: flex;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.rating-value {
+  font-weight: bold;
+  margin-left: 8px;
+  font-size: 18px;
+}
+
+.rating-count {
+  color: #666;
+  font-size: 14px;
+  margin-left: 5px;
+}
+
+/* Review item styling */
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.review-header .stars-container .star-icon {
+  font-size: 18px;
+}
+
+.review-date {
+  color: #777;
+  font-size: 12px;
+}
+
+.review-feedback {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Customer Reviews Section */
+.customer-reviews-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.customer-reviews-section h3 {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.loading-text, .error-text, .no-reviews {
+  text-align: center;
+  padding: 15px;
+  color: #666;
+}
+
+.error-text {
+  color: #f44336;
+}
+
+.reviews-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.review-item {
+  padding: 15px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Out of Stock Styles */
+.modal-out-of-stock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(244, 67, 54, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.product-quantity {
+  font-size: 14px;
+  color: #2e7d32;
+  margin: 8px 0;
+}
+
+.product-quantity.out-of-stock {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.add-to-cart-modal-btn.disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}

@@ -65,8 +65,10 @@ function CustomerHomePage() {
     try {
       setLoading(true);
       const response = await axios.get('http://localhost:8080/products');
-      setProducts(response.data);
-      setFilteredProducts(response.data);
+      // Filter out products with 0 quantity
+      const availableProducts = response.data.filter(product => product.productQuantity > 0);
+      setProducts(response.data); // Keep all products in state for filtering
+      setFilteredProducts(availableProducts); // Only show available products by default
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     } finally {
@@ -95,7 +97,9 @@ function CustomerHomePage() {
       setLoading(true);
       setSelectedCategory(category);
       const response = await axios.get(`http://localhost:8080/products/${category}`);
-      setFilteredProducts(response.data);
+      // Filter out products with 0 quantity
+      const availableProducts = response.data.filter(product => product.productQuantity > 0);
+      setFilteredProducts(availableProducts);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     } finally {
@@ -104,6 +108,12 @@ function CustomerHomePage() {
   };
 
   const addToCart = async (product) => {
+    // Check if product is in stock
+    if (product.productQuantity <= 0) {
+      alert("Sorry, this product is out of stock");
+      return;
+    }
+    
     const customerId = localStorage.getItem("customerId");
     
     // First check if product already exists in cart
@@ -122,6 +132,12 @@ function CustomerHomePage() {
         const orderId = existingCartItems[existingItemIndex].orderId;
         const newQuantity = existingCartItems[existingItemIndex].orderQuantity + 1;
         
+        // Check if requested quantity is available
+        if (newQuantity > product.productQuantity) {
+          alert(`Sorry, only ${product.productQuantity} kg available in stock`);
+          return;
+        }
+        
         // Update the quantity on the server
         const response = await axios.put(`http://localhost:8080/order/updateQuantity/${orderId}`, {
           orderQuantity: newQuantity
@@ -137,12 +153,9 @@ function CustomerHomePage() {
           if (!customerId) {
             localStorage.setItem("cart", JSON.stringify(updatedCartItems));
           }
-          
-          
         }
       } catch (error) {
         console.error("Error updating cart item quantity:", error);
-        
       }
     } else {
       // Product doesn't exist in cart - add new item
@@ -193,10 +206,17 @@ function CustomerHomePage() {
 
   const handleSearch = (term) => {
     setSearchTerm(term);
-    const filtered = products.filter((product) =>
-      product.productName.toLowerCase().includes(term.toLowerCase())
-    );
-    setFilteredProducts(filtered);
+    if (term.trim() === '') {
+      // When search is cleared, show only in-stock products
+      const availableProducts = products.filter(product => product.productQuantity > 0);
+      setFilteredProducts(availableProducts);
+    } else {
+      // When searching, show all matching products regardless of stock
+      const filtered = products.filter((product) =>
+        product.productName.toLowerCase().includes(term.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
   };
 
   const handleProductClick = async (product) => {
@@ -232,6 +252,11 @@ function CustomerHomePage() {
         },
       },
     ],
+  };
+
+  // Function to determine if a product has low stock (less than 5 kg)
+  const isLowStock = (quantity) => {
+    return quantity > 0 && quantity < 5;
   };
 
   return (
@@ -284,24 +309,39 @@ function CustomerHomePage() {
           {filteredProducts.map((product) => (
             <div
               key={product.productId}
-              className="product-card"
+              className={`product-card ${product.productQuantity === 0 ? 'out-of-stock' : ''}`}
               onClick={() => handleProductClick(product)}
             >
               <div className="product-image">
                 <img src={product.imageUrl} alt={product.productName} />
+                {product.productQuantity === 0 && (
+                  <div className="out-of-stock-overlay">Out of Stock</div>
+                )}
               </div>
               <div className="product-info">
                 <h3>{product.productName}</h3>
                 <p>{product.productDescription}</p>
                 <p className="price">₹{product.productPrice}/kg</p>
+                
+                {/* Display stock information */}
+                {product.productQuantity > 0 && (
+                  <p className={`product-quantity ${isLowStock(product.productQuantity) ? 'low-stock' : ''}`}>
+                    {isLowStock(product.productQuantity) ? 'Only ' : ''}
+                    {product.productQuantity} kg available
+                  </p>
+                )}
+                
                 <button
-                  className="add-to-cart-btn"
+                  className={`add-to-cart-btn ${product.productQuantity === 0 ? 'disabled' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    addToCart(product);
+                    if (product.productQuantity > 0) {
+                      addToCart(product);
+                    }
                   }}
+                  disabled={product.productQuantity === 0}
                 >
-                  Add to Cart
+                  {product.productQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
                 </button>
               </div>
             </div>
@@ -315,8 +355,10 @@ function CustomerHomePage() {
           productDetails={productDetails}
           onClose={closeModal}
           onAddToCart={() => {
-            addToCart(selectedProduct);
-            closeModal();
+            if (selectedProduct.productQuantity > 0) {
+              addToCart(selectedProduct);
+              closeModal();
+            }
           }}
         />
       )}
