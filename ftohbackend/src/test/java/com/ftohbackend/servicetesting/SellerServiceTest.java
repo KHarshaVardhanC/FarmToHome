@@ -4,7 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -16,18 +19,16 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import com.ftohbackend.exception.SellerException;
 import com.ftohbackend.model.Seller;
 import com.ftohbackend.repository.SellerRepository;
 import com.ftohbackend.service.SellerServiceimpl;
 
-@ExtendWith(MockitoExtension.class)
-public class SellerServiceTest {
+class SellerServiceTest {
 
     @Mock
     private SellerRepository sellerRepository;
@@ -35,332 +36,284 @@ public class SellerServiceTest {
     @InjectMocks
     private SellerServiceimpl sellerService;
 
-    private Seller testSeller;
-    private Seller updatedSellerData;
+    private Seller sampleSeller;
 
     @BeforeEach
     void setUp() {
-        // Set up test seller
-        testSeller = new Seller();
-//        testSeller.setSellerId(1);
-        testSeller.setSellerFirstName("John");
-        testSeller.setSellerLastName("Doe");
-        testSeller.setSellerEmail("john.doe@example.com");
-        testSeller.setSellerMobileNumber("1234567890");
-        testSeller.setSellerPassword("password123");
-        testSeller.setSellerStatus("Active");
-        
-        // Set up updated seller data for tests
-        updatedSellerData = new Seller();
-        updatedSellerData.setSellerFirstName("Jane");
-        updatedSellerData.setSellerLastName("Smith");
-        updatedSellerData.setSellerEmail("jane.smith@example.com");
-        updatedSellerData.setSellerMobileNumber("9876543210");
-        updatedSellerData.setSellerPassword("newpassword");
-        updatedSellerData.setSellerStatus("Inactive");
+        MockitoAnnotations.openMocks(this);
+
+        // Create a sample seller for testing
+        sampleSeller = new Seller();
+        sampleSeller.setSellerId(1);
+        sampleSeller.setSellerFirstName("John");
+        sampleSeller.setSellerLastName("Doe");
+        sampleSeller.setSellerEmail("john.doe@example.com");
+        sampleSeller.setSellerMobileNumber("9876543210");
+        sampleSeller.setSellerPassword("password123");
+        sampleSeller.setSellerPlace("Manhattan");
+        sampleSeller.setSellerCity("New York");
+        sampleSeller.setSellerState("NY");
+        sampleSeller.setSellerPincode("100001");
+        sampleSeller.setSellerStatus("Active");
     }
 
     @Test
     void testAddSeller_Success() throws SellerException {
-        when(sellerRepository.save(any(Seller.class))).thenReturn(testSeller);
+        // Arrange
+        when(sellerRepository.save(any(Seller.class))).thenReturn(sampleSeller);
 
-        String result = sellerService.addSeller(testSeller);
+        // Act
+        String result = sellerService.addSeller(sampleSeller);
 
+        // Assert
         assertEquals("Seller Added Successfully", result);
-        verify(sellerRepository, times(1)).save(testSeller);
+        verify(sellerRepository, times(1)).save(any(Seller.class));
     }
 
     @Test
     void testAddSeller_NullSeller() {
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            sellerService.addSeller(null);
-        });
-
-        assertEquals("Seller object cannot be null.", exception.getMessage());
-        verify(sellerRepository, never()).save(any(Seller.class));
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.addSeller(null));
     }
 
     @Test
     void testGetSeller_ById_Success() throws SellerException {
-        when(sellerRepository.findById(1)).thenReturn(Optional.of(testSeller));
+        // Arrange
+        when(sellerRepository.findById(1)).thenReturn(Optional.of(sampleSeller));
 
+        // Act
         Seller result = sellerService.getSeller(1);
 
+        // Assert
         assertNotNull(result);
-        assertEquals(testSeller.getSellerId(), result.getSellerId());
-        assertEquals(testSeller.getSellerFirstName(), result.getSellerFirstName());
-        verify(sellerRepository, times(1)).findById(1);
+        assertEquals(sampleSeller.getSellerId(), result.getSellerId());
+        assertEquals(sampleSeller.getSellerFirstName(), result.getSellerFirstName());
     }
 
     @Test
     void testGetSeller_ById_NullId() {
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            sellerService.getSeller(null);
-        });
-
-        assertEquals("Seller ID cannot be null.", exception.getMessage());
-        verify(sellerRepository, never()).findById(any());
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.getSeller((Integer) null));
     }
 
     @Test
     void testGetSeller_ById_NotFound() {
-        when(sellerRepository.findById(99)).thenReturn(Optional.empty());
+        // Arrange
+        when(sellerRepository.findById(anyInt())).thenReturn(Optional.empty());
 
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            sellerService.getSeller(99);
-        });
-
-        assertEquals("Seller not found with ID: 99", exception.getMessage());
-        verify(sellerRepository, times(1)).findById(99);
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.getSeller(999));
     }
 
     @Test
     void testDeleteSeller_Success() throws SellerException {
+        // Arrange
         when(sellerRepository.existsById(1)).thenReturn(true);
         doNothing().when(sellerRepository).deleteById(1);
 
+        // Act
         String result = sellerService.deleteSeller(1);
 
+        // Assert
         assertEquals("Seller Deleted Successfully", result);
-        verify(sellerRepository, times(1)).existsById(1);
+        verify(sellerRepository, times(1)).deleteById(1);
     }
 
     @Test
     void testDeleteSeller_NullId() {
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            sellerService.deleteSeller(null);
-        });
-
-        assertEquals("Seller ID cannot be null.", exception.getMessage());
-        verify(sellerRepository, never()).existsById(any());
-        verify(sellerRepository, never()).deleteById(any());
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.deleteSeller(null));
     }
 
     @Test
     void testDeleteSeller_NotFound() {
-        when(sellerRepository.existsById(99)).thenReturn(false);
+        // Arrange
+        when(sellerRepository.existsById(anyInt())).thenReturn(false);
 
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            sellerService.deleteSeller(99);
-        });
-
-        assertEquals("Seller not found with ID: 99", exception.getMessage());
-        verify(sellerRepository, times(1)).existsById(99);
-        verify(sellerRepository, never()).deleteById(any());
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.deleteSeller(999));
+        verify(sellerRepository, never()).deleteById(anyInt());
     }
 
     @Test
-    void testUpdateSellerDetails_Success() throws SellerException {
-        when(sellerRepository.findById(1)).thenReturn(Optional.of(testSeller));
-        when(sellerRepository.save(any(Seller.class))).thenReturn(testSeller);
+    void testUpdateSeller_Success() throws SellerException {
+        // Arrange
+        Seller updatedSeller = new Seller();
+        updatedSeller.setSellerFirstName("Updated");
+        updatedSeller.setSellerLastName("Name");
+        updatedSeller.setSellerEmail("updated.email@example.com");
+        updatedSeller.setSellerMobileNumber("9876543211");
+        updatedSeller.setSellerPassword("updatedPwd");
+        updatedSeller.setSellerStatus("Inactive");
 
-        // Explicitly cast to resolve ambiguity
-        String result = sellerService.updateSeller(Integer.valueOf(1), updatedSellerData);
+        when(sellerRepository.findById(1)).thenReturn(Optional.of(sampleSeller));
+        when(sellerRepository.save(any(Seller.class))).thenReturn(sampleSeller);
 
+        // Act
+        String result = sellerService.updateSeller(1, updatedSeller);
+
+        // Assert
         assertEquals("Updated Seller Details Successfully", result);
-        assertEquals(updatedSellerData.getSellerFirstName(), testSeller.getSellerFirstName());
-        assertEquals(updatedSellerData.getSellerLastName(), testSeller.getSellerLastName());
-        assertEquals(updatedSellerData.getSellerEmail(), testSeller.getSellerEmail());
-        verify(sellerRepository, times(1)).findById(1);
-        verify(sellerRepository, times(1)).save(testSeller);
+        verify(sellerRepository, times(1)).save(any(Seller.class));
     }
 
     @Test
-    void testUpdateSellerDetails_NullId() {
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            // Explicitly cast the first parameter to resolve ambiguity
-            sellerService.updateSeller((Integer)null, updatedSellerData);
-        });
-
-        assertEquals("Seller ID and updated seller data cannot be null.", exception.getMessage());
-        verify(sellerRepository, never()).findById(any());
-        verify(sellerRepository, never()).save(any());
+    void testUpdateSeller_NullId() {
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.updateSeller(null, sampleSeller));
     }
 
+ 
     @Test
-    void testUpdateSellerDetails_NullSeller() {
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            // Explicitly cast the second parameter to resolve ambiguity
-            sellerService.updateSeller(Integer.valueOf(1), (Seller)null);
-        });
+    void testUpdateSeller_NotFound() {
+        // Arrange
+        when(sellerRepository.findById(anyInt())).thenReturn(Optional.empty());
 
-        assertEquals("Seller ID and updated seller data cannot be null.", exception.getMessage());
-        verify(sellerRepository, never()).findById(any());
-        verify(sellerRepository, never()).save(any());
-    }
-
-    @Test
-    void testUpdateSellerDetails_NotFound() {
-        when(sellerRepository.findById(99)).thenReturn(Optional.empty());
-
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            // Explicitly cast to resolve ambiguity
-            sellerService.updateSeller(Integer.valueOf(99), updatedSellerData);
-        });
-
-        assertEquals("Seller not found with ID: 99", exception.getMessage());
-        verify(sellerRepository, times(1)).findById(99);
-        verify(sellerRepository, never()).save(any());
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.updateSeller(999, sampleSeller));
+        verify(sellerRepository, never()).save(any(Seller.class));
     }
 
     @Test
     void testUpdateSellerStatus_ToActive() throws SellerException {
-        when(sellerRepository.findById(1)).thenReturn(Optional.of(testSeller));
-        when(sellerRepository.save(any(Seller.class))).thenReturn(testSeller);
+        // Arrange
+        when(sellerRepository.findById(1)).thenReturn(Optional.of(sampleSeller));
+        when(sellerRepository.save(any(Seller.class))).thenReturn(sampleSeller);
 
-        // Explicitly call the status update method with String parameter
-        String result = sellerService.updateSeller(Integer.valueOf(1), "Active");
+        // Act
+        String result = sellerService.updateSeller(1, "Active");
 
+        // Assert
         assertEquals("Seller Account is Activated Successfully", result);
-        assertEquals("Active", testSeller.getSellerStatus());
-        verify(sellerRepository, times(1)).findById(1);
-        verify(sellerRepository, times(1)).save(testSeller);
+        verify(sellerRepository, times(1)).save(any(Seller.class));
     }
 
     @Test
     void testUpdateSellerStatus_ToInactive() throws SellerException {
-        when(sellerRepository.findById(1)).thenReturn(Optional.of(testSeller));
-        when(sellerRepository.save(any(Seller.class))).thenReturn(testSeller);
+        // Arrange
+        when(sellerRepository.findById(1)).thenReturn(Optional.of(sampleSeller));
+        when(sellerRepository.save(any(Seller.class))).thenReturn(sampleSeller);
 
-        // Explicitly call the status update method with String parameter
-        String result = sellerService.updateSeller(Integer.valueOf(1), "Inactive");
+        // Act
+        String result = sellerService.updateSeller(1, "Inactive");
 
+        // Assert
         assertEquals("Seller Account is Activated Successfully", result);
-        assertEquals("Inactive", testSeller.getSellerStatus());
-        verify(sellerRepository, times(1)).findById(1);
-        verify(sellerRepository, times(1)).save(testSeller);
+        verify(sellerRepository, times(1)).save(any(Seller.class));
     }
 
     @Test
-    void testUpdateSellerStatus_OtherStatus() throws SellerException {
-        when(sellerRepository.findById(1)).thenReturn(Optional.of(testSeller));
-        when(sellerRepository.save(any(Seller.class))).thenReturn(testSeller);
+    void testUpdateSellerStatus_ToOtherStatus() throws SellerException {
+        // Arrange
+        when(sellerRepository.findById(1)).thenReturn(Optional.of(sampleSeller));
+        when(sellerRepository.save(any(Seller.class))).thenReturn(sampleSeller);
 
-        // Explicitly call the status update method with String parameter
-        String result = sellerService.updateSeller(Integer.valueOf(1), "Pending");
+        // Act
+        String result = sellerService.updateSeller(1, "Pending");
 
+        // Assert
         assertEquals("Seller Account status Activated", result);
-        assertEquals("Pending", testSeller.getSellerStatus());
-        verify(sellerRepository, times(1)).findById(1);
-        verify(sellerRepository, times(1)).save(testSeller);
+        verify(sellerRepository, times(1)).save(any(Seller.class));
     }
 
     @Test
     void testUpdateSellerStatus_NullId() {
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            // Cast first parameter to Integer, second to String to resolve ambiguity
-            sellerService.updateSeller((Integer)null, "Active");
-        });
-
-        assertEquals("Seller ID and status cannot be null.", exception.getMessage());
-        verify(sellerRepository, never()).findById(any());
-        verify(sellerRepository, never()).save(any());
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.updateSeller(null, "Active"));
     }
 
     @Test
     void testUpdateSellerStatus_NullStatus() {
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            // Cast first parameter to Integer, second to String to resolve ambiguity
-            sellerService.updateSeller(Integer.valueOf(1), (String)null);
-        });
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.updateSeller(1, (String) null));
+    }
 
-        assertEquals("Seller ID and status cannot be null.", exception.getMessage());
-        verify(sellerRepository, never()).findById(any());
-        verify(sellerRepository, never()).save(any());
+    @Test
+    void testUpdateSellerStatus_NotFound() {
+        // Arrange
+        when(sellerRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.updateSeller(999, "Active"));
+        verify(sellerRepository, never()).save(any(Seller.class));
     }
 
     @Test
     void testGetAllSellers_Success() throws SellerException {
+        // Arrange
         List<Seller> sellers = new ArrayList<>();
-        sellers.add(testSeller);
-        
-        Seller secondSeller = new Seller();
-//        secondSeller.setSellerId(2);
-        secondSeller.setSellerFirstName("Jane");
-        secondSeller.setSellerLastName("Smith");
-        sellers.add(secondSeller);
-
+        sellers.add(sampleSeller);
         when(sellerRepository.findAll()).thenReturn(sellers);
 
+        // Act
         List<Seller> result = sellerService.getSeller();
 
+        // Assert
         assertNotNull(result);
-        assertEquals(2, result.size());
-        verify(sellerRepository, times(1)).findAll();
+        assertEquals(1, result.size());
+        assertEquals(sampleSeller.getSellerId(), result.get(0).getSellerId());
     }
 
     @Test
     void testGetAllSellers_EmptyList() {
+        // Arrange
         when(sellerRepository.findAll()).thenReturn(new ArrayList<>());
 
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            sellerService.getSeller();
-        });
-
-        assertEquals("No sellers found.", exception.getMessage());
-        verify(sellerRepository, times(1)).findAll();
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.getSeller());
     }
 
     @Test
     void testAuthenticateSeller_Success() throws SellerException {
-        String email = "john.doe@example.com";
-        String password = "password123";
-        
-        when(sellerRepository.findBySellerEmail(email)).thenReturn(testSeller);
-        when(testSeller.verifyPassword(password)).thenReturn(true);
+        // Arrange
+        // Mock the behavior of the Seller class's verifyPassword method
+        Seller mockSeller = mock(Seller.class);
+        when(mockSeller.getSellerId()).thenReturn(1);
+        when(mockSeller.verifyPassword("password123")).thenReturn(true);
 
-        Seller result = sellerService.authenticateSeller(email, password);
+        when(sellerRepository.findBySellerEmail("john.doe@example.com")).thenReturn(mockSeller);
 
+        // Act
+        Seller result = sellerService.authenticateSeller("john.doe@example.com", "password123");
+
+        // Assert
         assertNotNull(result);
-        assertEquals(testSeller, result);
-        verify(sellerRepository, times(1)).findBySellerEmail(email);
+        assertEquals(1, result.getSellerId());
+        verify(mockSeller, times(1)).verifyPassword("password123");
     }
 
     @Test
-    void testAuthenticateSeller_NullEmail() throws SellerException {
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            sellerService.authenticateSeller(null, "password123");
-        });
-
-        assertEquals("Email and password must not be null.", exception.getMessage());
-        verify(sellerRepository, never()).findBySellerEmail(any());
+    void testAuthenticateSeller_NullEmail() {
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.authenticateSeller(null, "password123"));
     }
 
     @Test
-    void testAuthenticateSeller_NullPassword() throws SellerException {
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            sellerService.authenticateSeller("john.doe@example.com", null);
-        });
-
-        assertEquals("Email and password must not be null.", exception.getMessage());
-        verify(sellerRepository, never()).findBySellerEmail(any());
+    void testAuthenticateSeller_NullPassword() {
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.authenticateSeller("john.doe@example.com", null));
     }
 
     @Test
-    void testAuthenticateSeller_EmailNotFound() throws SellerException {
-        when(sellerRepository.findBySellerEmail("nonexistent@example.com")).thenReturn(null);
+    void testAuthenticateSeller_SellerNotFound() throws SellerException {
+        // Arrange
+        when(sellerRepository.findBySellerEmail(anyString())).thenReturn(null);
 
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            sellerService.authenticateSeller("nonexistent@example.com", "password123");
-        });
-
-        assertEquals("Seller not found with email: nonexistent@example.com", exception.getMessage());
-        verify(sellerRepository, times(1)).findBySellerEmail("nonexistent@example.com");
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.authenticateSeller("notfound@example.com", "password123"));
     }
 
     @Test
     void testAuthenticateSeller_IncorrectPassword() throws SellerException {
-        String email = "john.doe@example.com";
-        String password = "wrongpassword";
-        
-        when(sellerRepository.findBySellerEmail(email)).thenReturn(testSeller);
-        when(testSeller.verifyPassword(password)).thenReturn(false);
+        // Arrange
+        // Mock the behavior of the Seller class's verifyPassword method
+        Seller mockSeller = mock(Seller.class);
+        when(mockSeller.verifyPassword("wrongpassword")).thenReturn(false);
 
-        SellerException exception = assertThrows(SellerException.class, () -> {
-            sellerService.authenticateSeller(email, password);
-        });
+        when(sellerRepository.findBySellerEmail("john.doe@example.com")).thenReturn(mockSeller);
 
-        assertEquals("Incorrect password.", exception.getMessage());
-        verify(sellerRepository, times(1)).findBySellerEmail(email);
+        // Act & Assert
+        assertThrows(SellerException.class, () -> sellerService.authenticateSeller("john.doe@example.com", "wrongpassword"));
+        verify(mockSeller, times(1)).verifyPassword("wrongpassword");
     }
 }

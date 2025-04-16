@@ -14,7 +14,7 @@ public class SomeConfig implements WebMvcConfigurer {
 	@Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/")  // Changed from "/" to "/**" to apply to all endpoints
-            .allowedOrigins("http://localhost:3000")
+            .allowedOrigins("*")
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
          }
 }

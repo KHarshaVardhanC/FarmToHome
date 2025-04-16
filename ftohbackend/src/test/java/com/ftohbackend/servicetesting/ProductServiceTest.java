@@ -1,30 +1,31 @@
 package com.ftohbackend.servicetesting;
 
-
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.Mockito.never;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.util.Collections;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
@@ -33,366 +34,450 @@ import com.ftohbackend.dto.CustomerProductDTO;
 import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
 import com.ftohbackend.exception.ProductException;
-import com.ftohbackend.exception.SellerException;
 import com.ftohbackend.model.Product;
 import com.ftohbackend.model.Seller;
 import com.ftohbackend.repository.ProductRepository;
 import com.ftohbackend.repository.SellerRepository;
 import com.ftohbackend.service.ProductServiceImpl;
+import com.ftohbackend.service.RatingServiceImpl;
 import com.ftohbackend.service.SellerService;
 
-@ExtendWith(MockitoExtension.class)
 public class ProductServiceTest {
-//
+
     @Mock
     private ProductRepository productRepository;
-    
+
     @Mock
     private SellerRepository sellerRepository;
-    
+
     @Mock
     private SellerService sellerService;
-    
+
     @Mock
     private Cloudinary cloudinary;
-    
+
     @Mock
     private Uploader uploader;
-    
+
     @Mock
     private ModelMapper modelMapper;
-    
+
     @Mock
-    private MultipartFile mockMultipartFile;
+    private RatingServiceImpl ratingServiceImpl;
 
     @InjectMocks
     private ProductServiceImpl productService;
 
-    private Product product;
-    private ProductRequest productRequest;
-    private ProductDTO productDTO;
-    private Seller seller;
+    private Product sampleProduct;
+    private ProductDTO sampleProductDTO;
+    private Seller sampleSeller;
+    private ProductRequest sampleProductRequest;
+    private MultipartFile sampleMultipartFile;
 
     @BeforeEach
-    public void setUp() {
-        seller = new Seller();
-//        seller.setSellerId(1);
-        seller.setSellerEmail("test@example.com");
-        seller.setSellerFirstName("John");
-        seller.setSellerLastName("Doe");
+    void setUp() throws Exception {
+        MockitoAnnotations.openMocks(this);
+
+        // Set up sample seller
+        sampleSeller = new Seller();
+        sampleSeller.setSellerId(1);
+        sampleSeller.setSellerFirstName("John");
+        sampleSeller.setSellerLastName("Doe");
+        sampleSeller.setSellerCity("New York");
+        sampleSeller.setSellerPlace("Manhattan");
+
+        // Set up sample product
+        sampleProduct = new Product();
+        sampleProduct.setProductId(1);
+        sampleProduct.setProductName("Apple");
+        sampleProduct.setProductPrice(2.99);
+        sampleProduct.setProductQuantity(100.0);
+        sampleProduct.setProductDescription("Fresh Apples");
+        sampleProduct.setProductCategory("Fruits");
+        sampleProduct.setProductQuantityType("Kg");
+        sampleProduct.setImageUrl("http://example.com/apple.jpg");
+        sampleProduct.setSeller(sampleSeller);
+        sampleProduct.setProductRatingValue(4.5);
+        sampleProduct.setProductRatingCount(10);
+
+        // Set up sample product DTO
+        sampleProductDTO = new ProductDTO();
+        sampleProductDTO.setProductId(1);
+        sampleProductDTO.setProductName("Apple");
+        sampleProductDTO.setProductPrice(2.99);
+        sampleProductDTO.setProductQuantity(100.0);
+        sampleProductDTO.setImageUrl("http://example.com/apple.jpg");
+        sampleProductDTO.setProductDescription("Fresh Apples");
+        sampleProductDTO.setProductCategory("Fruits");
+        sampleProductDTO.setSellerId(1);
+
+        // Set up sample product request
+        sampleProductRequest = new ProductRequest();
+        sampleProductRequest.setSellerId(1);
+        sampleProductRequest.setProductName("Apple");
+        sampleProductRequest.setProductPrice(2.99);
+        sampleProductRequest.setProductQuantity(100.0);
+        sampleProductRequest.setProductDescription("Fresh Apples");
+        sampleProductRequest.setProductCategory("Fruits");
+        sampleProductRequest.setProductQuantityType("Kg");
         
-        product = new Product();
-        product.setProductId(1);
-        product.setProductName("Test Product");
-        product.setProductPrice(100.0);
-        product.setProductQuantity(10.0);
-        product.setImageUrl("http://example.com/image.jpg");
-        product.setProductDescription("Test Description");
-        product.setSeller(seller);
-        
-        productRequest = new ProductRequest();
-        productRequest.setProductName("Test Product");
-        productRequest.setProductPrice(100.0);
-        productRequest.setProductQuantity(10.0);
-        productRequest.setProductDescription("Test Description");
-        productRequest.setSellerId(1);
-        productRequest.setImage(mockMultipartFile);
-        
-        productDTO = new ProductDTO();
-        productDTO.setProductId(1);
-        productDTO.setProductName("Test Product");
-        productDTO.setProductPrice(100.0);
-        productDTO.setProductQuantity(10.0);
-        productDTO.setImageUrl("http://example.com/image.jpg");
-        productDTO.setProductDescription("Test Description");
-        productDTO.setSellerId(1);
+        // Mock MultipartFile
+        sampleMultipartFile = new MockMultipartFile(
+            "image", 
+            "apple.jpg", 
+            "image/jpeg", 
+            "test image content".getBytes()
+        );
+        sampleProductRequest.setImage(sampleMultipartFile);
+
+        // Mock cloudinary behavior
+        when(cloudinary.uploader()).thenReturn(uploader);
+        Map<String, Object> uploadResult = new HashMap<>();
+        uploadResult.put("url", "http://example.com/apple.jpg");
+        when(uploader.upload(any(byte[].class), anyMap())).thenReturn(uploadResult);
+
+        // Mock seller service
+        when(sellerService.getSeller(1)).thenReturn(sampleSeller);
+
+        // Mock model mapper
+        when(modelMapper.map(any(Product.class), eq(ProductDTO.class))).thenReturn(sampleProductDTO);
     }
 
-    @AfterEach
-    public void tearDown() {
-        product = null;
-        productRequest = null;
-        productDTO = null;
-        seller = null;
+    @Test
+    void testAddProduct_Success() throws ProductException, IOException {
+        // Arrange
+        when(productRepository.save(any(Product.class))).thenReturn(sampleProduct);
+
+        // Act
+        ProductDTO result = productService.addProduct(sampleProductRequest);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(sampleProductDTO.getProductName(), result.getProductName());
+        assertEquals(sampleProductDTO.getProductPrice(), result.getProductPrice());
+        verify(productRepository, times(1)).save(any(Product.class));
     }
 
     @Test
-    @DisplayName("JUnit test for addProduct operation")
-    public void givenProductRequest_whenAddProduct_thenReturnProductDTO() throws Exception {
-        // given - precondition or setup
-        given(sellerService.getSeller(anyInt())).willReturn(seller);
-        given(cloudinary.uploader()).willReturn(uploader);
-        
-        Map<String, Object> uploadResult = Map.of("url", "http://example.com/image.jpg");
-        given(uploader.upload(any(byte[].class), any())).willReturn(uploadResult);
-        
-        given(productRepository.save(any(Product.class))).willReturn(product);
-        given(modelMapper.map(any(Product.class), any())).willReturn(productDTO);
-        
-        // when - action or behavior
-        ProductDTO savedProduct = productService.addProduct(productRequest);
-        
-        // then - verify the output
-        assertThat(savedProduct).isNotNull();
-        assertThat(savedProduct.getProductName()).isEqualTo(productRequest.getProductName());
+    void testAddProduct_NullRequest() {
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.addProduct(null));
+    }
+
+    @Test
+    void testAddProduct_NullImage() {
+        // Arrange
+        sampleProductRequest.setImage(null);
+
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.addProduct(sampleProductRequest));
+    }
+
+  
+    @Test
+    void testGetAllProduct_Success() throws ProductException {
+        // Arrange
+        List<Product> products = new ArrayList<>();
+        products.add(sampleProduct);
+        when(productRepository.findAll()).thenReturn(products);
+
+        // Act
+        List<Product> result = productService.getAllProduct();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(sampleProduct.getProductName(), result.get(0).getProductName());
+    }
+
+    @Test
+    void testGetAllProduct_EmptyList() {
+        // Arrange
+        when(productRepository.findAll()).thenReturn(new ArrayList<>());
+
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.getAllProduct());
+    }
+
+    @Test
+    void testGetAllProductBySellerId_Success() throws ProductException {
+        // Arrange
+        List<Product> products = new ArrayList<>();
+        products.add(sampleProduct);
+        when(productRepository.findBySellerSellerId(1)).thenReturn(products);
+
+        // Act
+        List<Product> result = productService.getAllProduct(1);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(sampleProduct.getProductName(), result.get(0).getProductName());
+    }
+
+    @Test
+    void testGetAllProductBySellerId_NullSellerId() {
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.getAllProduct((Integer) null));
+    }
+
+    @Test
+    void testGetAllProductBySellerId_EmptyList() throws ProductException {
+        // Arrange
+        when(productRepository.findBySellerSellerId(anyInt())).thenReturn(new ArrayList<>());
+
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.getAllProduct(1));
+    }
+
+    @Test
+    void testGetProductByTitle_Success() throws ProductException {
+        // Arrange
+        List<Product> products = new ArrayList<>();
+        products.add(sampleProduct);
+        when(productRepository.findAll()).thenReturn(products);
+
+        // Act
+        Product result = productService.getProductByTitle("Apple");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(sampleProduct.getProductName(), result.getProductName());
+    }
+
+    @Test
+    void testGetProductByTitle_NullName() {
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.getProductByTitle(null));
+    }
+
+    @Test
+    void testGetProductByTitle_EmptyName() {
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.getProductByTitle("  "));
+    }
+
+    @Test
+    void testGetProductByTitle_NotFound() {
+        // Arrange
+        List<Product> products = new ArrayList<>();
+        products.add(sampleProduct);
+        when(productRepository.findAll()).thenReturn(products);
+
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.getProductByTitle("Orange"));
+    }
+
+    @Test
+    void testUpdateProduct_Success() throws Exception {
+        // Arrange
+        when(productRepository.findById(1)).thenReturn(Optional.of(sampleProduct));
+        Product updatedDetails = new Product();
+        updatedDetails.setProductPrice(3.99);
+        updatedDetails.setProductName("Green Apple");
+        updatedDetails.setProductQuantity(50.0);
+        updatedDetails.setProductDescription("Fresh Green Apples");
+        updatedDetails.setProductCategory("Organic Fruits");
+        updatedDetails.setProductQuantityType("Pound");
+
+        // Act
+        String result = productService.updateProduct(1, updatedDetails);
+
+        // Assert
+        assertEquals("Product updated successfully", result);
         verify(productRepository, times(1)).save(any(Product.class));
     }
-    
+
     @Test
-    @DisplayName("JUnit test for addProduct operation - with null ProductRequest")
-    public void givenNullProductRequest_whenAddProduct_thenThrowsProductException() {
-        // given - precondition or setup
-        ProductRequest nullRequest = null;
-        
-        // when - action or behavior & then - verify the output
-        assertThrows(ProductException.class, () -> {
-            productService.addProduct(nullRequest);
-        });
-        
-        verify(productRepository, never()).save(any(Product.class));
+    void testUpdateProduct_NullProductId() {
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.updateProduct(null, new Product()));
     }
-    
+
     @Test
-    @DisplayName("JUnit test for addProduct operation - with null image")
-    public void givenProductRequestWithNullImage_whenAddProduct_thenThrowsProductException() throws SellerException {
-        // given - precondition or setup
-        productRequest.setImage(null);
-        given(sellerService.getSeller(anyInt())).willReturn(seller);
-        
-        // when - action or behavior & then - verify the output
-        assertThrows(ProductException.class, () -> {
-            productService.addProduct(productRequest);
-        });
-        
-        verify(productRepository, never()).save(any(Product.class));
+    void testUpdateProduct_NullUpdatedDetails() {
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.updateProduct(1, null));
     }
-    
+
     @Test
-    @DisplayName("JUnit test for getAllProduct operation")
-    public void givenProductsList_whenGetAllProduct_thenReturnProductsList() throws ProductException {
-        // given - precondition or setup
-        Product product2 = new Product();
-        product2.setProductId(2);
-        product2.setProductName("Test Product 2");
-        
-        given(productRepository.findAll()).willReturn(List.of(product, product2));
-        
-        // when - action or behavior
-        List<Product> products = productService.getAllProduct();
-        
-        // then - verify the output
-        assertThat(products).isNotNull();
-        assertThat(products.size()).isEqualTo(2);
-        verify(productRepository, times(1)).findAll();
+    void testUpdateProduct_ProductNotFound() {
+        // Arrange
+        when(productRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.updateProduct(1, new Product()));
     }
-    
+
     @Test
-    @DisplayName("JUnit test for getAllProduct operation - Empty List (Negative Scenario)")
-    public void givenEmptyProductsList_whenGetAllProduct_thenThrowsProductException() {
-        // given - precondition or setup
-        given(productRepository.findAll()).willReturn(Collections.emptyList());
-        
-        // when - action or behavior & then - verify the output
-        assertThrows(ProductException.class, () -> {
-            productService.getAllProduct();
-        });
-        
-        verify(productRepository, times(1)).findAll();
-    }
-    
-    @Test
-    @DisplayName("JUnit test for getAllProduct operation by sellerId")
-    public void givenSellerId_whenGetAllProduct_thenReturnProductsList() throws ProductException {
-        // given - precondition or setup
-        Product product2 = new Product();
-        product2.setProductId(2);
-        product2.setProductName("Test Product 2");
-        
-        given(productRepository.findBySellerSellerId(anyInt())).willReturn(List.of(product, product2));
-        
-        // when - action or behavior
-        List<Product> products = productService.getAllProduct(1);
-        
-        // then - verify the output
-        assertThat(products).isNotNull();
-        assertThat(products.size()).isEqualTo(2);
-        verify(productRepository, times(1)).findBySellerSellerId(1);
-    }
-    
-    @Test
-    @DisplayName("JUnit test for getAllProduct operation by sellerId - Empty List")
-    public void givenSellerId_whenGetAllProductWithNoResults_thenThrowsProductException() throws ProductException {
-        // given - precondition or setup
-        given(productRepository.findBySellerSellerId(anyInt())).willReturn(Collections.emptyList());
-        
-        // when - action or behavior & then - verify the output
-        assertThrows(ProductException.class, () -> {
-            productService.getAllProduct(1);
-        });
-        
-        verify(productRepository, times(1)).findBySellerSellerId(1);
-    }
-    
-    @Test
-    @DisplayName("JUnit test for getProductByTitle operation")
-    public void givenProductName_whenGetProductByTitle_thenReturnProduct() throws ProductException {
-        // given - precondition or setup
-        given(productRepository.findAll()).willReturn(List.of(product));
-        
-        // when - action or behavior
-        Product foundProduct = productService.getProductByTitle("Test Product");
-        
-        // then - verify the output
-        assertThat(foundProduct).isNotNull();
-        assertThat(foundProduct.getProductName()).isEqualTo("Test Product");
-    }
-    
-    @Test
-    @DisplayName("JUnit test for getProductByTitle operation - Product Not Found")
-    public void givenInvalidProductName_whenGetProductByTitle_thenThrowsProductException() {
-        // given - precondition or setup
-        given(productRepository.findAll()).willReturn(List.of(product));
-        
-        // when - action or behavior & then - verify the output
-        assertThrows(ProductException.class, () -> {
-            productService.getProductByTitle("Non-existent Product");
-        });
-    }
-    
-    @Test
-    @DisplayName("JUnit test for updateProduct operation")
-    public void givenProductIdAndUpdatedDetails_whenUpdateProduct_thenReturnSuccess() throws Exception {
-        // given - precondition or setup
-        Product updatedProduct = new Product();
-        updatedProduct.setProductName("Updated Product");
-        updatedProduct.setProductPrice(150.0);
-        updatedProduct.setProductQuantity(20.0);
-        
-        given(productRepository.findById(anyInt())).willReturn(Optional.of(product));
-        given(productRepository.save(any(Product.class))).willReturn(product);
-        
-        // when - action or behavior
-        String result = productService.updateProduct(1, updatedProduct);
-        
-        // then - verify the output
-        assertThat(result).isEqualTo("Product updated successfully");
+    void testUpdateProduct_WithRatingUpdate() throws Exception {
+        // Arrange
+        when(productRepository.findById(1)).thenReturn(Optional.of(sampleProduct));
+        Product updatedDetails = new Product();
+        updatedDetails.setProductRatingValue(5.0);
+        when(ratingServiceImpl.getRatingsByProductId(1)).thenReturn(new ArrayList<>());
+
+        // Act
+        String result = productService.updateProduct(1, updatedDetails);
+
+        // Assert
+        assertEquals("Product updated successfully", result);
+        assertEquals(5.0, sampleProduct.getProductRatingValue());
+        assertEquals(1, sampleProduct.getProductRatingCount());
         verify(productRepository, times(1)).save(any(Product.class));
     }
-    
+
     @Test
-    @DisplayName("JUnit test for updateProduct operation - Product Not Found")
-    public void givenInvalidProductId_whenUpdateProduct_thenThrowsProductException() {
-        // given - precondition or setup
-        Product updatedProduct = new Product();
-        updatedProduct.setProductName("Updated Product");
-        
-        given(productRepository.findById(anyInt())).willReturn(Optional.empty());
-        
-        // when - action or behavior & then - verify the output
-        assertThrows(ProductException.class, () -> {
-            productService.updateProduct(999, updatedProduct);
-        });
-        
-        verify(productRepository, never()).save(any(Product.class));
-    }
-    
-    @Test
-    @DisplayName("JUnit test for deleteProduct operation")
-    public void givenProductId_whenDeleteProduct_thenReturnSuccess() throws ProductException {
-        // given - precondition or setup
-        given(productRepository.findById(anyInt())).willReturn(Optional.of(product));
-        willDoNothing().given(productRepository).delete(any(Product.class));
-        
-        // when - action or behavior
+    void testDeleteProduct_Success() throws ProductException {
+        // Arrange
+        when(productRepository.findById(1)).thenReturn(Optional.of(sampleProduct));
+
+        // Act
         String result = productService.deleteProduct(1);
-        
-        // then - verify the output
-        assertThat(result).isEqualTo("Product deleted successfully");
+
+        // Assert
+        assertEquals("Product deleted successfully", result);
         verify(productRepository, times(1)).delete(any(Product.class));
     }
-    
+
     @Test
-    @DisplayName("JUnit test for deleteProduct operation - Product Not Found")
-    public void givenInvalidProductId_whenDeleteProduct_thenThrowsProductException() {
-        // given - precondition or setup
-        given(productRepository.findById(anyInt())).willReturn(Optional.empty());
-        
-        // when - action or behavior & then - verify the output
-        assertThrows(ProductException.class, () -> {
-            productService.deleteProduct(999);
-        });
-        
-        verify(productRepository, never()).delete(any(Product.class));
+    void testDeleteProduct_NullProductId() {
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.deleteProduct(null));
     }
-    
+
     @Test
-    @DisplayName("JUnit test for getProductsBySellerId operation")
-    public void givenSellerId_whenGetProductsBySellerId_thenReturnProductsList() throws ProductException {
-        // given - precondition or setup
-        Product product2 = new Product();
-        product2.setProductId(2);
-        product2.setProductName("Test Product 2");
-        
-        given(productRepository.findBySellerSellerId(anyInt())).willReturn(List.of(product, product2));
-        
-        // when - action or behavior
-        List<Product> products = productService.getProductsBySellerId(1);
-        
-        // then - verify the output
-        assertThat(products).isNotNull();
-        assertThat(products.size()).isEqualTo(2);
-        verify(productRepository, times(1)).findBySellerSellerId(1);
+    void testDeleteProduct_ProductNotFound() {
+        // Arrange
+        when(productRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.deleteProduct(1));
     }
-    
+
     @Test
-    @DisplayName("JUnit test for searchProductsWithSellerDetails operation")
-    public void givenProductName_whenSearchProductsWithSellerDetails_thenReturnCustomerProductDTOs() throws ProductException {
-        // given - precondition or setup
-        given(productRepository.findProductsByNameWithSeller(any(String.class))).willReturn(List.of(product));
-        
-        // when - action or behavior
-        List<CustomerProductDTO> result = productService.searchProductsWithSellerDetails("Test");
-        
-        // then - verify the output
-        assertThat(result).isNotNull();
-        assertThat(result.size()).isEqualTo(1);
+    void testGetProductsBySellerId_Success() throws ProductException {
+        // Arrange
+        List<Product> products = new ArrayList<>();
+        products.add(sampleProduct);
+        when(productRepository.findBySellerSellerId(1)).thenReturn(products);
+
+        // Act
+        List<Product> result = productService.getProductsBySellerId(1);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(sampleProduct.getProductName(), result.get(0).getProductName());
     }
-    
+
     @Test
-    @DisplayName("JUnit test for searchProductsWithSellerDetails operation - No Products Found")
-    public void givenInvalidProductName_whenSearchProductsWithSellerDetails_thenThrowsProductException() throws ProductException {
-        // given - precondition or setup
-        given(productRepository.findProductsByNameWithSeller(any(String.class))).willReturn(Collections.emptyList());
-        
-        // when - action or behavior & then - verify the output
-        assertThrows(ProductException.class, () -> {
-            productService.searchProductsWithSellerDetails("Non-existent");
-        });
+    void testGetProductsBySellerId_NullSellerId() {
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.getProductsBySellerId(null));
     }
-    
+
     @Test
-    @DisplayName("JUnit test for getProduct operation")
-    public void givenProductId_whenGetProduct_thenReturnProduct() throws ProductException {
-        // given - precondition or setup
-        given(productRepository.findById(anyInt())).willReturn(Optional.of(product));
-        
-        // when - action or behavior
-        Product foundProduct = productService.getProduct(1);
-        
-        // then - verify the output
-        assertThat(foundProduct).isNotNull();
-        assertThat(foundProduct.getProductId()).isEqualTo(1);
+    void testGetProductsBySellerId_EmptyList() throws ProductException {
+        // Arrange
+        when(productRepository.findBySellerSellerId(anyInt())).thenReturn(new ArrayList<>());
+
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.getProductsBySellerId(1));
     }
-    
+
     @Test
-    @DisplayName("JUnit test for getProduct operation - Product Not Found")
-    public void givenInvalidProductId_whenGetProduct_thenThrowsProductException() {
-        // given - precondition or setup
-        given(productRepository.findById(anyInt())).willReturn(Optional.empty());
+    void testSearchProductsWithSellerDetails_Success() throws ProductException {
+        // Arrange
+        List<Product> products = new ArrayList<>();
+        Product outOfStockProduct = new Product();
+        outOfStockProduct.setProductId(2);
+        outOfStockProduct.setProductName("Banana");
+        outOfStockProduct.setProductPrice(1.99);
+        outOfStockProduct.setProductQuantity(0.0);
+        outOfStockProduct.setProductDescription("Fresh Bananas");
+        outOfStockProduct.setProductCategory("Fruits");
+        outOfStockProduct.setProductQuantityType("Kg");
+        outOfStockProduct.setImageUrl("http://example.com/banana.jpg");
+        outOfStockProduct.setSeller(sampleSeller);
+        outOfStockProduct.setProductRatingValue(4.0);
+        outOfStockProduct.setProductRatingCount(5);
         
-        // when - action or behavior & then - verify the output
-        assertThrows(ProductException.class, () -> {
-            productService.getProduct(999);
-        });
+        products.add(outOfStockProduct);
+        when(productRepository.findProductsByNameWithSeller("Banana")).thenReturn(products);
+
+        // Act
+        List<CustomerProductDTO> result = productService.searchProductsWithSellerDetails("Banana");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Banana", result.get(0).getProductName());
+        assertEquals("John Doe", result.get(0).getSellerName());
+    }
+
+    @Test
+    void testSearchProductsWithSellerDetails_NullProductName() {
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.searchProductsWithSellerDetails((String) null));
+    }
+
+    @Test
+    void testSearchProductsWithSellerDetails_EmptyProductName() {
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.searchProductsWithSellerDetails("  "));
+    }
+
+    @Test
+    void testSearchProductsWithSellerDetails_NoProductsFound() throws ProductException {
+        // Arrange
+        when(productRepository.findProductsByNameWithSeller(anyString())).thenReturn(new ArrayList<>());
+
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.searchProductsWithSellerDetails("Orange"));
+    }
+
+    @Test
+    void testGetProduct_Success() throws ProductException {
+        // Arrange
+        when(productRepository.findById(1)).thenReturn(Optional.of(sampleProduct));
+
+        // Act
+        Product result = productService.getProduct(1);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(sampleProduct.getProductName(), result.getProductName());
+    }
+
+    @Test
+    void testGetProduct_NullProductId() {
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.getProduct(null));
+    }
+
+    @Test
+    void testGetProduct_ProductNotFound() {
+        // Arrange
+        when(productRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ProductException.class, () -> productService.getProduct(1));
+    }
+
+    @Test
+    void testGetCategoryProducts_Success() throws ProductException {
+        // Arrange
+        List<Product> products = new ArrayList<>();
+        products.add(sampleProduct);
+        when(productRepository.findByProductCategory("Fruits")).thenReturn(products);
+
+        // Act
+        List<Product> result = productService.getCategoryProducts("Fruits");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(sampleProduct.getProductName(), result.get(0).getProductName());
     }
 }

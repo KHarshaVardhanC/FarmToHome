@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ftohbackend.dto.CustomerOrderDTO;
 import com.ftohbackend.exception.OrderException;
@@ -17,6 +18,7 @@ import com.ftohbackend.repository.OrderRepository;
 import com.ftohbackend.repository.SellerRepository;
 
 @Service
+@Transactional
 public class OrderServiceImpl implements OrderService {
 
 	@Autowired

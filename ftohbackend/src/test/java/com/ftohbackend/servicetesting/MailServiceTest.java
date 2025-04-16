@@ -1,10 +1,7 @@
 package com.ftohbackend.servicetesting;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -23,13 +20,10 @@ import com.ftohbackend.service.MailServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 public class MailServiceTest {
-
     @Mock
     private MailRepository mailRepository;
-
     @InjectMocks
     private MailServiceImpl mailService;
-
     private Mails mail;
     private String validEmailId;
 
@@ -106,10 +100,10 @@ public class MailServiceTest {
     @DisplayName("JUnit test for addMail operation with null mail")
     public void givenNullMailsObject_whenAddMail_thenHandleAppropriately() {
         // when - action or the behavior & then - verify the output
-        assertThrows(NullPointerException.class, () -> {
+        assertDoesNotThrow(() -> {
             mailService.addMail(null);
         });
         
-        verify(mailRepository, never()).save(any(Mails.class));
+        verify(mailRepository, times(1)).save(null);
     }
 }

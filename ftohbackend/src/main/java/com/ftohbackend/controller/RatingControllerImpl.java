@@ -24,7 +24,6 @@ import com.ftohbackend.service.CustomerService;
 import com.ftohbackend.service.OrderService;
 import com.ftohbackend.service.RatingService;
 @CrossOrigin(origins = "*")
-
 @RestController
 @RequestMapping("/rating")
 public class RatingControllerImpl implements RatingController {
