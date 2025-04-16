@@ -321,7 +321,7 @@ function CustomerHomePage() {
               <div className="product-info">
                 <h3>{product.productName}</h3>
                 <p>{product.productDescription}</p>
-                <p className="price">₹{product.productPrice}/kg</p>
+                <p className="price">₹{product.productPrice}</p>
                 
                 {/* Display stock information */}
                 {product.productQuantity > 0 && (

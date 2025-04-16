@@ -101,7 +101,7 @@ function App() {
             path="/SellerHome" element={<RequireAuthSeller> <Home /> </RequireAuthSeller>
             } />
           <Route path="/edit-product/:id" element={<RequireAuthSeller><EditProduct /></RequireAuthSeller>} />
-          <Route path="review/:productId" element={<Rating />} />
+          <Route path="review/:orderId" element={<Rating />} />
 
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
