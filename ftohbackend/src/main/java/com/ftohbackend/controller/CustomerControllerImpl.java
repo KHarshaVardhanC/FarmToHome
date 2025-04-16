@@ -29,7 +29,8 @@ import com.ftohbackend.service.MailServiceImpl;
 import jakarta.validation.Valid;
 
 
-@CrossOrigin(origins = "http://localhost:3000")
+//@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/customer")
 @Validated

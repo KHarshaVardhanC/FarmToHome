@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.exception.RatingException;
@@ -12,6 +13,7 @@ import com.ftohbackend.model.Rating;
 import com.ftohbackend.repository.RatingRepository;
 
 @Service
+@Transactional
 public class RatingServiceImpl implements RatingService {
 
 	@Autowired

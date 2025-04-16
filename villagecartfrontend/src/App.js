@@ -1,5 +1,6 @@
 import React from 'react';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes , useLocation, useNavigate} from 'react-router-dom';
+import { useEffect } from 'react';
 
 import CartPage from "./components/CartPage";
 import MyOrders from './components/MyOrders';
@@ -37,9 +38,38 @@ import RequireAuthCustomer from './components/RequireAuthCustomer';
 import RequireAuthAdmin from './components/RequireAuthAdmin';
 
 
+function NavigationBlocker() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleBackButton = (e) => {
+      // If on home page, prevent going back to login
+      if (location.pathname === '/customer-home') {
+        e.preventDefault();
+        // Optionally show a confirmation dialog
+        if (window.confirm('Are you sure you want to logout?')) {
+          // Perform logout logic
+          navigate('/login');
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handleBackButton);
+    return () => window.removeEventListener('popstate', handleBackButton);
+  }, [location, navigate]);
+
+  return null;
+}
+
+
+
+
+
 function App() {
   return (
     <Router>
+       <NavigationBlocker />
       <div className="App">
         <Routes>
           <Route path="/" element={<MainHome />} />

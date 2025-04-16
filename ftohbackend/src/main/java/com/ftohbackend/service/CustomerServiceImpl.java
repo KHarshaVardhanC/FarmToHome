@@ -12,6 +12,7 @@ import com.ftohbackend.model.Customer;
 import com.ftohbackend.repository.CustomerRepository;
 
 @Service
+@Transactional
 public class CustomerServiceImpl implements CustomerService {
 
 	@Autowired
@@ -26,7 +27,6 @@ public class CustomerServiceImpl implements CustomerService {
 		return "customer added successfully";
 	}
 
-	@Transactional(readOnly = true)
 	public Customer getCustomer(Integer customerId) throws CustomerException {
 		if (customerId == null) {
 			throw new CustomerException("Customer ID cannot be null.");
@@ -36,7 +36,6 @@ public class CustomerServiceImpl implements CustomerService {
 				.orElseThrow(() -> new CustomerException("Customer not found with ID: " + customerId));
 	}
 
-	@Transactional(readOnly = true)
 	public List<Customer> getAllCustomers() throws CustomerException {
 		List<Customer> customers = customerRepository.findAll();
 		if (customers.isEmpty()) {
@@ -45,7 +44,6 @@ public class CustomerServiceImpl implements CustomerService {
 		return customers;
 	}
 
-	@Transactional
 	public String updateCustomer(Integer customerId, Customer customer) throws CustomerException {
 		if (customerId == null || customer == null) {
 			throw new CustomerException("Customer ID and customer data cannot be null.");

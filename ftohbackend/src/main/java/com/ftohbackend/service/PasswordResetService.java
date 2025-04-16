@@ -3,11 +3,13 @@ package com.ftohbackend.service;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.model.Seller;
 
 @Service
+@Transactional
 public class PasswordResetService {
 	
 

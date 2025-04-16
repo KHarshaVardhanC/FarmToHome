@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ftohbackend.exception.SellerException;
 import com.ftohbackend.model.Seller;
@@ -13,6 +14,7 @@ import com.ftohbackend.repository.SellerRepository;
 import jakarta.validation.Valid;
 
 @Service
+@Transactional
 public class SellerServiceimpl implements SellerService {
 
 	@Autowired
