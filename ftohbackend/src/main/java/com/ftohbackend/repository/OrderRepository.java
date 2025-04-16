@@ -12,9 +12,11 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
 	List<Order> findByCustomerCustomerId(Integer customerId);
     
-//	List<Order> findBySellerSellerId(Integer sellerId);
 	@Query("SELECT o FROM Order o WHERE o.product.seller.sellerId = :sellerId")
     List<Order> findByProductSellerSellerId(@Param("sellerId") Integer sellerId);
+	
+	
+	
+	
+	List<Order> findByProductProductIdAndCustomerCustomerId(Integer productId, Integer customerId);
 }
-
-
