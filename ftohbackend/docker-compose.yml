@@ -1,4 +1,6 @@
 
+
+
 version: '3.8'
 services:
   igjenkins:
@@ -6,7 +8,7 @@ services:
     container_name: igjenkins
     user: root
     ports:
-      - "8081:8080"
+      - "8080:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
@@ -14,3 +16,4 @@ services:
 
 volumes:
   jenkins_home:
+
