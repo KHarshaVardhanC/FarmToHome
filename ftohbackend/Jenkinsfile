@@ -1,5 +1,8 @@
 pipeline {
-    agent any
+        agent any
+    tools {
+        maven 'maven1'
+    }
     
     stages {
             stage('Compile and Clean') { 
@@ -49,7 +52,7 @@ pipeline {
             }
         }
         stage('Docker deploy'){
-            steps {
+            steps {d
                 bat 'docker run -itd -p  8080:8080 villagecart'
              }
         }
