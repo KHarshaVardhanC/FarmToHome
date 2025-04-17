@@ -28,11 +28,6 @@
 		<url />
 	</scm>
 	
-		<properties>
-    <sonar.organization>Katta Harsha Vardhan</sonar.organization>
-    <sonar.projectKey>VillageCart</sonar.projectKey>
-    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
