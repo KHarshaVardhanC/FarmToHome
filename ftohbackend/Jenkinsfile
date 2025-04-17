@@ -44,7 +44,7 @@ pipeline {
             steps {
                 dir('ftohbackend') {
                     withSonarQubeEnv('SonarQube') {  // Requires SonarQube plugin
-                        bat 'mvn sonar:sonar'
+                        sh 'mvn sonar:sonar'
                     }
                 }
             }
