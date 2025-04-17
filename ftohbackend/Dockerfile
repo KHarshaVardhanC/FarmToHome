@@ -1,5 +1,5 @@
 # Multi-stage build for optimized final image
-FROM maven:3.8.6-eclipse-temurin-11 AS builder
+FROM maven:3.8.6-eclipse-temurin-17 AS builder
 WORKDIR /build
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
@@ -37,10 +37,8 @@ RUN find /app -type d -exec chmod 750 {} \; && \
 
 EXPOSE 8080
 
-# Enhanced health check with connection timeout
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
     CMD curl -fsS --connect-timeout 2 http://localhost:8080/actuator/health || exit 1
 
-# Secure entrypoint with exec form
 ENTRYPOINT ["java", "-jar", "app.jar"]
 CMD ["${JAVA_OPTS}"]
