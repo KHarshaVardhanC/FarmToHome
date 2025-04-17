@@ -3,7 +3,7 @@ pipeline {
     
     tools {
         maven 'Maven'
-        jdk 'jdk'  // Ensure this matches your Jenkins JDK installation name
+        jdk 'jdk-17'  // Ensure this matches your Jenkins JDK installation name
     }
     
     environment {
@@ -33,7 +33,7 @@ pipeline {
         stage('Build & Test') {
             steps {
                 dir('ftohbackend') {
-                    sh 'mvn clean package'
+                    bat 'mvn clean package'
                     junit 'target/surefire-reports/*.xml'  // Archive test results
                     archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
                 }
