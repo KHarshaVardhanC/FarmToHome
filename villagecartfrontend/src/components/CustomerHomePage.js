@@ -6,6 +6,7 @@ import ProductDetailModal from './ProductDetailModal';
 import '../styles/CustomerHomePage.css';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import { useNavigate } from 'react-router-dom';
 
 function CustomerHomePage() {
   const [products, setProducts] = useState([]);
@@ -26,7 +27,44 @@ function CustomerHomePage() {
     { name: 'Dairy', image: '/images/dairy.jpg' },
     { name: 'Grains', image: '/images/grains.jpg' },
   ];
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    // 1. Add a new history entry to ensure we have control
+    window.history.pushState({ isCustomerHome: true }, '', window.location.href);
+  
+    const handleBackButton = (event) => {
+      console.log('Back navigation detected', event);
+      
+      // 2. Only intercept if we're actually on the customer home page
+      if (window.location.pathname.includes('/customer-home')) {
+        // 3. Prevent default back navigation
+        event.preventDefault();
+        
+        // 4. Show confirmation dialog
+        if (window.confirm('Are you sure you want to logout?')) {
+          // Clear user data
+          localStorage.removeItem('customerId');
+          localStorage.removeItem('userName');
+          // Navigate to login (replace instead of push)
+          navigate('/login', { replace: true });
+        } else {
+          // 5. If user cancels, re-establish our history state
+          window.history.pushState({ isCustomerHome: true }, '', window.location.href);
+        }
+      }
+    };
+  
+    // 6. Add the listener with proper options
+    window.addEventListener('popstate', handleBackButton, { passive: false });
+  
+    return () => {
+      // 7. Clean up the listener
+      window.removeEventListener('popstate', handleBackButton);
+    };
+  }, [navigate]);
+
+  
   useEffect(() => {
     const fetchCustomerDetails = async () => {
       const id = localStorage.getItem('customerId');
@@ -43,6 +81,8 @@ function CustomerHomePage() {
         }
       }
     };
+
+    
 
     fetchCustomerDetails();
     fetchProducts();

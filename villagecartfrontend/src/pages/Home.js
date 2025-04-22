@@ -16,6 +16,43 @@ const Home = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [productRatings, setProductRatings] = useState({});
 
+  // const navigate = useNavigate();
+  
+    useEffect(() => {
+      // 1. Add a new history entry to ensure we have control
+      window.history.pushState({ isSellerHome: true }, '', window.location.href);
+    
+      const handleBackButton = (event) => {
+        console.log('Back navigation detected', event);
+        
+        // 2. Only intercept if we're actually on the customer home page
+        if (window.location.pathname.includes('/SellerHome')) {
+          // 3. Prevent default back navigation
+          event.preventDefault();
+          
+          // 4. Show confirmation dialog
+          if (window.confirm('Are you sure you want to logout?')) {
+            // Clear user data
+            localStorage.removeItem('sellerId');
+            localStorage.removeItem('userName');
+            // Navigate to login (replace instead of push)
+            navigate('/login', { replace: true });
+          } else {
+            // 5. If user cancels, re-establish our history state
+            window.history.pushState({ isSellerHome: true }, '', window.location.href);
+          }
+        }
+      };
+    
+      // 6. Add the listener with proper options
+      window.addEventListener('popstate', handleBackButton, { passive: false });
+    
+      return () => {
+        // 7. Clean up the listener
+        window.removeEventListener('popstate', handleBackButton);
+      };
+    }, [navigate]);
+  
   const sellerId = localStorage.getItem('sellerId');
 
   const calculateTotalRevenue = (orders) => {

@@ -14,6 +14,7 @@ import {
     fetchSellerProducts,
     fetchProducts
 } from '../utils/api';
+import { useNavigate } from 'react-router-dom';
 
 const Admin = () => {
     const [view, setView] = useState('home'); // home, products, sellers, seller-details, customers, customer-details
@@ -25,6 +26,46 @@ const Admin = () => {
     const [editingProduct, setEditingProduct] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+
+    const navigate = useNavigate();
+
+  useEffect(() => {
+    // 1. Add a new history entry to ensure we have control
+    window.history.pushState({ isAdminHome: true }, '', window.location.href);
+  
+    const handleBackButton = (event) => {
+      console.log('Back navigation detected', event);
+      
+      // 2. Only intercept if we're actually on the customer home page
+      if (window.location.pathname.includes('/admin')) {
+        // 3. Prevent default back navigation
+        event.preventDefault();
+        
+        // 4. Show confirmation dialog
+        if (window.confirm('Are you sure you want to logout?')) {
+          // Clear user data
+          localStorage.removeItem('adminId');
+          localStorage.removeItem('userName');
+          
+          // Navigate to login (replace instead of push)
+          navigate('/login', { replace: true });
+        } else {
+          // 5. If user cancels, re-establish our history state
+          window.history.pushState({ isAdminHome: true }, '', window.location.href);
+        }
+      }
+    };
+  
+    // 6. Add the listener with proper options
+    window.addEventListener('popstate', handleBackButton, { passive: false });
+  
+    return () => {
+      // 7. Clean up the listener
+      window.removeEventListener('popstate', handleBackButton);
+    };
+  }, [navigate]);
+
 
     // Helper function to get seller name from ID
     const getSellerNameById = (sellerId) => {
