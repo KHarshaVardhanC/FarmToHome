@@ -463,4 +463,125 @@ public class OrderServiceTest {
         
         verify(orderRepository, times(1)).findById(1);
     }
+    
+    @Test
+    void testAddOrder_ExistingInCartOrder_Success() throws Exception {
+        // Create an existing order for the same product and customer
+        Order existingOrder = new Order();
+        existingOrder.setOrderId(5);
+        existingOrder.setCustomer(testCustomer);
+        existingOrder.setProduct(testProduct);
+        existingOrder.setOrderQuantity(5.0);
+        existingOrder.setOrderStatus("incart");
+        
+        List<Order> existingOrders = new ArrayList<>();
+        existingOrders.add(existingOrder);
+        
+        when(productService.getProduct(anyInt())).thenReturn(testProduct);
+        when(orderRepository.findByProductProductIdAndCustomerCustomerId(
+                testProduct.getProductId(), testCustomer.getCustomerId()))
+                .thenReturn(existingOrders);
+        when(orderRepository.save(any(Order.class))).thenReturn(existingOrder);
+        
+        // Set test order quantity that when added to existing won't exceed product quantity
+        testOrder.setOrderQuantity(10.0);
+        
+        String result = orderService.addOrder(testOrder);
+        
+        assertEquals("Order added Successfully", result);
+        // Check that quantities were combined
+        assertEquals(15.0, existingOrder.getOrderQuantity());
+        verify(productService, times(1)).getProduct(testProduct.getProductId());
+        verify(orderRepository, times(1)).findByProductProductIdAndCustomerCustomerId(
+                testProduct.getProductId(), testCustomer.getCustomerId());
+        verify(orderRepository, times(1)).save(existingOrder);
+        // Verify updateProduct was not called as that happens only for non-existing orders
+        verify(productService, never()).updateProduct(anyInt(), any(Product.class));
+    }
+
+    @Test
+    void testAddOrder_ExistingInCartOrder_QuantityExceeded() throws Exception {
+        // Create an existing order for same product and customer
+        Order existingOrder = new Order();
+        existingOrder.setOrderId(5);
+        existingOrder.setCustomer(testCustomer);
+        existingOrder.setProduct(testProduct);
+        existingOrder.setOrderQuantity(40.0);
+        existingOrder.setOrderStatus("incart");
+        
+        List<Order> existingOrders = new ArrayList<>();
+        existingOrders.add(existingOrder);
+        
+        when(productService.getProduct(anyInt())).thenReturn(testProduct);
+        when(orderRepository.findByProductProductIdAndCustomerCustomerId(
+                testProduct.getProductId(), testCustomer.getCustomerId()))
+                .thenReturn(existingOrders);
+        
+        // Set test order quantity that when added to existing will exceed product quantity
+        testOrder.setOrderQuantity(20.0);
+        
+        String result = orderService.addOrder(testOrder);
+        
+        assertEquals("Order Quantity Exceeded", result);
+        // Verify order quantity wasn't changed
+        assertEquals(40.0, existingOrder.getOrderQuantity());
+        verify(productService, times(1)).getProduct(testProduct.getProductId());
+        verify(orderRepository, times(1)).findByProductProductIdAndCustomerCustomerId(
+                testProduct.getProductId(), testCustomer.getCustomerId());
+        // Verify save was not called
+        verify(orderRepository, never()).save(any(Order.class));
+        verify(productService, never()).updateProduct(anyInt(), any(Product.class));
+    }
+
+    @Test
+    void testAddOrder_NoExistingOrders() throws Exception {
+        when(productService.getProduct(anyInt())).thenReturn(testProduct);
+        when(orderRepository.findByProductProductIdAndCustomerCustomerId(
+                testProduct.getProductId(), testCustomer.getCustomerId()))
+                .thenReturn(new ArrayList<>());
+        when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+        
+        testOrder.setOrderQuantity(10.0);
+        
+        String result = orderService.addOrder(testOrder);
+        
+        assertEquals("Order Successful", result);
+        verify(productService, times(1)).getProduct(testProduct.getProductId());
+        verify(orderRepository, times(1)).findByProductProductIdAndCustomerCustomerId(
+                testProduct.getProductId(), testCustomer.getCustomerId());
+        verify(productService, times(1)).updateProduct(eq(testProduct.getProductId()), any(Product.class));
+        verify(orderRepository, times(1)).save(testOrder);
+    }
+
+    @Test
+    void testAddOrder_ExistingOrderNotInCart() throws Exception {
+        // Create an existing order with status other than "incart"
+        Order existingOrder = new Order();
+        existingOrder.setOrderId(5);
+        existingOrder.setCustomer(testCustomer);
+        existingOrder.setProduct(testProduct);
+        existingOrder.setOrderQuantity(5.0);
+        existingOrder.setOrderStatus("Ordered");
+        
+        List<Order> existingOrders = new ArrayList<>();
+        existingOrders.add(existingOrder);
+        
+        when(productService.getProduct(anyInt())).thenReturn(testProduct);
+        when(orderRepository.findByProductProductIdAndCustomerCustomerId(
+                testProduct.getProductId(), testCustomer.getCustomerId()))
+                .thenReturn(existingOrders);
+        when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+        
+        testOrder.setOrderQuantity(10.0);
+        
+        String result = orderService.addOrder(testOrder);
+        
+        // Should proceed with normal order flow since existing order is not "incart"
+        assertEquals("Order Successful", result);
+        verify(productService, times(1)).getProduct(testProduct.getProductId());
+        verify(orderRepository, times(1)).findByProductProductIdAndCustomerCustomerId(
+                testProduct.getProductId(), testCustomer.getCustomerId());
+        verify(productService, times(1)).updateProduct(eq(testProduct.getProductId()), any(Product.class));
+        verify(orderRepository, times(1)).save(testOrder);
+    }
 }

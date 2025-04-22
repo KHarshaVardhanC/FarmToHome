@@ -73,9 +73,28 @@ public class OrderServiceImpl implements OrderService {
 		}
 		Product product = productService.getProduct(order.getProduct().getProductId());
 		
-//		Order order=OrderService
-//    	 System.out.println(product);
-
+		List<Order> orders=orderRepository.findByProductProductIdAndCustomerCustomerId(order.getProduct().getProductId() , order.getCustomer().getCustomerId());
+		
+		if(orders.size() != 0 )
+		{
+			for(Order ord: orders)
+			{
+				if(ord.getOrderStatus().equalsIgnoreCase("incart") || ord.getOrderStatus().equalsIgnoreCase("in cart"))
+				{
+					if(order.getOrderQuantity() + ord.getOrderQuantity() <= product.getProductQuantity())
+					{
+						ord.setOrderQuantity(order.getOrderQuantity()+ord.getOrderQuantity());
+						orderRepository.save(ord);
+						return "Order added Successfully";
+						
+					}
+					else
+					{
+						return "Order Quantity Exceeded";
+					}
+				}
+			}
+		}
 		if (order.getOrderQuantity() <= product.getProductQuantity()) {
 //    		 product.setProductQuantity( product.getProductQuantity() - order.getOrderQuantity());
 			productService.updateProduct(product.getProductId(), product);
@@ -93,8 +112,6 @@ public class OrderServiceImpl implements OrderService {
 		if (sellerId == null) {
 			throw new OrderException("Seller ID cannot be null");
 		}
-//		List<Order> orders = orderRepository.findAll().stream()
-//				.filter(x -> x.getProduct().getSeller().getSellerId() == sellerId).toList();
 
 		
 		List<Order> orders = orderRepository.findByProductSellerSellerId(sellerId);
