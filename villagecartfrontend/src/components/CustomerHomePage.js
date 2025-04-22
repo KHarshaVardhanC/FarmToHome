@@ -20,6 +20,7 @@ function CustomerHomePage() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [productDetails, setProductDetails] = useState(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
 
   const categories = [
     { name: 'Vegetables', image: '/images/vegetables.jpg' },
@@ -28,6 +29,15 @@ function CustomerHomePage() {
     { name: 'Grains', image: '/images/grains.jpg' },
   ];
   const navigate = useNavigate();
+
+  // Toggle expanded description state for a specific product
+  const toggleDescription = (e, productId) => {
+    e.stopPropagation(); // Prevent the card click event
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [productId]: !prev[productId]
+    }));
+  };
 
   useEffect(() => {
     // 1. Add a new history entry to ensure we have control
@@ -81,8 +91,6 @@ function CustomerHomePage() {
         }
       }
     };
-
-    
 
     fetchCustomerDetails();
     fetchProducts();
@@ -174,7 +182,7 @@ function CustomerHomePage() {
         
         // Check if requested quantity is available
         if (newQuantity > product.productQuantity) {
-          alert(`Sorry, only ${product.productQuantity} kg available in stock`);
+          alert(`Sorry, only ${product.productQuantity} ${product.productQuantityType || 'kg'} available in stock`);
           return;
         }
         
@@ -201,7 +209,7 @@ function CustomerHomePage() {
       // Product doesn't exist in cart - add new item
       const orderData = {
         productId: product.productId,
-        orderQuantity: 1, // Set default to 1kg
+        orderQuantity: 1, // Set default to 1
         customerId: customerId ? parseInt(customerId) : null,
         orderStatus: "IN_CART"
       };
@@ -219,6 +227,7 @@ function CustomerHomePage() {
             productId: product.productId,
             productName: product.productName,
             productPrice: product.productPrice,
+            productQuantityType: product.productQuantityType,
             imageUrl: product.imageUrl,
             orderQuantity: 1,
             orderStatus: "Incart" // Match the case from API response
@@ -294,9 +303,14 @@ function CustomerHomePage() {
     ],
   };
 
-  // Function to determine if a product has low stock (less than 5 kg)
+  // Function to determine if a product has low stock (less than 5 units)
   const isLowStock = (quantity) => {
     return quantity > 0 && quantity < 5;
+  };
+
+  // Helper function to check if description needs "See more" button
+  const needsSeeMore = (description) => {
+    return description && description.length > 30; // Adjust character count as needed
   };
 
   return (
@@ -360,29 +374,48 @@ function CustomerHomePage() {
               </div>
               <div className="product-info">
                 <h3>{product.productName}</h3>
-                <p>{product.productDescription}</p>
-                <p className="price">₹{product.productPrice}</p>
                 
-                {/* Display stock information */}
+                {/* Truncated description with See more option */}
+                <div className="product-description-container">
+                  <p className={`product-description ${expandedDescriptions[product.productId] ? 'expanded' : ''}`}>
+                    {expandedDescriptions[product.productId] || !needsSeeMore(product.productDescription) 
+                      ? product.productDescription 
+                      : `${product.productDescription.substring(0, 30)}...`}
+                  </p>
+                  {needsSeeMore(product.productDescription) && (
+                    <button 
+                      className="see-more-btn" 
+                      onClick={(e) => toggleDescription(e, product.productId)}
+                    >
+                      {expandedDescriptions[product.productId] ? 'See less' : 'See more'}
+                    </button>
+                  )}
+                </div>
+                
+                <p className="price">₹{product.productPrice}/{product.productQuantityType || 'kg'}</p>
+                
+                {/* Display stock information with quantity type */}
                 {product.productQuantity > 0 && (
                   <p className={`product-quantity ${isLowStock(product.productQuantity) ? 'low-stock' : ''}`}>
                     {isLowStock(product.productQuantity) ? 'Only ' : ''}
-                    {product.productQuantity} kg available
+                    {product.productQuantity} {product.productQuantityType || 'kg'} available
                   </p>
                 )}
                 
-                <button
-                  className={`add-to-cart-btn ${product.productQuantity === 0 ? 'disabled' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (product.productQuantity > 0) {
-                      addToCart(product);
-                    }
-                  }}
-                  disabled={product.productQuantity === 0}
-                >
-                  {product.productQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
-                </button>
+                <div className="button-container">
+                  <button
+                    className={`add-to-cart-btn ${product.productQuantity === 0 ? 'disabled' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (product.productQuantity > 0) {
+                        addToCart(product);
+                      }
+                    }}
+                    disabled={product.productQuantity === 0}
+                  >
+                    {product.productQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
+                  </button>
+                </div>
               </div>
             </div>
           ))}

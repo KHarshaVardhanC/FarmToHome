@@ -215,14 +215,14 @@ function MyOrders() {
                     </button>
                   )}
                   
-                  {/* Buy Again button only appears for delivered orders */}
+                  Buy Again button only appears for delivered orders
                   {order.orderStatus === 'Delivered' && (
-                    // <button 
-                    //   className="reorder-btn"
-                    //   onClick={() => handleBuyAgain(order)}
-                    // >
-                    //   Buy Again
-                    // </button>
+                    <button 
+                      className="reorder-btn"
+                      onClick={() => handleBuyAgain(order)}
+                    >
+                      Buy Again
+                    </button>
                   )}
                 </div>
               </div>
