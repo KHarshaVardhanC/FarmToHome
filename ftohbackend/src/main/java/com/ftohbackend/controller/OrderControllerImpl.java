@@ -142,6 +142,17 @@ public class OrderControllerImpl implements OrderController {
 		return orderService.updateOrderStatus(orderId, orderStatus);
 
 	}
+	
+	@Override
+	@PutMapping("/update/{orderId}/{orderQuantity}")
+	public String updateOrderQuantity(@PathVariable Integer orderId,@PathVariable Double orderQuantity)
+	{
+//		System.out.println(orderId);
+		return orderService.updateOrderQuantity(orderId, orderQuantity);
+//		return "";
+	}
+	
+	
 
 	@GetMapping("/seller/{sellerId}")
 	@Override

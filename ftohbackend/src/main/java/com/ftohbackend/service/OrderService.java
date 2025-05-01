@@ -25,5 +25,7 @@ public interface OrderService {
 
 	CustomerOrderDTO getOrderInvoice(Integer orderId) throws Exception;
 
+	String updateOrderQuantity(Integer orderId, Double orderQuantity);
+
 
 }
