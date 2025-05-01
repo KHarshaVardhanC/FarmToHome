@@ -15,6 +15,8 @@ const Home = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [productRatings, setProductRatings] = useState({});
+  const [totalRevenue, setTotalRevenue] = useState(0);
+
 
   // const navigate = useNavigate();
   
@@ -55,14 +57,6 @@ const Home = () => {
   
   const sellerId = localStorage.getItem('sellerId');
 
-  const calculateTotalRevenue = (orders) => {
-    return orders.reduce((total, order) => {
-      const product = products.find(p => p.productId === order.productId);
-      const isSuccessOrder = order.orderStatus?.toLowerCase() === 'success';
-      if (!product || !isSuccessOrder) return total;
-      return total + product.productPrice * order.orderQuantity;
-    }, 0);
-  };
 
   const renderStars = (rating) => {
     if (!rating || isNaN(rating)) return null;
@@ -100,6 +94,25 @@ const Home = () => {
           ordersData = [];
         }
         setOrders(ordersData);
+        let revenue = 0;
+        ordersData.forEach(order => {
+          const product = productsData.find(p => p.productName.trim().toLowerCase() === order.productName.trim().toLowerCase());
+          
+          console.log(`Order ID: ${order.orderId}, Product Found: ${product ? 'Yes' : 'No'}, Order Status: ${order.orderStatus}`);
+          
+          const orderStatus = order.orderStatus?.toLowerCase();
+          const isCompletedOrder = orderStatus === 'delivered' || orderStatus === 'success';
+          
+          if (product && isCompletedOrder) {
+            revenue += product.productPrice * order.orderQuantity;
+          }
+        });
+        console.log("Calculated Revenue:", revenue);
+        setTotalRevenue(revenue);
+        
+
+
+
 
         // Fetch ratings only if we have products
         const ratings = {};
@@ -172,7 +185,6 @@ const Home = () => {
 
   if (loading) return <div className="loading-container"><div className="spinner-border text-primary" role="status"><span className="visually-hidden">Loading...</span></div></div>;
 
-  const totalRevenue = calculateTotalRevenue(orders);
 
   return (
     <div className="home-page">
