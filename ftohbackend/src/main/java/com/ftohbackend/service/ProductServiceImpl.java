@@ -143,6 +143,8 @@ public class ProductServiceImpl implements ProductService {
 		}
 		throw new ProductException("Product with name '" + name + "' not found.");
 	}
+	
+	
 
 	@Override
 	public String updateProduct(Integer productId, Product updatedDetails) throws ProductException, Exception {
@@ -227,41 +229,13 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public List<CustomerProductDTO> searchProductsWithSellerDetails(String productName) throws ProductException {
+	public List<Product> searchProductsWithSellerDetails(String productName) throws ProductException {
 		if (productName == null || productName.trim().isEmpty()) {
 			throw new ProductException("Product name cannot be null or empty.");
 		}
 
-		List<Product> products = productRepository.findProductsByNameWithSeller(productName.trim());
-		if (products == null || products.isEmpty()) {
-			throw new ProductException("No products found with name: " + productName);
-		}
-
-		List<CustomerProductDTO> customerproductdto = new ArrayList<>();
-		for (Product product : products) {
-			if (product.getProductQuantity() == 0.0) {
-
-				CustomerProductDTO customerProductDTO = new CustomerProductDTO();
-
-				customerProductDTO.setImageUrl(product.getImageUrl());
-				customerProductDTO.setProductDescription(product.getProductDescription());
-				customerProductDTO.setProductId(product.getProductId());
-				customerProductDTO.setProductPrice(product.getProductPrice());
-				customerProductDTO.setProductName(product.getProductName());
-				customerProductDTO.setProductQuantity(product.getProductQuantity());
-				customerProductDTO.setProductQuantityType(product.getProductQuantityType());
-				customerProductDTO.setProductRatingCount(product.getProductRatingCount());
-				customerProductDTO.setProductRatingValue(product.getProductRatingValue());
-				customerProductDTO.setSellerName(
-						product.getSeller().getSellerFirstName() + " " + product.getSeller().getSellerLastName());
-				customerProductDTO.setSellerCity(product.getSeller().getSellerCity());
-				customerProductDTO.setSellerPlace(product.getSeller().getSellerPlace());
-
-				customerproductdto.add(customerProductDTO);
-			}
-		}
-
-		return customerproductdto;
+		return productRepository.findProductsByNameWithSeller(productName.trim());
+		
 	}
 
 	@Override
@@ -281,12 +255,13 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public List<CustomerProductDTO> searchProductsWithSellerDetails(ProductCity productCity) {
-		// TODO Auto-generated method stub
-		String productName=productCity.getProductName();
-		String cityName=productCity.getCityName();
-		return null;
+	public List<Product> searchProductsWithSellerDetails(ProductCity productCity) throws Exception {
+
+		
+		return productRepository.findByProductNameContainingIgnoreCaseAndSeller_SellerCityIgnoreCase(productCity.getProductName(), productCity.getCityName());
 	}
+
+	
 
 }
 

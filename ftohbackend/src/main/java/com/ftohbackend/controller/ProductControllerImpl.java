@@ -22,6 +22,7 @@ import com.ftohbackend.dto.CustomerProductDTO;
 import com.ftohbackend.dto.ProductCity;
 import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
+import com.ftohbackend.dto.SearchRequestDTO;
 import com.ftohbackend.dto.SellerProductDTO;
 import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Product;
@@ -77,21 +78,90 @@ public class ProductControllerImpl implements ProductController {
 		customerProductDTO.setSellerName(product.getSeller().getSellerFirstName() + " "+product.getSeller().getSellerLastName());
 		return customerProductDTO;
 	}
+	
+	
+//	public List<CustomerProductDTO> getProductByNameAndCity(SearchRequestDTO searchRequestDTO)
+//	{
+//		List<Product> products= productService.getAllProductByNameAndCity(searchRequestDTO);
+//		List<CustomerProductDTO> customerproductdtos=new ArrayList<>();
+//		
+//	}
+	
 
 	@GetMapping("/product1/{productName}")
 	@Override
 	public List<CustomerProductDTO> getProductByName(@PathVariable String productName) throws Exception,ProductException {
-		List<CustomerProductDTO> products = productService.searchProductsWithSellerDetails(productName);
-		return products;
+		
+		
+		List<Product> products = productService.searchProductsWithSellerDetails(productName);
+		if (products == null || products.isEmpty()) {
+			throw new ProductException("No products found with name: " + productName);
+		}
+
+		List<CustomerProductDTO> customerproductdto = new ArrayList<>();
+		for (Product product : products) {
+			if (product.getProductQuantity() != 0.0) {
+
+				CustomerProductDTO customerProductDTO = new CustomerProductDTO();
+
+				customerProductDTO.setImageUrl(product.getImageUrl());
+				customerProductDTO.setProductDescription(product.getProductDescription());
+				customerProductDTO.setProductId(product.getProductId());
+				customerProductDTO.setProductPrice(product.getProductPrice());
+				customerProductDTO.setProductName(product.getProductName());
+				customerProductDTO.setProductQuantity(product.getProductQuantity());
+				customerProductDTO.setProductQuantityType(product.getProductQuantityType());
+				customerProductDTO.setProductRatingCount(product.getProductRatingCount());
+				customerProductDTO.setProductRatingValue(product.getProductRatingValue());
+				customerProductDTO.setSellerName(product.getSeller().getSellerFirstName() + " " + product.getSeller().getSellerLastName());
+				customerProductDTO.setSellerCity(product.getSeller().getSellerCity());
+				customerProductDTO.setSellerPlace(product.getSeller().getSellerPlace());
+
+				customerproductdto.add(customerProductDTO);
+			}
+		}
+
+		return customerproductdto;
+		
 	}
 
 	@Override
 	@PostMapping("/NameCity") 
 	public List<CustomerProductDTO> getProductByNameAndCity(@RequestBody ProductCity productCity) throws Exception
 	{
-		List<CustomerProductDTO> products=productService.searchProductsWithSellerDetails(productCity);
+		List<Product> products=new ArrayList<>();
+		if(productCity.getCityName() == null || productCity.getCityName().isEmpty())
+		{
+			products=productService.searchProductsWithSellerDetails(productCity.getProductName());
+		}
+		else
+		{
+			products=productService.searchProductsWithSellerDetails(productCity);
+		}
 		
-		return products;
+		List<CustomerProductDTO> customerproductdtos=new ArrayList<CustomerProductDTO>();
+		for(Product product: products)
+		{
+			CustomerProductDTO customerProductDTO = new CustomerProductDTO();
+
+			customerProductDTO.setImageUrl(product.getImageUrl());
+			customerProductDTO.setProductDescription(product.getProductDescription());
+			customerProductDTO.setProductId(product.getProductId());
+			customerProductDTO.setProductPrice(product.getProductPrice());
+			customerProductDTO.setProductName(product.getProductName());
+			customerProductDTO.setProductQuantity(product.getProductQuantity());
+			customerProductDTO.setProductQuantityType(product.getProductQuantityType());
+			customerProductDTO.setProductRatingCount(product.getProductRatingCount());
+			customerProductDTO.setProductRatingValue(product.getProductRatingValue());
+			customerProductDTO.setSellerName(product.getSeller().getSellerFirstName() + " " + product.getSeller().getSellerLastName());
+			customerProductDTO.setSellerCity(product.getSeller().getSellerCity());
+			customerProductDTO.setSellerPlace(product.getSeller().getSellerPlace());
+
+			customerproductdtos.add(customerProductDTO);
+			
+		}
+		
+		return customerproductdtos;
 	}
 	
 	@PutMapping("/product/{productId}")
@@ -164,5 +234,8 @@ public class ProductControllerImpl implements ProductController {
 	public ProductDTO getProduct(@PathVariable Integer productId) throws ProductException {
 		return modelMapper.map(productService.getProduct(productId), ProductDTO.class);
 	}
+
+
+
 
 }

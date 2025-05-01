@@ -45,22 +45,49 @@ function CartPage() {
       setLoading(false);
     }
   };
-
-  const handleQuantityChange = (orderId, newQuantity) => {
+  const handleQuantityChange = async (orderId, newQuantity) => {
     if (newQuantity < 1) return;
-
-    setCartItems(prevItems =>
-      prevItems.map(item =>
+  
+    try {
+      // 1. Update backend (assumes you have an endpoint like this)
+      await axios.put(`http://localhost:8080/order/update/${orderId}/${newQuantity}`);
+  
+      // 2. Update state
+      setCartItems(prevItems =>
+        prevItems.map(item =>
+          item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
+        )
+      );
+  
+      // 3. Update localStorage
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const updatedCart = cart.map(item =>
         item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
-      )
-    );
-
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const updatedCart = cart.map(item =>
-      item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
-    );
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
+      );
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
+    } catch (error) {
+      console.error("Failed to update quantity:", error);
+      alert("Failed to update quantity. Please try again.");
+    }
   };
+  
+
+    // const handleQuantityChange = (orderId, newQuantity) => {
+    //   if (newQuantity < 1) return;
+
+    //   setCartItems(prevItems =>
+    //     prevItems.map(item =>
+    //       item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
+    //     )
+    //   );
+    //   // console.log(prevItems);
+
+    //   const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    //   const updatedCart = cart.map(item =>
+    //     item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
+    //   );
+    //   localStorage.setItem('cart', JSON.stringify(updatedCart));
+    // };
 
   const removeFromCart = async (orderId) => {
     try {

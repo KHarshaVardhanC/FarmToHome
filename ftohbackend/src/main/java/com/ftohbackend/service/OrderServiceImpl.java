@@ -214,4 +214,14 @@ public class OrderServiceImpl implements OrderService {
 
 		return customerOrderDTO;
 	}
+
+	@Override
+	public String updateOrderQuantity(Integer orderId, Double orderQuantity) {
+		// TODO Auto-generated method stub
+		Order order=orderRepository.findById(orderId).get();
+		order.setOrderQuantity(orderQuantity);
+		orderRepository.save(order);
+		
+		return "kk";
+	}
 }

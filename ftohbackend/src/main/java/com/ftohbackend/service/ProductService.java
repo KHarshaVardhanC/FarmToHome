@@ -32,13 +32,14 @@ public interface ProductService {
 
 	List<Product> getAllProduct(Integer sellerId) throws ProductException;
 
-	List<CustomerProductDTO> searchProductsWithSellerDetails(String productName) throws Exception;
+	List<Product> searchProductsWithSellerDetails(ProductCity productCity) throws Exception;
 
 	public ProductDTO addProduct(ProductRequest productRequest) throws IOException, Exception;
 
 	List<Product> getCategoryProducts(String productCategory) throws ProductException;
 
-	public List<CustomerProductDTO> searchProductsWithSellerDetails(ProductCity productCity);
+	List<Product> searchProductsWithSellerDetails(String productName) throws ProductException;
+
 
 
 

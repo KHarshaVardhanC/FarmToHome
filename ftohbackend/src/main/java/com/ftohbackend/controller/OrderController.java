@@ -29,5 +29,7 @@ public interface OrderController {
 
 	List<CustomerOrderDTO> getCartOrdersByCustomerId(Integer customerId) throws OrderException, Exception;
 
+	String updateOrderQuantity(Integer orderId, Double orderQuantity);
+
 	
 }
