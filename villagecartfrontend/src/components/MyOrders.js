@@ -215,7 +215,7 @@ function MyOrders() {
                     </button>
                   )}
                   
-                  Buy Again button only appears for delivered orders
+                  {/* Buy Again button only appears for delivered orders */}
                   {order.orderStatus === 'Delivered' && (
                     <button 
                       className="reorder-btn"

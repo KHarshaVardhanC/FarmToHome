@@ -20,7 +20,6 @@ public class MailServiceImpl {
 	public Boolean isMailExists(@Valid String mail)
 	{
 		
-//		System.out.println(mailRepository.save(mails));
 		return mailRepository.existsById(mail);
 		
 		
