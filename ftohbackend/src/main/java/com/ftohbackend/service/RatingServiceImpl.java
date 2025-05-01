@@ -73,7 +73,7 @@ public class RatingServiceImpl implements RatingService {
 		return ratings;
 	}
 	
-	@Override
+	@Override 
 	public Boolean getRatingByOrderId(Integer orderId) {
 		List<Rating> ratings=ratingRepository.findByOrderOrderId(orderId);
 		if(ratings.size() == 0)

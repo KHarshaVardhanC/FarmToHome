@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductRatingDTO {
-
+	String customerName;
 	Integer ratingId;
 	Double ratingValue;
 	String feedback;

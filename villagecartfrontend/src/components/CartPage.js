@@ -24,13 +24,13 @@ function CartPage() {
       setLoading(false);
       return;
     }
-  
+
     try {
       const response = await axios.get(`http://localhost:8080/order/orders/incart/${customerId}`);
-     
+
       if (Array.isArray(response.data)) {
         setCartItems(response.data);
-        setError(null); 
+        setError(null);
       } else {
         // Handle case where response is not in expected format
         setCartItems([]);
@@ -38,7 +38,7 @@ function CartPage() {
       }
     } catch (err) {
       console.error('Error fetching cart items:', err);
-      
+
       setCartItems([]);
       setError(null);
     } finally {
@@ -95,17 +95,17 @@ function CartPage() {
       setPlacingOrder(true);
       const itemsToOrder = selectedItem ? [selectedItem] : cartItems;
       let allOrdersSuccessful = true;
-  
+
       for (const item of itemsToOrder) {
         // Use PUT request to update order status
         const response = await axios.put(
           `http://localhost:8080/order/order/${item.orderId}/ordered`
         );
-  
+
         if (response.status === 200 || response.status === 201) {
           // Remove from cart items in state
           setCartItems(prev => prev.filter(cartItem => cartItem.orderId !== item.orderId));
-  
+
           // Update local storage cart
           const cart = JSON.parse(localStorage.getItem('cart')) || [];
           const updatedCart = cart.filter(cartItem => cartItem.orderId !== item.orderId);
@@ -115,7 +115,7 @@ function CartPage() {
           console.error("Order failed with status", response.status);
         }
       }
-  
+
       if (allOrdersSuccessful) {
         alert("Order placed successfully!");
         setShowOrderPopup(false);
@@ -212,7 +212,7 @@ function CartPage() {
           <div className="order-popup">
             <button className="close-popup" onClick={() => setShowOrderPopup(false)}>×</button>
             <h2>Complete Your Order</h2>
-            
+
             <div className="order-items-summary">
               {selectedItem ? (
                 <div className="order-item">
@@ -241,9 +241,9 @@ function CartPage() {
                 </>
               )}
             </div>
-            
-            <button 
-              className="place-order-btn" 
+
+            <button
+              className="place-order-btn"
               onClick={placeOrder}
               disabled={placingOrder}
             >

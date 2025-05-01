@@ -1,385 +1,396 @@
-//package com.ftohbackend.controllertesting;
-//
-//import static org.hamcrest.CoreMatchers.is;
-//import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.ArgumentMatchers.anyInt;
-//import static org.mockito.ArgumentMatchers.anyString;
-//import static org.mockito.BDDMockito.given;
-//import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-//import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-//import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-//import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-//
-//import java.util.Arrays;
-//import java.util.List;
-//
-//import org.junit.jupiter.api.AfterEach;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.DisplayName;
-//import org.junit.jupiter.api.Test;
-//import org.modelmapper.ModelMapper;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-//import org.springframework.boot.test.mock.mockito.MockBean;
-//import org.springframework.http.MediaType;
-//import org.springframework.mock.web.MockMultipartFile;
-//import org.springframework.test.context.ContextConfiguration;
-//import org.springframework.test.web.servlet.MockMvc;
-//import org.springframework.test.web.servlet.ResultActions;
-//import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-//
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.ftohbackend.controller.ProductController;
-//import com.ftohbackend.controller.ProductControllerImpl;
-//import com.ftohbackend.dto.CustomerProductDTO;
-//import com.ftohbackend.dto.ProductDTO;
-//import com.ftohbackend.dto.ProductRequest;
-//import com.ftohbackend.dto.SellerProductDTO;
-//import com.ftohbackend.exception.ProductException;
-//import com.ftohbackend.model.Product;
-//import com.ftohbackend.model.Seller;
-//import com.ftohbackend.service.ProductService;
-//import com.ftohbackend.service.ProductServiceImpl;
-//
-//@WebMvcTest(ProductControllerImpl.class)
-//@ContextConfiguration(classes = { ProductController.class})
-//public class ProductControllerTest {
-//
-//    @Autowired
-//    private MockMvc mockMvc;
-//
-//    @Autowired
-//    private ObjectMapper objectMapper;
-//
-//    @MockBean
-//    private ProductService productService;
-//
-//    @MockBean
-//    private ProductServiceImpl productServiceImpl;
-//
-//    @MockBean
-//    private ModelMapper modelMapper;
-//
-//    private Product product;
-//    private ProductDTO productDTO;
-//    private ProductRequest productRequest;
-//    private CustomerProductDTO customerProductDTO;
-//    private SellerProductDTO sellerProductDTO;
-//    private Seller seller;
-//
-//    @BeforeEach
-//    public void setUp() {
-//        // Setup seller
-//        seller = new Seller();
-//        seller.setSellerId(1);
-//        seller.setSellerEmail("seller@example.com");
-//        seller.setSellerFirstName("Jane");
-//        seller.setSellerLastName("Smith");
-//        seller.setSellerMobileNumber("9876543210");
-//        seller.setSellerPlace("Uptown");
-//        seller.setSellerCity("Los Angeles");
-//        seller.setSellerState("California");
-//        seller.setSellerPincode("900001");
-//        seller.setSellerPassword("seller123");
-//        seller.setSellerStatus("Active");
-//
-//        // Setup product
-//        product = new Product();
-//        product.setProductId(1);
-//        product.setSeller(seller);
-//        product.setProductPrice(100.0);
-//        product.setProductName("Test Product");
-//        product.setProductQuantity(10.0);
-//        product.setProductQuantityType("kg");
-//        product.setImageUrl("http://example.com/image.jpg");
-//        product.setProductDescription("A test product description");
-//        product.setProductCategory("Grocery");
-//        product.setProductRatingValue(4.5);
-//        product.setProductRatingCount(10);
-//
-//        // Setup ProductDTO
-//        productDTO = new ProductDTO();
-//        productDTO.setProductId(1);
-//        productDTO.setSellerId(1);
-//        productDTO.setProductPrice(100.0);
-//        productDTO.setProductName("Test Product");
-//        productDTO.setProductQuantity(10.0);
-//        productDTO.setProductQuantityType("kg");
-//        productDTO.setImageUrl("http://example.com/image.jpg");
-//        productDTO.setProductDescription("A test product description");
-//        productDTO.setProductCategory("Grocery");
-//        productDTO.setProductRatingValue(4.5);
-//        productDTO.setProductRatingCount(10);
-//
-//        // Setup ProductRequest
-//        productRequest = new ProductRequest();
-//        productRequest.setSellerId(1);
-//        productRequest.setProductPrice(100.0);
-//        productRequest.setProductName("Test Product");
-//        productRequest.setProductQuantity(10.0);
-//        productRequest.setProductQuantityType("kg");
-//        productRequest.setProductDescription("A test product description");
-//        productRequest.setProductCategory("Grocery");
-//
-//        // Setup CustomerProductDTO
-//        customerProductDTO = new CustomerProductDTO();
-//        customerProductDTO.setProductId(1);
-//        customerProductDTO.setProductName("Test Product");
-//        customerProductDTO.setProductPrice(100.0);
-//        customerProductDTO.setProductDescription("A test product description");
-//        customerProductDTO.setProductQuantity(10.0);
-//        customerProductDTO.setProductQuantityType("kg");
-//        customerProductDTO.setImageUrl("http://example.com/image.jpg");
-//        customerProductDTO.setProductRatingValue(4.5);
-//        customerProductDTO.setProductRatingCount(10);
-//        customerProductDTO.setSellerPlace("Uptown");
-//        customerProductDTO.setSellerCity("Los Angeles");
-//        customerProductDTO.setSellerName("Jane Smith");
-//
-//        // Setup SellerProductDTO
-//        sellerProductDTO = new SellerProductDTO();
-//        sellerProductDTO.setProductId(1);
-//        sellerProductDTO.setProductName("Test Product");
-//        sellerProductDTO.setProductQuantity(10.0);
-//        sellerProductDTO.setProductQuantityType("kg");
-//        sellerProductDTO.setProductPrice(100.0);
-//        sellerProductDTO.setImageUrl("http://example.com/image.jpg");
-//        sellerProductDTO.setProductDescription("A test product description");
-//        sellerProductDTO.setProductRatingValue(4.5);
-//        sellerProductDTO.setProductRatingCount(10);
-//    }
-//
-//    @AfterEach
-//    public void tearDown() {
-//        product = null;
-//        productDTO = null;
-//        productRequest = null;
-//        customerProductDTO = null;
-//        sellerProductDTO = null;
-//        seller = null;
-//    }
-//
-//    @Test
-//    @DisplayName("Test addProduct method")
-//    public void testAddProduct() throws Exception {
-//        // given - precondition or setup
-//        MockMultipartFile imageFile = new MockMultipartFile(
-//            "image", 
-//            "test-image.jpg", 
-//            MediaType.IMAGE_JPEG_VALUE, 
-//            "image content".getBytes()
-//        );
-//        
-//        given(productService.addProduct(any(ProductRequest.class))).willReturn(productDTO);
-//
-//        // when - action or the behavior
-//        ResultActions response = mockMvc.perform(
-//            MockMvcRequestBuilders.multipart("/product")
-//                .file(imageFile)
-//                .param("sellerId", "1")
-//                .param("productPrice", "100.0")
-//                .param("productName", "Test Product")
-//                .param("productQuantity", "10.0")
-//                .param("productQuantityType", "kg")
-//                .param("productDescription", "A test product description")
-//                .param("productCategory", "Grocery")
-//                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-//        );
-//
-//        // then - verify the output
-//        response.andDo(print())
-//            .andExpect(status().isCreated())
-//            .andExpect(jsonPath("$.productId", is(productDTO.getProductId())))
-//            .andExpect(jsonPath("$.productName", is(productDTO.getProductName())))
-//            .andExpect(jsonPath("$.productPrice", is(productDTO.getProductPrice())));
-//    }
-//
-//    @Test
-//    @DisplayName("Test getCustomerProductByProductId method")
-//    public void testGetCustomerProductByProductId() throws Exception {
-//        // given - precondition or setup
-//        given(productService.getProduct(anyInt())).willReturn(product);
-//
-//        // when - action or the behavior
-//        ResultActions response = mockMvc.perform(get("/product2/{productId}", 1));
-//
-//        // then - verify the output
-//        response.andDo(print())
-//            .andExpect(status().isOk())
-//            .andExpect(jsonPath("$.productId", is(customerProductDTO.getProductId())))
-//            .andExpect(jsonPath("$.productName", is(customerProductDTO.getProductName())))
-//            .andExpect(jsonPath("$.productPrice", is(customerProductDTO.getProductPrice())));
-//    }
-//
-//    @Test
-//    @DisplayName("Test getProductByName method")
-//    public void testGetProductByName() throws Exception {
-//        // given - precondition or setup
-//        List<CustomerProductDTO> customerProducts = Arrays.asList(customerProductDTO);
-//        given(productService.searchProductsWithSellerDetails(anyString())).willReturn(customerProducts);
-//
-//        // when - action or the behavior
-//        ResultActions response = mockMvc.perform(get("/product1/{productName}", "Test"));
-//
-//        // then - verify the output
-//        response.andDo(print())
-//            .andExpect(status().isOk())
-//            .andExpect(jsonPath("$.size()", is(customerProducts.size())))
-//            .andExpect(jsonPath("$[0].productId", is(customerProductDTO.getProductId())))
-//            .andExpect(jsonPath("$[0].productName", is(customerProductDTO.getProductName())));
-//    }
-//
-//    @Test
-//    @DisplayName("Test updateProduct method")
-//    public void testUpdateProduct() throws Exception {
-//        // given - precondition or setup
-//        given(modelMapper.map(any(ProductDTO.class), any())).willReturn(product);
-//        given(productService.updateProduct(anyInt(), any(Product.class))).willReturn("Product updated successfully");
-//
-//        // when - action or the behavior
-//        ResultActions response = mockMvc.perform(put("/product/{productId}", 1)
-//            .contentType(MediaType.APPLICATION_JSON)
-//            .content(objectMapper.writeValueAsString(productDTO)));
-//
-//        // then - verify the output
-//        response.andDo(print())
-//            .andExpect(status().isOk())
-//            .andExpect(jsonPath("$", is("Product updated successfully")));
-//    }
-//
-//    @Test
-//    @DisplayName("Test deleteProduct method")
-//    public void testDeleteProduct() throws Exception {
-//        // given - precondition or setup
-//        given(productService.deleteProduct(anyInt())).willReturn("Product deleted successfully");
-//
-//        // when - action or the behavior
-//        ResultActions response = mockMvc.perform(delete("/product/{productId}", 1));
-//
-//        // then - verify the output
-//        response.andDo(print())
-//            .andExpect(status().isOk())
-//            .andExpect(jsonPath("$", is("Product deleted successfully")));
-//    }
-//
-//    @Test
-//    @DisplayName("Test getAllProducts method")
-//    public void testGetAllProducts() throws Exception {
-//        // given - precondition or setup
-//        List<Product> products = Arrays.asList(product);
-//        List<ProductDTO> productDTOs = Arrays.asList(productDTO);
-//        
-//        given(productService.getAllProduct()).willReturn(products);
-//        given(modelMapper.map(any(Product.class), any())).willReturn(productDTO);
-//
-//        // when - action or the behavior
-//        ResultActions response = mockMvc.perform(get("/products"));
-//
-//        // then - verify the output
-//        response.andDo(print())
-//            .andExpect(status().isOk())
-//            .andExpect(jsonPath("$.size()", is(productDTOs.size())));
-//    }
-//
-//    @Test
-//    @DisplayName("Test getCategoryProducts method")
-//    public void testGetCategoryProducts() throws Exception {
-//        // given - precondition or setup
-//        List<Product> products = Arrays.asList(product);
-//        List<ProductDTO> productDTOs = Arrays.asList(productDTO);
-//        
-//        given(productService.getCategoryProducts(anyString())).willReturn(products);
-//        given(modelMapper.map(any(Product.class), any())).willReturn(productDTO);
-//
-//        // when - action or the behavior
-//        ResultActions response = mockMvc.perform(get("products/{productCategory}", "Grocery"));
-//
-//        // then - verify the output
-//        response.andDo(print())
-//            .andExpect(status().isOk())
-//            .andExpect(jsonPath("$.size()", is(productDTOs.size())));
-//    }
-//
-//    @Test
-//    @DisplayName("Test getProducts method for seller")
-//    public void testGetProductsBySellerId() throws Exception {
-//        // given - precondition or setup
-//        List<Product> products = Arrays.asList(product);
-//        given(productService.getAllProduct(anyInt())).willReturn(products);
-//
-//        // when - action or the behavior
-//        ResultActions response = mockMvc.perform(get("/product/{sellerId}", 1));
-//
-//        // then - verify the output
-//        response.andDo(print())
-//            .andExpect(status().isOk())
-//            .andExpect(jsonPath("$.size()", is(1)))
-//            .andExpect(jsonPath("$[0].productId", is(sellerProductDTO.getProductId())))
-//            .andExpect(jsonPath("$[0].productName", is(sellerProductDTO.getProductName())));
-//    }
-//
-//    @Test
-//    @DisplayName("Test getProduct method by ID")
-//    public void testGetProductById() throws Exception {
-//        // given - precondition or setup
-//        given(productService.getProduct(anyInt())).willReturn(product);
-//        given(modelMapper.map(any(Product.class), any())).willReturn(productDTO);
-//
-//        // when - action or the behavior
-//        ResultActions response = mockMvc.perform(get("/{productId}", 1));
-//
-//        // then - verify the output
-//        response.andDo(print())
-//            .andExpect(status().isOk())
-//            .andExpect(jsonPath("$.productId", is(productDTO.getProductId())))
-//            .andExpect(jsonPath("$.productName", is(productDTO.getProductName())));
-//    }
-//
-//    @Test
-//    @DisplayName("Test getProduct method throws ProductException")
-//    public void testGetProductByIdThrowsException() throws Exception {
-//        // given - precondition or setup
-//        given(productService.getProduct(anyInt())).willThrow(new ProductException("Product not found"));
-//
-//        // when - action or the behavior
-//        ResultActions response = mockMvc.perform(get("/{productId}", 999));
-//
-//        // then - verify the output
-//        response.andDo(print())
-//            .andExpect(status().isNotFound());
-//    }
-//
-//    @Test
-//    @DisplayName("Test addProduct method throws Exception")
-//    public void testAddProductThrowsException() throws Exception {
-//        // given - precondition or setup
-//        MockMultipartFile imageFile = new MockMultipartFile(
-//            "image", 
-//            "test-image.jpg", 
-//            MediaType.IMAGE_JPEG_VALUE, 
-//            "image content".getBytes()
-//        );
-//        
-//        given(productService.addProduct(any(ProductRequest.class))).willThrow(new Exception("Invalid product data"));
-//
-//        // when - action or the behavior
-//        ResultActions response = mockMvc.perform(
-//            MockMvcRequestBuilders.multipart("/product")
-//                .file(imageFile)
-//                .param("sellerId", "1")
-//                .param("productPrice", "100.0")
-//                .param("productName", "Test Product")
-//                .param("productQuantity", "10.0")
-//                .param("productQuantityType", "kg")
-//                .param("productDescription", "A test product description")
-//                .param("productCategory", "Grocery")
-//                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-//        );
-//
-//        // then - verify the output
-//        response.andDo(print())
-//            .andExpect(status().isInternalServerError());
-//    }
-//}
+package com.ftohbackend.controllertesting;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.reactive.result.method.annotation.ResponseEntityExceptionHandler;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ftohbackend.controller.ProductControllerImpl;
+import com.ftohbackend.dto.CustomerProductDTO;
+import com.ftohbackend.dto.ProductCity;
+import com.ftohbackend.dto.ProductDTO;
+import com.ftohbackend.dto.ProductRequest;
+import com.ftohbackend.exception.ProductException;
+import com.ftohbackend.model.Product;
+import com.ftohbackend.model.Seller;
+import com.ftohbackend.service.ProductService;
+import com.ftohbackend.service.ProductServiceImpl;
+
+ class ProductControllerTest {
+
+    private MockMvc mockMvc;
+    
+    @Mock
+    private ProductService productService;
+    
+    @Mock
+    private ProductServiceImpl productServiceImpl;
+    
+    @Mock
+    private ModelMapper modelMapper;
+    
+    @InjectMocks
+    private ProductControllerImpl productController;
+    
+    private ObjectMapper objectMapper = new ObjectMapper();
+    
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(productController)
+                .setControllerAdvice(new TestExceptionHandler()).build();    
+    }
+    
+    @ControllerAdvice
+    private static class TestExceptionHandler extends ResponseEntityExceptionHandler {
+        @ExceptionHandler(ProductException.class)
+        public ResponseEntity<Object> handleProductException(ProductException ex) {
+            return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @Test
+    void testAddProduct() throws Exception {
+        // Arrange
+        MockMultipartFile image = new MockMultipartFile(
+            "image",                     // This needs to match the field name in ProductRequest
+            "test.jpg",                  // Original filename
+            MediaType.IMAGE_JPEG_VALUE,  // Content type
+            "test image content".getBytes() // Content
+        );
+        
+        
+        
+        // Properly mock the service method to handle the request
+        ProductDTO expectedResponse = new ProductDTO();
+        expectedResponse.setProductId(1);
+        expectedResponse.setSellerId(1);
+        expectedResponse.setProductName("Test Product");
+        
+        when(productService.addProduct(any(ProductRequest.class))).thenReturn(expectedResponse);
+        
+        // Act & Assert
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/product")
+                .file(image)
+                // If necessary, add other form fields as params
+                .param("sellerId", "1")
+                .param("productPrice", "100.0")
+                .param("productName", "Test Product")
+                .param("productQuantity", "10.0")
+                .param("productQuantityType", "KG")
+                .param("productDescription", "Test Description")
+                .param("productCategory", "Vegetables")
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.productId").value(1))
+                .andExpect(jsonPath("$.sellerId").value(1))
+                .andExpect(jsonPath("$.productName").value("Test Product"));
+    }
+    
+    @Test
+    void testGetCustomerProductByProductId() throws Exception {
+        // Arrange
+        Integer productId = 1;
+        Product product = new Product();
+        product.setProductId(productId);
+        product.setProductName("Test Product");
+        product.setProductPrice(100.0);
+        product.setProductDescription("Test Description");
+        product.setProductQuantity(10.0);
+        product.setProductQuantityType("KG");
+        product.setImageUrl("test-image.jpg");
+        product.setProductRatingValue(4.5);
+        product.setProductRatingCount(10);
+        
+        Seller seller = new Seller();
+        seller.setSellerFirstName("John");
+        seller.setSellerLastName("Doe");
+        seller.setSellerPlace("Test Place");
+        seller.setSellerCity("Test City");
+        product.setSeller(seller);
+        
+        when(productService.getProduct(productId)).thenReturn(product);
+        
+        // Act & Assert
+        mockMvc.perform(get("/product2/{productId}", productId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productId").value(productId))
+                .andExpect(jsonPath("$.productName").value("Test Product"))
+                .andExpect(jsonPath("$.sellerName").value("John Doe"));
+    }
+    
+    @Test
+    void testGetProductByName() throws Exception {
+        // Arrange
+        String productName = "Test";
+        List<CustomerProductDTO> products = new ArrayList<>();
+        CustomerProductDTO dto = new CustomerProductDTO();
+        dto.setProductId(1);
+        dto.setProductName("Test Product");
+        products.add(dto);
+        
+        when(productService.searchProductsWithSellerDetails(productName)).thenReturn(products);
+        
+        // Act & Assert
+        mockMvc.perform(get("/product1/{productName}", productName))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].productId").value(1))
+                .andExpect(jsonPath("$[0].productName").value("Test Product"));
+    }
+    
+    @Test
+    void testGetProductByNameAndCity() throws Exception {
+        // Arrange
+        ProductCity productCity = new ProductCity();
+        productCity.setProductName("Test");
+        productCity.setCityName("Test City");
+        
+        List<CustomerProductDTO> products = new ArrayList<>();
+        CustomerProductDTO dto = new CustomerProductDTO();
+        dto.setProductId(1);
+        dto.setProductName("Test Product");
+        dto.setSellerCity("Test City");
+        products.add(dto);
+        
+        when(productService.searchProductsWithSellerDetails(any(ProductCity.class))).thenReturn(products);
+        
+        // Act & Assert
+        mockMvc.perform(post("/NameCity")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(productCity)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].productId").value(1))
+                .andExpect(jsonPath("$[0].productName").value("Test Product"))
+                .andExpect(jsonPath("$[0].sellerCity").value("Test City"));
+    }
+    
+    @Test
+    void testUpdateProduct() throws Exception {
+        // Arrange
+        Integer productId = 1;
+        ProductDTO updatedDetails = new ProductDTO();
+        updatedDetails.setProductName("Updated Product");
+        updatedDetails.setProductPrice(150.0);
+        
+        Product prod = new Product();
+        prod.setProductName("Updated Product");
+        prod.setProductPrice(150.0);
+        
+        when(modelMapper.map(updatedDetails, Product.class)).thenReturn(prod);
+        when(productService.updateProduct(productId, prod)).thenReturn("Product updated successfully");
+        
+        // Act & Assert
+        mockMvc.perform(put("/product/{productId}", productId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updatedDetails)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Product updated successfully"));
+    }
+    
+    @Test
+    void testDeleteProduct() throws Exception {
+        // Arrange
+        Integer productId = 1;
+        when(productService.deleteProduct(productId)).thenReturn("Product deleted successfully");
+        
+        // Act & Assert
+        mockMvc.perform(delete("/product/{productId}", productId))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Product deleted successfully"));
+    }
+    
+    @Test
+    void testGetAllProducts() throws Exception {
+        // Arrange
+        List<Product> products = new ArrayList<>();
+        Product product1 = new Product();
+        product1.setProductId(1);
+        product1.setProductName("Product 1");
+        
+        Product product2 = new Product();
+        product2.setProductId(2);
+        product2.setProductName("Product 2");
+        
+        products.add(product1);
+        products.add(product2);
+        
+        ProductDTO dto1 = new ProductDTO();
+        dto1.setProductId(1);
+        dto1.setProductName("Product 1");
+        
+        ProductDTO dto2 = new ProductDTO();
+        dto2.setProductId(2);
+        dto2.setProductName("Product 2");
+        
+        when(productService.getAllProduct()).thenReturn(products);
+        when(modelMapper.map(product1, ProductDTO.class)).thenReturn(dto1);
+        when(modelMapper.map(product2, ProductDTO.class)).thenReturn(dto2);
+        
+        // Act & Assert
+        mockMvc.perform(get("/products"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].productId").value(1))
+                .andExpect(jsonPath("$[0].productName").value("Product 1"))
+                .andExpect(jsonPath("$[1].productId").value(2))
+                .andExpect(jsonPath("$[1].productName").value("Product 2"));
+    }
+    
+    @Test
+    void testGetCategoryProducts() throws Exception {
+        // Arrange
+        String category = "Vegetables";
+        List<Product> products = new ArrayList<>();
+        Product product = new Product();
+        product.setProductId(1);
+        product.setProductName("Carrot");
+        product.setProductCategory(category);
+        products.add(product);
+        
+        ProductDTO dto = new ProductDTO();
+        dto.setProductId(1);
+        dto.setProductName("Carrot");
+        dto.setProductCategory(category);
+        
+        when(productService.getCategoryProducts(category)).thenReturn(products);
+        when(modelMapper.map(product, ProductDTO.class)).thenReturn(dto);
+        
+        // Act & Assert
+        mockMvc.perform(get("/products/{productCategory}", category))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].productId").value(1))
+                .andExpect(jsonPath("$[0].productName").value("Carrot"))
+                .andExpect(jsonPath("$[0].productCategory").value(category));
+    }
+    
+    @Test
+    void testGetProducts() throws Exception {
+        // Arrange
+        Integer sellerId = 1;
+        List<Product> products = new ArrayList<>();
+        
+        Product product = new Product();
+        product.setProductId(1);
+        product.setProductName("Test Product");
+        product.setProductQuantity(10.0);
+        product.setProductQuantityType("KG");
+        product.setProductPrice(100.0);
+        product.setImageUrl("test-image.jpg");
+        product.setProductDescription("Test Description");
+        product.setProductRatingValue(4.5);
+        product.setProductRatingCount(10);
+        
+        products.add(product);
+        
+        when(productService.getAllProduct(sellerId)).thenReturn(products);
+        
+        // Act & Assert
+        mockMvc.perform(get("/product/{sellerId}", sellerId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].productId").value(1))
+                .andExpect(jsonPath("$[0].productName").value("Test Product"))
+                .andExpect(jsonPath("$[0].productRatingValue").value(4.5));
+    }
+    
+    @Test
+    void testGetProductsWithNullRating() throws Exception {
+        // Arrange
+        Integer sellerId = 1;
+        List<Product> products = new ArrayList<>();
+        
+        Product product = new Product();
+        product.setProductId(1);
+        product.setProductName("Test Product");
+        product.setProductQuantity(10.0);
+        product.setProductQuantityType("KG");
+        product.setProductPrice(100.0);
+        product.setImageUrl("test-image.jpg");
+        product.setProductDescription("Test Description");
+        product.setProductRatingValue(null);
+        product.setProductRatingCount(null);
+        
+        products.add(product);
+        
+        when(productService.getAllProduct(sellerId)).thenReturn(products);
+        
+        // Act & Assert
+        mockMvc.perform(get("/product/{sellerId}", sellerId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].productId").value(1))
+                .andExpect(jsonPath("$[0].productName").value("Test Product"))
+                .andExpect(jsonPath("$[0].productRatingValue").value(0.0))
+                .andExpect(jsonPath("$[0].productRatingCount").value(0));
+    }
+    
+    @Test
+    void testGetProduct() throws Exception {
+        // Arrange
+        Integer productId = 1;
+        Product product = new Product();
+        product.setProductId(productId);
+        product.setProductName("Test Product");
+        
+        ProductDTO dto = new ProductDTO();
+        dto.setProductId(productId);
+        dto.setProductName("Test Product");
+        
+        when(productService.getProduct(productId)).thenReturn(product);
+        when(modelMapper.map(product, ProductDTO.class)).thenReturn(dto);
+        
+        // Act & Assert
+        mockMvc.perform(get("/{productId}", productId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productId").value(productId))
+                .andExpect(jsonPath("$.productName").value("Test Product"));
+    }
+    
+    @Test
+    void testGetCustomerProductByProductId_Exception() throws Exception {
+        // Arrange
+        Integer productId = 1;
+        when(productService.getProduct(productId)).thenThrow(new ProductException("Product not found"));
+        
+        // Act & Assert
+        mockMvc.perform(get("/product2/{productId}", productId))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string("Product not found"));
+    }
+    
+    @Test
+    void testGetProductByName_Exception() throws Exception {
+        // Arrange
+        String productName = "Test";
+        when(productService.searchProductsWithSellerDetails(productName)).thenThrow(new ProductException("Product not found"));
+        
+        // Act & Assert
+        mockMvc.perform(get("/product1/{productName}", productName))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string("Product not found"));
+    }
+}

@@ -40,7 +40,7 @@ import com.ftohbackend.service.MailServiceImpl;
 
 @WebMvcTest
 @ContextConfiguration(classes = { CustomerControllerImpl.class })
-public class CustomerControllerTest {
+class CustomerControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -62,7 +62,7 @@ public class CustomerControllerTest {
     private LoginRequest loginRequest;
 
     @BeforeEach
-    public void setUp() {
+void setUp() {
         // Set up Customer
         customer = new Customer();
         customer.setCustomerId(1);
