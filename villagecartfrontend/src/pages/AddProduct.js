@@ -21,6 +21,8 @@ const AddProduct = () => {
     sellerId: sellerId,
     productDescription: '',
     productCategory: '',
+    minOrderQuantity: '',
+    discountPercentage: '',
   });
 
   const handleChange = (e) => {
@@ -47,24 +49,30 @@ const AddProduct = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+  
     try {
       const formData = new FormData();
+      const quantity = parseFloat(productData.productQuantity);
+      const minOrderQty = parseFloat(productData.minOrderQuantity) || 0;
+      const discountPct = parseFloat(productData.discountPercentage) || 0;
+  
       const formattedData = {
         ...productData,
         productPrice: parseFloat(productData.productPrice),
-        productQuantity: parseInt(productData.productQuantity),
+        productQuantity: quantity,
+        discountPercentage: discountPct,
+        minOrderQuantity: minOrderQty,
         sellerId: parseInt(sellerId)
       };
-
+    
       Object.keys(formattedData).forEach(key => {
         formData.append(key, formattedData[key]);
       });
-
+  
       if (selectedFile) {
         formData.append('image', selectedFile);
       }
-
+  
       await productApi.addProduct(formData);
       navigate('/view-products');
     } catch (err) {
@@ -73,7 +81,8 @@ const AddProduct = () => {
       setLoading(false);
     }
   };
-
+  
+  
   return (
     <div className="add-product-page">
       <nav className="navbar navbar-light bg-white">
@@ -118,10 +127,7 @@ const AddProduct = () => {
                       value={productData.productName} 
                       onChange={handleChange} 
                       required 
-                      style={{ 
-                        backgroundColor: 'white',
-                        color: '#212529'
-                      }}
+                      style={{ backgroundColor: 'white', color: '#212529' }}
                     />
                   </div>
 
@@ -136,10 +142,7 @@ const AddProduct = () => {
                       required 
                       min="0" 
                       step="0.01" 
-                      style={{ 
-                        backgroundColor: 'white',
-                        color: '#212529'
-                      }}
+                      style={{ backgroundColor: 'white', color: '#212529' }}
                     />
                   </div>
 
@@ -154,22 +157,15 @@ const AddProduct = () => {
                         onChange={handleChange} 
                         required 
                         min="0"
-                        style={{ 
-                          backgroundColor: 'white',
-                          color: '#212529'
-                        }}
+                        style={{ backgroundColor: 'white', color: '#212529' }}
                       />
                       <select 
                         className="form-select" 
-                        style={{ 
-                          maxWidth: '40%', 
-                          backgroundColor: 'white',
-                          color: '#212529'
-                        }}
                         name="productQuantityType" 
                         value={productData.productQuantityType} 
                         onChange={handleChange}
                         required
+                        style={{ maxWidth: '40%', backgroundColor: 'white', color: '#212529' }}
                       >
                         <option value="kg">kg</option>
                         <option value="litre">litre</option>
@@ -187,10 +183,7 @@ const AddProduct = () => {
                       value={productData.productCategory} 
                       onChange={handleChange} 
                       required
-                      style={{ 
-                        backgroundColor: 'white',
-                        color: '#212529'
-                      }}
+                      style={{ backgroundColor: 'white', color: '#212529' }}
                     >
                       <option value="">Select Category</option>
                       <option value="Vegetables">Vegetables</option>
@@ -210,10 +203,33 @@ const AddProduct = () => {
                       onChange={handleChange} 
                       required 
                       rows="3" 
-                      style={{ 
-                        backgroundColor: 'white',
-                        color: '#212529'
-                      }}
+                      style={{ backgroundColor: 'white', color: '#212529' }}
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label">Minimum Order Quantity for Discount</label>
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      name="minOrderQuantity" 
+                      value={productData.minOrderQuantity} 
+                      onChange={handleChange} 
+                      placeholder="e.g. 10"
+                      style={{ backgroundColor: 'white', color: '#212529' }}
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label">Discount Percentage (%)</label>
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      name="discountPercentage" 
+                      value={productData.discountPercentage} 
+                      onChange={handleChange} 
+                      placeholder="e.g. 5"
+                      style={{ backgroundColor: 'white', color: '#212529' }}
                     />
                   </div>
 
@@ -225,10 +241,7 @@ const AddProduct = () => {
                       accept="image/*" 
                       onChange={handleFileChange} 
                       required 
-                      style={{ 
-                        backgroundColor: 'white',
-                        color: '#212529'
-                      }}
+                      style={{ backgroundColor: 'white', color: '#212529' }}
                     />
                     {previewUrl && (
                       <div className="mt-2">

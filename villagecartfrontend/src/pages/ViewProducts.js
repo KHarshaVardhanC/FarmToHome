@@ -210,6 +210,16 @@ const ViewProducts = () => {
                       <strong>Price: ₹{product.productPrice} {product.productQuantityType ? `per ${product.productQuantityType}` : ''}</strong>
                     </p>
 
+                    {/* Add discount information */}
+                    {product.discountPercentage > 0 && product.minOrderQuantity > 0 && (
+                      <p className="card-text mb-2 text-success">
+                        <small>
+                          <i className="fas fa-tag me-1"></i>
+                          {product.discountPercentage}% off on min. order of {product.minOrderQuantity} {product.productQuantityType || 'kg'}
+                        </small>
+                      </p>
+                    )}
+
                     <p className="card-text text-muted mb-0">
                       {productRatings[product.productId] ? (
                         <div>
