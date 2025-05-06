@@ -80,17 +80,21 @@ const Admin = () => {
         return (order.orderQuantity || 0) * (order.productPrice || 0);
     };
     const handleProductClick = async (product) => {
+        console.log('Product clicked:', product);
         setLoading(true);
         setError(null);
         try {
-            const reviews = await fetchProductReviews(product.productId);
+            console.log('Fetching ratings for product ID:', product.productId);
+            const ratings = await fetchProductReviews(product.productId);
+            console.log('Ratings fetched:', ratings);
+
             setViewingProductReviews({
                 product: product,
-                reviews: reviews || []
+                ratings: ratings || []
             });
         } catch (err) {
-            console.error('Error fetching product reviews:', err);
-            setError(`Failed to load product reviews: ${err.message}`);
+            console.error('Error fetching product ratings:', err);
+            setError(`Failed to load product ratings: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -575,13 +579,14 @@ const Admin = () => {
     const renderProductReviews = () => {
         if (!viewingProductReviews) return null;
 
-        const { product, reviews } = viewingProductReviews;
+        const { product, ratings } = viewingProductReviews;
+        console.log('Rendering ratings:', ratings); // Debug log
 
         return (
             <div className="reviews-modal">
                 <div className="reviews-content">
                     <div className="reviews-header">
-                        <h3>Reviews for {product.productName}</h3>
+                        <h3>Ratings & Reviews for {product.productName}</h3>
                         <button
                             className="close-button"
                             onClick={() => setViewingProductReviews(null)}
@@ -590,29 +595,34 @@ const Admin = () => {
                         </button>
                     </div>
 
-                    {reviews.length === 0 ? (
-                        <p>No reviews found for this product.</p>
+                    {!ratings || ratings.length === 0 ? (
+                        <p>No ratings found for this product.</p>
                     ) : (
                         <div className="reviews-list">
-                            {reviews.map(review => (
-                                <div key={review.reviewId} className="review-item">
+                            {ratings.map(rating => (
+                                <div key={rating.ratingId} className="review-item">
                                     <div className="review-header">
-                                        <span className="reviewer-name">{review.customerName}</span>
+                                        <span className="reviewer-name">
+                                            {rating.customerName || "Anonymous"}
+                                        </span>
                                         <div className="review-rating">
-                                            {[...Array(5)].map((_, i) => (
+                                            {Array.from({ length: 5 }).map((_, i) => (
                                                 <span
                                                     key={i}
-                                                    className={`star ${i < review.rating ? 'filled' : ''}`}
+                                                    className={`star ${i < Math.round(rating.ratingValue || 0) ? 'filled' : ''}`}
                                                 >
                                                     ★
                                                 </span>
                                             ))}
+                                            <span className="rating-value">
+                                                {rating.ratingValue?.toFixed(1) || '0'}/5
+                                            </span>
                                         </div>
                                         <span className="review-date">
-                                            {new Date(review.reviewDate).toLocaleDateString()}
+                                            {rating.createdAt ? new Date(rating.createdAt).toLocaleString() : 'Unknown date'}
                                         </span>
                                     </div>
-                                    <p className="review-text">{review.reviewText}</p>
+                                    <p className="review-text">{rating.feedback || "No feedback provided"}</p>
                                 </div>
                             ))}
                         </div>
