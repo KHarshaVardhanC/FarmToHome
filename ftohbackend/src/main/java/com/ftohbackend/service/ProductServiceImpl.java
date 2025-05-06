@@ -92,15 +92,15 @@ public class ProductServiceImpl implements ProductService {
 		}
 	}
 
-	private ProductDTO convertToDTO(Product product) {
-		ProductDTO dto = new ProductDTO();
-		dto.setProductId(product.getProductId());
-		dto.setProductName(product.getProductName());
-		dto.setProductPrice(product.getProductPrice());
-		dto.setProductQuantity(product.getProductQuantity());
-		dto.setImageUrl(product.getImageUrl());
-		return dto;
-	}
+//	private ProductDTO convertToDTO(Product product) {
+//		ProductDTO dto = new ProductDTO();
+//		dto.setProductId(product.getProductId());
+//		dto.setProductName(product.getProductName());
+//		dto.setProductPrice(product.getProductPrice());
+//		dto.setProductQuantity(product.getProductQuantity());
+//		dto.setImageUrl(product.getImageUrl());
+//		return dto;
+//	}
 
 	@Override
 	public List<Product> getAllProduct() throws ProductException {
@@ -176,6 +176,9 @@ public class ProductServiceImpl implements ProductService {
 		{
 			product.setProductQuantityType(updatedDetails.getProductQuantityType());
 		}
+		
+		product.setDiscountPercentage(updatedDetails.getDiscountPercentage());
+		product.setMinOrderQuantity(updatedDetails.getMinOrderQuantity());
 
 //		updatedDetails.getPro
 
@@ -229,20 +232,12 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	public List<Product> searchProductsWithSellerDetails(String productName) throws ProductException {
-	    // Validate input
-	    if (productName == null || productName.trim().isEmpty()) {
-	        throw new ProductException("Product name cannot be null or empty");
-	    }
-	    
-	    // Get products from repository
-	    List<Product> products = productRepository.findProductsByNameWithSeller(productName);
-	    
-	    // Check if products were found - THIS IS THE KEY PART THAT WAS MISSING
-	    if (products == null || products.isEmpty()) {
-	        throw new ProductException("No products found with name: " + productName);
-	    }
-	    
-	    return products;
+		if (productName == null || productName.trim().isEmpty()) {
+			throw new ProductException("Product name cannot be null or empty.");
+		}
+
+		return productRepository.findByProductNameContainingIgnoreCase(productName.trim());
+		
 	}
 
 	@Override
@@ -257,7 +252,7 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public List<Product> getCategoryProducts(String productCategory) throws ProductException {
 
-		return productRepository.findByProductCategory(productCategory);
+		return productRepository.findByProductCategoryContainingIgnoreCase(productCategory);
 
 	}
 
