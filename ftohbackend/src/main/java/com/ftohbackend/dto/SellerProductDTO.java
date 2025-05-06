@@ -17,5 +17,7 @@ public class SellerProductDTO {
 	Double productQuantity;
 	Double productRatingValue;
 	Integer productRatingCount;
+	Double discountPercentage;
+	Double minOrderQuantity;
 
 }

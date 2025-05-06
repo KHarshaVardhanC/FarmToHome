@@ -71,6 +71,8 @@ public class ProductControllerImpl implements ProductController {
 		customerProductDTO.setImageUrl(product.getImageUrl());
 		customerProductDTO.setProductRatingValue(product.getProductRatingValue());
 		customerProductDTO.setProductRatingCount(product.getProductRatingCount());
+		customerProductDTO.setDiscountPercentage(product.getDiscountPercentage());
+		customerProductDTO.setMinOrderQuantity(product.getMinOrderQuantity());
 		
 		
 		customerProductDTO.setSellerPlace(product.getSeller().getSellerPlace());
@@ -116,6 +118,8 @@ public class ProductControllerImpl implements ProductController {
 				customerProductDTO.setSellerName(product.getSeller().getSellerFirstName() + " " + product.getSeller().getSellerLastName());
 				customerProductDTO.setSellerCity(product.getSeller().getSellerCity());
 				customerProductDTO.setSellerPlace(product.getSeller().getSellerPlace());
+				customerProductDTO.setDiscountPercentage(product.getDiscountPercentage());
+				customerProductDTO.setMinOrderQuantity(product.getMinOrderQuantity());
 
 				customerproductdto.add(customerProductDTO);
 			}
@@ -156,6 +160,9 @@ public class ProductControllerImpl implements ProductController {
 			customerProductDTO.setSellerName(product.getSeller().getSellerFirstName() + " " + product.getSeller().getSellerLastName());
 			customerProductDTO.setSellerCity(product.getSeller().getSellerCity());
 			customerProductDTO.setSellerPlace(product.getSeller().getSellerPlace());
+			customerProductDTO.setDiscountPercentage(product.getDiscountPercentage());
+			customerProductDTO.setMinOrderQuantity(product.getMinOrderQuantity());
+			
 
 			customerproductdtos.add(customerProductDTO);
 			
@@ -220,6 +227,9 @@ public class ProductControllerImpl implements ProductController {
 				sellerproductDTO.setProductRatingValue(product.getProductRatingValue());
 				sellerproductDTO.setProductRatingCount(product.getProductRatingCount());
 			}
+			
+			sellerproductDTO.setDiscountPercentage(product.getDiscountPercentage());
+			sellerproductDTO.setMinOrderQuantity(product.getMinOrderQuantity());
 			
 			sellerproductdtos.add(sellerproductDTO);
 			

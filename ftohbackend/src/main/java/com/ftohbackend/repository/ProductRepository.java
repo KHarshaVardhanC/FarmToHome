@@ -21,10 +21,12 @@ public interface ProductRepository extends JpaRepository<Product,Integer>{
     @Query("SELECT p FROM Product p JOIN FETCH p.seller WHERE p.productName LIKE %:name%")
     List<Product> findProductsByNameWithSeller(@Param("name") String name) throws ProductException;
     
+//    List<Product> findByProd
+    
     // Alternative method to search products with partial matching
     List<Product> findByProductNameContainingIgnoreCase(String name) throws ProductException;
 
-	List<Product> findByProductCategory(String productCategory);
+	List<Product> findByProductCategoryContainingIgnoreCase(String productCategory);
 
 	
 	List<Product> findByProductNameContainingIgnoreCaseAndSeller_SellerCityIgnoreCase(String productName, String sellerCity);

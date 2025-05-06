@@ -24,5 +24,7 @@ public class ProductRequest {
 	String productDescription;
 	@NotNull(message = "Product Category Required")
 	String productCategory;
+	Double discountPercentage;
+	Double minOrderQuantity;
 
 }
