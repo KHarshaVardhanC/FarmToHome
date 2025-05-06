@@ -25,11 +25,24 @@ const ProductDetails = () => {
     return stars;
   };
 
+  // Format date to be more readable
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        
+
         try {
           const res = await productApi.getProduct(id);
           setProduct(res.data);
@@ -133,22 +146,6 @@ const ProductDetails = () => {
                 </div>
               )}
 
-              {ratings.length > 0 ? (
-                <div className="mt-2">
-                  <h6 className="fw-semibold">Customer Feedback</h6>
-                  <ul className="feedback-list ps-3">
-                    {ratings.map((r, i) => (
-                      <li key={i} className="text-muted small fst-italic">"{r.feedback || 'No comment'}"</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <div className="mt-2">
-                  <h6 className="fw-semibold">Customer Feedback</h6>
-                  <p className="text-muted small">No feedback available yet.</p>
-                </div>
-              )}
-
               {/* Action Buttons */}
               <div className="d-flex flex-wrap gap-3 mt-4">
                 {product.productQuantity === 0 ? (
@@ -174,6 +171,43 @@ const ProductDetails = () => {
                   className="img-fluid rounded product-image"
                   style={{ maxHeight: '200px', objectFit: 'cover', width: '100%' }}
                 />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Enhanced Customer Feedback Section */}
+        <div className="card shadow-sm mt-4">
+          <div className="card-header bg-light">
+            <h5 className="mb-0">Customer Ratings & Feedback</h5>
+          </div>
+          <div className="card-body">
+            {ratings.length > 0 ? (
+              <div className="feedback-container">
+                {ratings.map((rating, index) => (
+                  <div key={index} className="feedback-item mb-3 pb-3 border-bottom">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <div>
+                        <span className="badge bg-secondary me-2">Customer #{index + 1}</span>
+                        <span>{renderStars(rating.ratingValue)}</span>
+                        <span className="ms-2 fw-bold">{rating.ratingValue}/5</span>
+                      </div>
+                      <small className="text-muted">{formatDate(rating.createdAt)}</small>
+                    </div>
+                    <div className="feedback-text">
+                      {rating.feedback ? (
+                        <p className="mb-0">{rating.feedback}</p>
+                      ) : (
+                        <p className="text-muted fst-italic mb-0">No comment provided</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <i className="fas fa-comment-slash text-muted mb-3" style={{ fontSize: '2rem' }}></i>
+                <p className="text-muted mb-0">No feedback available yet.</p>
               </div>
             )}
           </div>

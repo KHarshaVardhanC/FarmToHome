@@ -100,6 +100,7 @@ public class RatingControllerImpl implements RatingController {
 			
 			productratings.add(productratingdto);
 		}
+		System.out.println(productratings.size());
 		
 		
 		return productratings;

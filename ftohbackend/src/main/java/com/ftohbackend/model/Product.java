@@ -70,6 +70,9 @@ public class Product {
 	
 	String productQuantityType;
 	
+	Double discountPercentage;
+	Double minOrderQuantity;
+	
 
 	@OneToMany(mappedBy = "product" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	public List<Order> orders=new ArrayList<>();

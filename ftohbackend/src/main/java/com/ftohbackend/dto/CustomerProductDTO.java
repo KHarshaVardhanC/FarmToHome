@@ -20,5 +20,7 @@ public class CustomerProductDTO {
 	Double productRatingValue;
 	Integer productRatingCount;
 	String productQuantityType;
+	Double discountPercentage;
+	Double minOrderQuantity;
 
 }
