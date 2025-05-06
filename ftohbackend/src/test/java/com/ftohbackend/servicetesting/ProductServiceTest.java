@@ -407,13 +407,16 @@ public class ProductServiceTest {
         when(productRepository.findProductsByNameWithSeller("Banana")).thenReturn(products);
 
         // Act
-        List<CustomerProductDTO> result = productService.searchProductsWithSellerDetails("Banana");
+        List<Product> result = productService.searchProductsWithSellerDetails("Banana");
 
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals("Banana", result.get(0).getProductName());
-        assertEquals("John Doe", result.get(0).getSellerName());
+        
+        // Fix: Check first name and last name separately instead of expecting a combined string
+        assertEquals("John", result.get(0).getSeller().getSellerFirstName());
+        assertEquals("Doe", result.get(0).getSeller().getSellerLastName());
     }
 
     @Test
@@ -434,7 +437,11 @@ public class ProductServiceTest {
         when(productRepository.findProductsByNameWithSeller(anyString())).thenReturn(new ArrayList<>());
 
         // Act & Assert
-        assertThrows(ProductException.class, () -> productService.searchProductsWithSellerDetails("Orange"));
+        ProductException exception = assertThrows(ProductException.class, 
+            () -> productService.searchProductsWithSellerDetails("Orange"));
+        
+        // Optional: Verify the exception message if needed
+        assertEquals("No products found with name: Orange", exception.getMessage());
     }
 
     @Test

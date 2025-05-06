@@ -150,11 +150,22 @@ import com.ftohbackend.service.ProductServiceImpl;
     void testGetProductByName() throws Exception {
         // Arrange
         String productName = "Test";
-        List<CustomerProductDTO> products = new ArrayList<>();
-        CustomerProductDTO dto = new CustomerProductDTO();
-        dto.setProductId(1);
-        dto.setProductName("Test Product");
-        products.add(dto);
+        List<Product> products = new ArrayList<>();
+        
+        // Create Product with all necessary information
+        Product product = new Product();
+        product.setProductId(1);
+        product.setProductQuantity(10.0);
+        product.setProductName("Test Product");
+        
+        // Create Seller and attach to Product
+        Seller seller = new Seller();
+        seller.setSellerFirstName("John");
+        seller.setSellerLastName("Doe");
+        seller.setSellerCity("Test City");
+        product.setSeller(seller);
+        
+        products.add(product);
         
         when(productService.searchProductsWithSellerDetails(productName)).thenReturn(products);
         
@@ -172,12 +183,21 @@ import com.ftohbackend.service.ProductServiceImpl;
         productCity.setProductName("Test");
         productCity.setCityName("Test City");
         
-        List<CustomerProductDTO> products = new ArrayList<>();
-        CustomerProductDTO dto = new CustomerProductDTO();
-        dto.setProductId(1);
-        dto.setProductName("Test Product");
-        dto.setSellerCity("Test City");
-        products.add(dto);
+        List<Product> products = new ArrayList<>();
+        
+        // Create Product with all necessary information
+        Product product = new Product();
+        product.setProductId(1);
+        product.setProductName("Test Product");
+        
+        // Create Seller and attach to Product
+        Seller seller = new Seller();
+        seller.setSellerFirstName("John");
+        seller.setSellerLastName("Doe");
+        seller.setSellerCity("Test City");
+        product.setSeller(seller);
+        
+        products.add(product);
         
         when(productService.searchProductsWithSellerDetails(any(ProductCity.class))).thenReturn(products);
         

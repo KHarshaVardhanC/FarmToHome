@@ -228,14 +228,21 @@ public class ProductServiceImpl implements ProductService {
 		return products;
 	}
 
-	@Override
 	public List<Product> searchProductsWithSellerDetails(String productName) throws ProductException {
-		if (productName == null || productName.trim().isEmpty()) {
-			throw new ProductException("Product name cannot be null or empty.");
-		}
-
-		return productRepository.findProductsByNameWithSeller(productName.trim());
-		
+	    // Validate input
+	    if (productName == null || productName.trim().isEmpty()) {
+	        throw new ProductException("Product name cannot be null or empty");
+	    }
+	    
+	    // Get products from repository
+	    List<Product> products = productRepository.findProductsByNameWithSeller(productName);
+	    
+	    // Check if products were found - THIS IS THE KEY PART THAT WAS MISSING
+	    if (products == null || products.isEmpty()) {
+	        throw new ProductException("No products found with name: " + productName);
+	    }
+	    
+	    return products;
 	}
 
 	@Override

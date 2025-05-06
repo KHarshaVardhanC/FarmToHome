@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -20,14 +20,18 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ftohbackend.controller.CustomerControllerImpl;
@@ -38,31 +42,52 @@ import com.ftohbackend.model.Customer;
 import com.ftohbackend.service.CustomerService;
 import com.ftohbackend.service.MailServiceImpl;
 
-@WebMvcTest
-@ContextConfiguration(classes = { CustomerControllerImpl.class })
 class CustomerControllerTest {
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
+    
+    @Mock
     private CustomerService customerService;
 
-    @MockBean
+    @Mock
     private MailServiceImpl mailServiceImpl;
 
-    @MockBean
+    @Mock
     private ModelMapper modelMapper;
+    
+    @InjectMocks
+    private CustomerControllerImpl customerController;
+    
+    private ObjectMapper objectMapper;
 
     private Customer customer;
     private CustomerDTO customerDTO;
     private LoginRequest loginRequest;
+    
+    // Create a global exception handler for testing
+    @ControllerAdvice
+    public static class GlobalExceptionHandler {
+        @ExceptionHandler(CustomerException.class)
+        public ResponseEntity<String> handleCustomerException(CustomerException ex, WebRequest request) {
+            return ResponseEntity.status(404).body(ex.getMessage());
+        }
+        
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<String> handleException(Exception ex, WebRequest request) {
+            return ResponseEntity.internalServerError().body(ex.getMessage());
+        }
+    }
 
     @BeforeEach
-void setUp() {
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(customerController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
+        
+        objectMapper = new ObjectMapper();
+        
         // Set up Customer
         customer = new Customer();
         customer.setCustomerId(1);
@@ -108,9 +133,9 @@ void setUp() {
     @DisplayName("JUnit test for addCustomer operation - new email")
     public void givenCustomerDTO_whenAddCustomer_thenReturnSuccessMessage() throws Exception {
         // given - precondition or setup
-        given(mailServiceImpl.isMailExists(anyString())).willReturn(false);
-        given(modelMapper.map(any(CustomerDTO.class), any())).willReturn(customer);
-        given(customerService.addCustomer(any(Customer.class))).willReturn("Customer added successfully");
+        when(mailServiceImpl.isMailExists(anyString())).thenReturn(false);
+        when(modelMapper.map(any(CustomerDTO.class), any())).thenReturn(customer);
+        when(customerService.addCustomer(any(Customer.class))).thenReturn("Customer added successfully");
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(post("/customer")
@@ -127,7 +152,7 @@ void setUp() {
     @DisplayName("JUnit test for addCustomer operation - existing email")
     public void givenCustomerDTOWithExistingEmail_whenAddCustomer_thenReturnErrorMessage() throws Exception {
         // given - precondition or setup
-        given(mailServiceImpl.isMailExists(anyString())).willReturn(true);
+        when(mailServiceImpl.isMailExists(anyString())).thenReturn(true);
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(post("/customer")
@@ -144,8 +169,8 @@ void setUp() {
     @DisplayName("JUnit test for getCustomer operation")
     public void givenCustomerId_whenGetCustomer_thenReturnCustomerDTO() throws Exception {
         // given - precondition or setup
-        given(customerService.getCustomer(anyInt())).willReturn(customer);
-        given(modelMapper.map(any(Customer.class), any())).willReturn(customerDTO);
+        when(customerService.getCustomer(anyInt())).thenReturn(customer);
+        when(modelMapper.map(any(Customer.class), any())).thenReturn(customerDTO);
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(get("/customer/{customerId}", 1));
@@ -159,21 +184,21 @@ void setUp() {
                 .andExpect(jsonPath("$.customerEmail", is(customerDTO.getCustomerEmail())));
     }
     
-//    @Test
-//    @DisplayName("JUnit test for getCustomer operation - CustomerException")
-//    public void givenInvalidCustomerId_whenGetCustomer_thenThrowsCustomerException() throws Exception {
-//        // given - precondition or setup
-//        int invalidCustomerId = 999;
-//        given(customerService.getCustomer(invalidCustomerId)).willThrow(new CustomerException("Customer not found with ID: " + invalidCustomerId));
-//        
-//        // when - action or behavior
-//        ResultActions response = mockMvc.perform(get("/customer/{customerId}", invalidCustomerId));
-//        
-//        // then - verify the output
-//        response.andDo(print())
-//                .andExpect(status().isNotFound()) // Assuming your exception handler returns 404 for CustomerException
-//                .andExpect(jsonPath("$.message", is("Customer not found with ID: " + invalidCustomerId)));
-//    }
+    @Test
+    @DisplayName("JUnit test for getCustomer operation - CustomerException")
+    public void givenInvalidCustomerId_whenGetCustomer_thenThrowsCustomerException() throws Exception {
+        // given - precondition or setup
+        int invalidCustomerId = 999;
+        when(customerService.getCustomer(invalidCustomerId)).thenThrow(new CustomerException("Customer not found with ID: " + invalidCustomerId));
+        
+        // when - action or behavior
+        ResultActions response = mockMvc.perform(get("/customer/{customerId}", invalidCustomerId));
+        
+        // then - verify the output
+        response.andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Customer not found with ID: " + invalidCustomerId));
+    }
     
     @Test
     @DisplayName("JUnit test for getAllCustomers operation")
@@ -182,11 +207,8 @@ void setUp() {
         List<Customer> customers = new ArrayList<>();
         customers.add(customer);
         
-        List<CustomerDTO> customerDTOs = new ArrayList<>();
-        customerDTOs.add(customerDTO);
-        
-        given(customerService.getAllCustomers()).willReturn(customers);
-        given(modelMapper.map(any(Customer.class), any())).willReturn(customerDTO);
+        when(customerService.getAllCustomers()).thenReturn(customers);
+        when(modelMapper.map(any(Customer.class), any())).thenReturn(customerDTO);
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(get("/customer/"));
@@ -201,7 +223,7 @@ void setUp() {
     @DisplayName("JUnit test for loginCustomer operation - successful login")
     public void givenLoginRequest_whenLoginCustomer_thenReturnCustomerResponse() throws Exception {
         // given - precondition or setup
-        given(customerService.authenticateCustomer(anyString(), anyString())).willReturn(customer);
+        when(customerService.authenticateCustomer(anyString(), anyString())).thenReturn(customer);
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(post("/customer/login")
@@ -219,7 +241,7 @@ void setUp() {
     @DisplayName("JUnit test for loginCustomer operation - failed login")
     public void givenInvalidLoginRequest_whenLoginCustomer_thenReturnUnauthorized() throws Exception {
         // given - precondition or setup
-        given(customerService.authenticateCustomer(anyString(), anyString())).willReturn(null);
+        when(customerService.authenticateCustomer(anyString(), anyString())).thenReturn(null);
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(post("/customer/login")
@@ -236,8 +258,8 @@ void setUp() {
     @DisplayName("JUnit test for updateCustomer operation")
     public void givenCustomerIdAndCustomerDTO_whenUpdateCustomer_thenReturnSuccessMessage() throws Exception {
         // given - precondition or setup
-        given(modelMapper.map(any(CustomerDTO.class), any())).willReturn(customer);
-        given(customerService.updateCustomer(anyInt(), any(Customer.class))).willReturn("Customer updated successfully");
+        when(modelMapper.map(any(CustomerDTO.class), any())).thenReturn(customer);
+        when(customerService.updateCustomer(anyInt(), any(Customer.class))).thenReturn("Customer updated successfully");
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(put("/customer/{customerId}", 1)
@@ -250,22 +272,22 @@ void setUp() {
                 .andExpect(content().string("Customer updated successfully"));
     }
     
-//    @Test
-//    @DisplayName("JUnit test for updateCustomer operation - CustomerException")
-//    public void givenInvalidCustomerId_whenUpdateCustomer_thenThrowsCustomerException() throws Exception {
-//        // given - precondition or setup
-//        int invalidCustomerId = 999;
-//        given(modelMapper.map(any(CustomerDTO.class), any())).willReturn(customer);
-//        given(customerService.updateCustomer(invalidCustomerId, customer)).willThrow(new CustomerException("Customer not found with ID: " + invalidCustomerId));
-//        
-//        // when - action or behavior
-//        ResultActions response = mockMvc.perform(put("/customer/{customerId}", invalidCustomerId)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(objectMapper.writeValueAsString(customerDTO)));
-//                
-//        // then - verify the output
-//        response.andDo(print())
-//                .andExpect(status().isNotFound()) // Assuming your exception handler returns 404 for CustomerException
-//                .andExpect(jsonPath("$.message", is("Customer not found with ID: " + invalidCustomerId)));
-//    }
+    @Test
+    @DisplayName("JUnit test for updateCustomer operation - CustomerException")
+    public void givenInvalidCustomerId_whenUpdateCustomer_thenThrowsCustomerException() throws Exception {
+        // given - precondition or setup
+        int invalidCustomerId = 999;
+        when(modelMapper.map(any(CustomerDTO.class), any())).thenReturn(customer);
+        when(customerService.updateCustomer(invalidCustomerId, customer)).thenThrow(new CustomerException("Customer not found with ID: " + invalidCustomerId));
+        
+        // when - action or behavior
+        ResultActions response = mockMvc.perform(put("/customer/{customerId}", invalidCustomerId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(customerDTO)));
+                
+        // then - verify the output
+        response.andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Customer not found with ID: " + invalidCustomerId));
+    }
 }
