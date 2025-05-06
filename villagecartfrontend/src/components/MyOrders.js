@@ -25,9 +25,7 @@ function MyOrders() {
     try {
       const response = await axios.get(`http://localhost:8080/order/customer/${customerId}`);
 
-
       if (Array.isArray(response.data)) {
-
         const sortedOrders = response.data.sort((a, b) => {
           const statusOrder = { 'ordered': 1, 'Processing': 2, 'Delivered': 3 };
           return statusOrder[a.orderStatus] - statusOrder[b.orderStatus];
@@ -35,13 +33,11 @@ function MyOrders() {
         setOrders(sortedOrders);
         setError(null);
       } else {
-
         setOrders([]);
         setError(null);
       }
     } catch (err) {
       console.error('Error fetching orders:', err);
-
       setOrders([]);
       setError(null);
     } finally {
@@ -85,42 +81,31 @@ function MyOrders() {
     navigate(`/review/${orderId}`);
   };
 
+  // const handleBuyAgain = async (order) => {
+  //   try {
+  //     // Create the order object to send to the backend
+  //     const orderData = {
+  //        // The backend will assign a proper ID
+  //       productId: order.productId,
+  //       orderQuantity: order.orderQuantity,
+  //       customerId: customerId,
+  //       orderStatus: "Incart" // This should match what your backend expects for cart items
+  //     };
 
-  const handleBuyAgain = (order) => {
-
-    const productToAdd = {
-      productId: order.productId,
-      productName: order.productName,
-      productPrice: order.productPrice,
-      imageUrl: order.imageUrl,
-      orderQuantity: order.orderQuantity,
-      productQuantityType: order.productQuantityType || 'kg',
-      sellerId: order.sellerId
-    };
-
-    try {
-      const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-
-
-      const existingItemIndex = cartItems.findIndex(item => item.productId === productToAdd.productId);
-
-      if (existingItemIndex !== -1) {
-
-        cartItems[existingItemIndex].orderQuantity += productToAdd.orderQuantity;
-      } else {
-
-        cartItems.push(productToAdd);
-      }
-
-
-      localStorage.setItem('cartItems', JSON.stringify(cartItems));
-      alert(`${productToAdd.productName} added to your cart!`);
-      navigate('/cart');
-    } catch (err) {
-      console.error('Error adding product to cart:', err);
-      alert('Failed to add product to cart. Please try again.');
-    }
-  };
+  //     // Make the API call to add the item to cart
+  //     const response = await axios.post('http://localhost:8080/order/add', orderData);
+      
+  //     if (response.status === 200 || response.status === 201) {
+  //       alert(`${order.productName} added to your cart!`);
+  //       navigate('/cart');
+  //     } else {
+  //       alert('Failed to add product to cart. Please try again.');
+  //     }
+  //   } catch (err) {
+  //     console.error('Error adding product to cart:', err);
+  //     alert('Failed to add product to cart. Please try again.');
+  //   }
+  // };
 
   if (loading) return (
     <div className="my-orders-page">
@@ -215,15 +200,15 @@ function MyOrders() {
                     </button>
                   )}
 
-                  Buy Again button only appears for delivered orders
-                  {order.orderStatus === 'Delivered' && (
+                  {/* Buy Again button only appears for delivered orders */}
+                  {/* {order.orderStatus === 'Delivered' && (
                     <button
                       className="reorder-btn"
                       onClick={() => handleBuyAgain(order)}
                     >
                       Buy Again
                     </button>
-                  )}
+                  )} */}
                 </div>
               </div>
             ))}
