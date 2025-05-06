@@ -231,7 +231,6 @@ public class ProductServiceImpl implements ProductService {
 		return products;
 	}
 
-	@Override
 	public List<Product> searchProductsWithSellerDetails(String productName) throws ProductException {
 		if (productName == null || productName.trim().isEmpty()) {
 			throw new ProductException("Product name cannot be null or empty.");

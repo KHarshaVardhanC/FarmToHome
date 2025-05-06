@@ -196,7 +196,7 @@
 .signin-container {
   position: relative;
   min-height: 100vh;
-  min-width:200vh;
+  min-width: 200vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -206,12 +206,13 @@
   padding-top: 40px;
 
 }
- 
+
 .header-title {
   width: 70%;
   text-align: center;
   margin-bottom: 40px;
-  padding-right: 600px;;
+  padding-right: 900px;
+  ;
   z-index: 2;
 }
 
@@ -255,17 +256,19 @@
   position: relative;
   width: 100%;
   max-width: 420px;
-  padding: 40px 30px ;
+  padding: 40px 30px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 20px;
   box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-left: 180px; /* Add this line to move box 40px from left */
+  margin-left: 180px;
+  /* Add this line to move box 40px from left */
   margin-right: auto;
   z-index: 2;
   animation: floatIn 0.6s ease-out;
-  margin-left: 270px; /* Remove left margin */
+  margin-left: 270px;
+  /* Remove left margin */
   margin-top: 20px;
 }
 
@@ -389,22 +392,36 @@
   transform: none;
 }
 
-.back-button {
+.back-buttonn {
   width: 100%;
   margin-top: 15px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 15px;
+  background: linear-gradient(45deg, #4ecdc4, #96e6a1);
+  /* same green gradient */
+  border: none;
   border-radius: 12px;
   color: #ffffff;
+  font-size: 1.1em;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.3s ease;
   animation: fadeInUp 0.5s ease-out 0.7s both;
 }
 
-.back-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+.back-buttonn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
 }
+
+.back-buttonn:disabled {
+  background: #666;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 
 .signup-link {
   text-align: center;
@@ -412,8 +429,9 @@
   color: #b3b3b3;
   animation: fadeInUp 0.5s ease-out 0.8s both;
 }
-.signup-link p{
-  color:#fb3b3b;
+
+.signup-link p {
+  color: #fb3b3b;
 }
 
 .signup-link a {
@@ -441,6 +459,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -452,6 +471,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -463,6 +483,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -470,15 +491,33 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
 }
 
 @keyframes gradient {
-  0% { transform: rotate(0deg); }
-  50% { transform: rotate(180deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(180deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive Design */

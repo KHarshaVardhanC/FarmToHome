@@ -4,8 +4,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -18,17 +20,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ftohbackend.controller.SellerControllerImpl;
@@ -40,30 +46,52 @@ import com.ftohbackend.model.Seller;
 import com.ftohbackend.service.MailServiceImpl;
 import com.ftohbackend.service.SellerService;
 
-@WebMvcTest
-@ContextConfiguration(classes = { SellerControllerImpl.class })
-public class SellerControllerTest {
+class SellerControllerTest {
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
+    
+    @Mock
     private SellerService sellerService;
     
-    @MockBean
+    @Mock
     private MailServiceImpl mailService;
     
-    @MockBean
-    private org.modelmapper.ModelMapper modelMapper;
-
+    @Mock
+    private ModelMapper modelMapper;
+    
+    @InjectMocks
+    private SellerControllerImpl sellerController;
+    
+    private ObjectMapper objectMapper;
+    
     private Seller seller;
     private SellerDTO sellerDTO;
-
+    
+    // Create a global exception handler for testing
+    @ControllerAdvice
+    public static class GlobalExceptionHandler {
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<String> handleException(Exception ex, WebRequest request) {
+            return ResponseEntity.status(401).body(ex.getMessage());
+        }
+        
+        @ExceptionHandler(SellerException.class)
+        public ResponseEntity<String> handleSellerException(SellerException ex, WebRequest request) {
+            return ResponseEntity.status(401).body(ex.getMessage());
+        }
+    }
+    
     @BeforeEach
-    public void setUp() {
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(sellerController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
+        
+        objectMapper = new ObjectMapper();
+        
+        // Setup seller test data
         seller = new Seller();
         seller.setSellerId(1);
         seller.setSellerEmail("seller@example.com");
@@ -91,23 +119,16 @@ public class SellerControllerTest {
         sellerDTO.setSellerStatus("Active");
         
         // Configure ModelMapper behavior
-        given(modelMapper.map(any(SellerDTO.class), eq(Seller.class))).willReturn(seller);
-        given(modelMapper.map(any(Seller.class), eq(SellerDTO.class))).willReturn(sellerDTO);
-    }
-
-    @AfterEach
-    public void tearDown() {
-        seller = null;
-        sellerDTO = null;
+        when(modelMapper.map(any(SellerDTO.class), any())).thenReturn(seller);
+        when(modelMapper.map(any(Seller.class), any())).thenReturn(sellerDTO);
     }
 
     @Test
     @DisplayName("JUnit test for addSeller operation - Success")
-    public void givenSellerDTO_whenAddSeller_thenReturnSuccessMessage() throws Exception {
+    void givenSellerDTO_whenAddSeller_thenReturnSuccessMessage() throws Exception {
         // given - precondition or setup
-        given(mailService.isMailExists(anyString())).willReturn(false);
-        given(sellerService.addSeller(any(Seller.class))).willReturn("Seller Added Successfully");
-        willDoNothing().given(mailService).addMail(any(Mails.class));
+        when(mailService.isMailExists(anyString())).thenReturn(false);
+        when(sellerService.addSeller(any(Seller.class))).thenReturn("Seller Added Successfully");
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(post("/seller")
@@ -118,13 +139,15 @@ public class SellerControllerTest {
         response.andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string("You Registered Successfully"));
+        
+        verify(mailService, times(1)).addMail(any(Mails.class));
     }
     
     @Test
     @DisplayName("JUnit test for addSeller operation - Email Already Exists")
-    public void givenSellerDTO_whenAddSellerWithExistingEmail_thenReturnEmailExistsMessage() throws Exception {
+    void givenSellerDTO_whenAddSellerWithExistingEmail_thenReturnEmailExistsMessage() throws Exception {
         // given - precondition or setup
-        given(mailService.isMailExists(anyString())).willReturn(true);
+        when(mailService.isMailExists(anyString())).thenReturn(true);
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(post("/seller")
@@ -139,9 +162,9 @@ public class SellerControllerTest {
 
     @Test
     @DisplayName("JUnit test for getSeller by ID operation")
-    public void givenSellerId_whenGetSeller_thenReturnSellerDTO() throws Exception {
+    void givenSellerId_whenGetSeller_thenReturnSellerDTO() throws Exception {
         // given - precondition or setup
-        given(sellerService.getSeller(anyInt())).willReturn(seller);
+        when(sellerService.getSeller(anyInt())).thenReturn(seller);
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(get("/seller/{sellerId}", 1));
@@ -155,24 +178,25 @@ public class SellerControllerTest {
                 .andExpect(jsonPath("$.sellerLastName", is(sellerDTO.getSellerLastName())));
     }
     
-//    @Test
-//    @DisplayName("JUnit test for getSeller by ID operation - Not Found")
-//    public void givenInvalidSellerId_whenGetSeller_thenThrowSellerException() throws Exception {
-//        // given - precondition or setup
-//        int invalidSellerId = 999;
-//        given(sellerService.getSeller(invalidSellerId)).willThrow(new SellerException("Seller not found"));
-//        
-//        // when - action or behavior
-//        ResultActions response = mockMvc.perform(get("/seller/{sellerId}", invalidSellerId));
-//        
-//        // then - verify the output
-//        response.andDo(print())
-//                .andExpect(status().isNotFound()); // Assuming your exception handler returns 404 for SellerException
-//    }
+    @Test
+    @DisplayName("JUnit test for getSeller by ID operation - Not Found")
+    void givenInvalidSellerId_whenGetSeller_thenThrowSellerException() throws Exception {
+        // given - precondition or setup
+        int invalidSellerId = 999;
+        when(sellerService.getSeller(invalidSellerId)).thenThrow(new SellerException("Seller not found"));
+        
+        // when - action or behavior
+        ResultActions response = mockMvc.perform(get("/seller/{sellerId}", invalidSellerId));
+        
+        // then - verify the output
+        response.andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Seller not found"));
+    }
 
     @Test
     @DisplayName("JUnit test for getAllSellers operation")
-    public void givenSellersList_whenGetAllSellers_thenReturnSellersList() throws Exception {
+    void givenSellersList_whenGetAllSellers_thenReturnSellersList() throws Exception {
         // given - precondition or setup
         List<Seller> sellerList = new ArrayList<>();
         sellerList.add(seller);
@@ -184,7 +208,7 @@ public class SellerControllerTest {
         seller2.setSellerLastName("Doe");
         sellerList.add(seller2);
         
-        given(sellerService.getSeller()).willReturn(sellerList);
+        when(sellerService.getSeller()).thenReturn(sellerList);
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(get("/seller"));
@@ -197,9 +221,9 @@ public class SellerControllerTest {
 
     @Test
     @DisplayName("JUnit test for deleteSeller by ID operation")
-    public void givenSellerId_whenDeleteSeller_thenReturnSuccessMessage() throws Exception {
+    void givenSellerId_whenDeleteSeller_thenReturnSuccessMessage() throws Exception {
         // given - precondition or setup
-        given(sellerService.deleteSeller(anyInt())).willReturn("Seller deleted successfully");
+        when(sellerService.deleteSeller(anyInt())).thenReturn("Seller deleted successfully");
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(delete("/seller/{sellerId}", 1));
@@ -210,26 +234,27 @@ public class SellerControllerTest {
                 .andExpect(content().string("Seller deleted successfully"));
     }
     
-//    @Test
-//    @DisplayName("JUnit test for deleteSeller by ID operation - Not Found")
-//    public void givenInvalidSellerId_whenDeleteSeller_thenThrowSellerException() throws Exception {
-//        // given - precondition or setup
-//        int invalidSellerId = 999;
-//        given(sellerService.deleteSeller(invalidSellerId)).willThrow(new SellerException("Seller not found"));
-//        
-//        // when - action or behavior
-//        ResultActions response = mockMvc.perform(delete("/seller/{sellerId}", invalidSellerId));
-//        
-//        // then - verify the output
-//        response.andDo(print())
-//                .andExpect(status().isNotFound()); // Assuming your exception handler returns 404 for SellerException
-//    }
+    @Test
+    @DisplayName("JUnit test for deleteSeller by ID operation - Not Found")
+    void givenInvalidSellerId_whenDeleteSeller_thenThrowSellerException() throws Exception {
+        // given - precondition or setup
+        int invalidSellerId = 999;
+        doThrow(new SellerException("Seller not found")).when(sellerService).deleteSeller(invalidSellerId);
+        
+        // when - action or behavior
+        ResultActions response = mockMvc.perform(delete("/seller/{sellerId}", invalidSellerId));
+        
+        // then - verify the output
+        response.andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Seller not found"));
+    }
 
     @Test
     @DisplayName("JUnit test for updateSeller operation")
-    public void givenSellerDTOAndId_whenUpdateSeller_thenReturnSuccessMessage() throws Exception {
+    void givenSellerDTOAndId_whenUpdateSeller_thenReturnSuccessMessage() throws Exception {
         // given - precondition or setup
-        given(sellerService.updateSeller(anyInt(), any(Seller.class))).willReturn("Seller updated successfully");
+        when(sellerService.updateSeller(anyInt(), any(Seller.class))).thenReturn("Seller updated successfully");
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(put("/seller/{sellerId}", 1)
@@ -244,9 +269,9 @@ public class SellerControllerTest {
     
     @Test
     @DisplayName("JUnit test for updateSeller status operation")
-    public void givenSellerIdAndStatus_whenUpdateSellerStatus_thenReturnSuccessMessage() throws Exception {
+    void givenSellerIdAndStatus_whenUpdateSellerStatus_thenReturnSuccessMessage() throws Exception {
         // given - precondition or setup
-        given(sellerService.updateSeller(anyInt(), anyString())).willReturn("Seller status updated successfully");
+        when(sellerService.updateSeller(anyInt(), anyString())).thenReturn("Seller status updated successfully");
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(put("/seller/{sellerId}/{sellerStatus}", 1, "Inactive"));
@@ -259,13 +284,13 @@ public class SellerControllerTest {
     
     @Test
     @DisplayName("JUnit test for loginSeller operation - Success")
-    public void givenLoginRequest_whenLoginSeller_thenReturnSellerResponse() throws Exception {
+    void givenLoginRequest_whenLoginSeller_thenReturnSellerResponse() throws Exception {
         // given - precondition or setup
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("seller@example.com");
         loginRequest.setPassword("password123");
         
-        given(sellerService.authenticateSeller(anyString(), anyString())).willReturn(seller);
+        when(sellerService.authenticateSeller(anyString(), anyString())).thenReturn(seller);
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(post("/seller/login")
@@ -283,14 +308,14 @@ public class SellerControllerTest {
     
     @Test
     @DisplayName("JUnit test for loginSeller operation - Invalid Credentials")
-    public void givenInvalidLoginRequest_whenLoginSeller_thenReturn401Status() throws Exception {
+    void givenInvalidLoginRequest_whenLoginSeller_thenReturn401Status() throws Exception {
         // given - precondition or setup
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("invalid@example.com");
         loginRequest.setPassword("wrongpassword");
         
-        given(sellerService.authenticateSeller(anyString(), anyString()))
-            .willThrow(new SellerException("Invalid email or password"));
+        when(sellerService.authenticateSeller(anyString(), anyString()))
+            .thenThrow(new SellerException("Invalid email or password"));
         
         // when - action or behavior
         ResultActions response = mockMvc.perform(post("/seller/login")
@@ -301,10 +326,5 @@ public class SellerControllerTest {
         response.andDo(print())
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("Invalid email or password"));
-    }
-    
-    // Helper method to make the tests more readable
-    private static <T> T eq(T value) {
-        return org.mockito.ArgumentMatchers.eq(value);
     }
 }

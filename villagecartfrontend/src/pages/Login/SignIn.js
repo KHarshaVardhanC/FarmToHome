@@ -197,46 +197,46 @@ const Signin = () => {
         )}
 
         {/* Hidden admin login option *//*}
-        {!formData.userType && (
-          <div className="admin-login-section" style={{ marginTop: "20px" }}>
-            <p>
-              <button
-                onClick={(e) => {
-                  handleRoleSelect("admin");
-                }}
-                style={{
-                  fontSize: "0.8rem",
-                  color: "#777",
-                  textDecoration: "none",
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                  cursor: "pointer"
-                }}
-              >
-                Admin Login
-              </button>
-            </p>
-          </div>
-        )}
+{!formData.userType && (
+<div className="admin-login-section" style={{ marginTop: "20px" }}>
+<p>
+<button
+onClick={(e) => {
+  handleRoleSelect("admin");
+}}
+style={{
+  fontSize: "0.8rem",
+  color: "#777",
+  textDecoration: "none",
+  background: "none",
+  border: "none",
+  padding: 0,
+  cursor: "pointer"
+}}
+>
+Admin Login
+</button>
+</p>
+</div>
+)}
 
-        <div className="signup-link">
-          <p>
-            Don't have an account?{" "}
-            <a href="/signup" className="signup-link">
-              Sign Up
-            </a>
-          </p>
-        </div>
-      </div>
+<div className="signup-link">
+<p>
+Don't have an account?{" "}
+<a href="/signup" className="signup-link">
+Sign Up
+</a>
+</p>
+</div>
+</div>
 
-      {/* Forgot Password Popup *//*}
-      <VerifyEmailPopup
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)} // Close the popup
-      />
-    </div>
-  );
+{/* Forgot Password Popup *//*}
+<VerifyEmailPopup
+  isOpen={isPopupOpen}
+  onClose={() => setIsPopupOpen(false)} // Close the popup
+/>
+</div>
+);
 };
 
 export default Signin;
@@ -456,7 +456,7 @@ const Signin = () => {
 
             <button
               onClick={resetSelection}
-              className="back-button"
+              className="back-buttonn"
               style={{
                 marginTop: "10px",
                 background: "transparent",

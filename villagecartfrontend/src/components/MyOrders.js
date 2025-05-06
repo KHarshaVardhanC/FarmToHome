@@ -21,27 +21,27 @@ function MyOrders() {
       setLoading(false);
       return;
     }
-  
+
     try {
       const response = await axios.get(`http://localhost:8080/order/customer/${customerId}`);
-      
-    
+
+
       if (Array.isArray(response.data)) {
-       
+
         const sortedOrders = response.data.sort((a, b) => {
           const statusOrder = { 'ordered': 1, 'Processing': 2, 'Delivered': 3 };
           return statusOrder[a.orderStatus] - statusOrder[b.orderStatus];
         });
         setOrders(sortedOrders);
-        setError(null); 
+        setError(null);
       } else {
-        
+
         setOrders([]);
         setError(null);
       }
     } catch (err) {
       console.error('Error fetching orders:', err);
-      
+
       setOrders([]);
       setError(null);
     } finally {
@@ -65,10 +65,10 @@ function MyOrders() {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-      day: 'numeric', 
-      month: 'short', 
-      year: 'numeric' 
+    return date.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
     });
   };
 
@@ -82,12 +82,12 @@ function MyOrders() {
       alert('Cannot write review: Product ID is missing');
       return;
     }
-    navigate(`/review/${orderId}`); 
+    navigate(`/review/${orderId}`);
   };
 
- 
+
   const handleBuyAgain = (order) => {
- 
+
     const productToAdd = {
       productId: order.productId,
       productName: order.productName,
@@ -100,19 +100,19 @@ function MyOrders() {
 
     try {
       const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-      
-      
+
+
       const existingItemIndex = cartItems.findIndex(item => item.productId === productToAdd.productId);
-      
+
       if (existingItemIndex !== -1) {
-        
+
         cartItems[existingItemIndex].orderQuantity += productToAdd.orderQuantity;
       } else {
-        
+
         cartItems.push(productToAdd);
       }
-      
-      
+
+
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
       alert(`${productToAdd.productName} added to your cart!`);
       navigate('/cart');
@@ -141,7 +141,7 @@ function MyOrders() {
       <Navbar />
       <div className="orders-container">
         <h1 className="orders-title">My Orders</h1>
-        
+
         {orders.length === 0 ? (
           <div className="empty-orders">
             <p>You haven't placed any orders yet</p>
@@ -159,22 +159,22 @@ function MyOrders() {
                     {order.orderStatus}
                   </div>
                 </div>
-                
+
                 <div className="order-content">
                   <div className="order-image">
                     <img src={order.imageUrl} alt={order.productName} />
                   </div>
-                  
+
                   <div className="order-details">
                     <h3 className="product-name">{order.productName}</h3>
                     <p className="order-quantity">Quantity: {order.orderQuantity.toFixed(1)} {order.productQuantityType || 'kg'}</p>
                     <p className="order-price">Price: ₹{order.productPrice}/{order.productQuantityType || 'kg'}</p>
                     <p className="order-total">Total: ₹{(order.productPrice * order.orderQuantity).toFixed(2)}</p>
-                    
+
                     {order.productDescription && (
                       <p className="product-description">{order.productDescription}</p>
                     )}
-                    
+
                     <div className="seller-info">
                       <p className="seller-name">Seller: {order.sellerName || 'N/A'}</p>
                       {order.sellerPlace && order.sellerCity && (
@@ -185,39 +185,39 @@ function MyOrders() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="order-actions">
                   {/* Get Invoice button appears for all orders */}
-                  <button 
+                  <button
                     className="invoice-btn"
                     onClick={() => handleGetInvoice(order.orderId)}
                   >
                     Get Invoice
                   </button>
-                  
+
                   {/* Write a Review button only appears for delivered orders that haven't been rated yet */}
                   {order.orderStatus === 'Delivered' && order.orderRatingStatus !== 'Rated' && (
-                    <button 
+                    <button
                       className="review-btn"
                       onClick={() => handleWriteReview(order.orderId)}
                     >
                       Write a Review
                     </button>
                   )}
-                  
+
                   {/* Show a disabled button if already rated */}
                   {order.orderStatus === 'Delivered' && order.orderRatingStatus === 'Rated' && (
-                    <button 
+                    <button
                       className="review-btn rated-btn"
                       disabled
                     >
                       Already Reviewed
                     </button>
                   )}
-                  
-                  {/* Buy Again button only appears for delivered orders */}
+
+                  Buy Again button only appears for delivered orders
                   {order.orderStatus === 'Delivered' && (
-                    <button 
+                    <button
                       className="reorder-btn"
                       onClick={() => handleBuyAgain(order)}
                     >

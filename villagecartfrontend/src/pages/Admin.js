@@ -12,7 +12,8 @@ import {
     updateSellerStatus,
     deleteProduct,
     fetchSellerProducts,
-    fetchProducts
+    fetchProducts,
+    fetchProductReviews
 } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,45 +27,46 @@ const Admin = () => {
     const [editingProduct, setEditingProduct] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-
+    // Add to your existing state variables at the top
+    const [viewingProductReviews, setViewingProductReviews] = useState(null);
 
     const navigate = useNavigate();
 
-  useEffect(() => {
-    // 1. Add a new history entry to ensure we have control
-    window.history.pushState({ isAdminHome: true }, '', window.location.href);
-  
-    const handleBackButton = (event) => {
-      console.log('Back navigation detected', event);
-      
-      // 2. Only intercept if we're actually on the customer home page
-      if (window.location.pathname.includes('/admin')) {
-        // 3. Prevent default back navigation
-        event.preventDefault();
-        
-        // 4. Show confirmation dialog
-        if (window.confirm('Are you sure you want to logout?')) {
-          // Clear user data
-          localStorage.removeItem('adminId');
-          localStorage.removeItem('userName');
-          
-          // Navigate to login (replace instead of push)
-          navigate('/login', { replace: true });
-        } else {
-          // 5. If user cancels, re-establish our history state
-          window.history.pushState({ isAdminHome: true }, '', window.location.href);
-        }
-      }
-    };
-  
-    // 6. Add the listener with proper options
-    window.addEventListener('popstate', handleBackButton, { passive: false });
-  
-    return () => {
-      // 7. Clean up the listener
-      window.removeEventListener('popstate', handleBackButton);
-    };
-  }, [navigate]);
+    useEffect(() => {
+        // 1. Add a new history entry to ensure we have control
+        window.history.pushState({ isAdminHome: true }, '', window.location.href);
+
+        const handleBackButton = (event) => {
+            console.log('Back navigation detected', event);
+
+            // 2. Only intercept if we're actually on the customer home page
+            if (window.location.pathname.includes('/admin')) {
+                // 3. Prevent default back navigation
+                event.preventDefault();
+
+                // 4. Show confirmation dialog
+                if (window.confirm('Are you sure you want to logout?')) {
+                    // Clear user data
+                    localStorage.removeItem('adminId');
+                    localStorage.removeItem('userName');
+
+                    // Navigate to login (replace instead of push)
+                    navigate('/login', { replace: true });
+                } else {
+                    // 5. If user cancels, re-establish our history state
+                    window.history.pushState({ isAdminHome: true }, '', window.location.href);
+                }
+            }
+        };
+
+        // 6. Add the listener with proper options
+        window.addEventListener('popstate', handleBackButton, { passive: false });
+
+        return () => {
+            // 7. Clean up the listener
+            window.removeEventListener('popstate', handleBackButton);
+        };
+    }, [navigate]);
 
 
     // Helper function to get seller name from ID
@@ -77,12 +79,28 @@ const Admin = () => {
     const calculateOrderTotal = (order) => {
         return (order.orderQuantity || 0) * (order.productPrice || 0);
     };
+    const handleProductClick = async (product) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const reviews = await fetchProductReviews(product.productId);
+            setViewingProductReviews({
+                product: product,
+                reviews: reviews || []
+            });
+        } catch (err) {
+            console.error('Error fetching product reviews:', err);
+            setError(`Failed to load product reviews: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
             setError(null);
-    
+
             try {
                 if (view === 'sellers' || view === 'home') {
                     try {
@@ -94,7 +112,7 @@ const Admin = () => {
                         setError(prev => prev ? `${prev}; Failed to load sellers` : 'Failed to load sellers');
                     }
                 }
-    
+
                 if (view === 'customers' || view === 'home') {
                     try {
                         const customersData = await fetchCustomers();
@@ -115,7 +133,7 @@ const Admin = () => {
                         setError(prev => prev ? `${prev}; Failed to load customers` : 'Failed to load customers');
                     }
                 }
-    
+
                 if (view === 'products' || view === 'home') {
                     try {
                         const productsData = await fetchProducts();
@@ -125,7 +143,7 @@ const Admin = () => {
                         setError(prev => prev ? `${prev}; Failed to load products` : 'Failed to load products');
                     }
                 }
-    
+
             } catch (err) {
                 console.error('General error:', err);
                 setError('Failed to load data - please check your connection');
@@ -133,10 +151,10 @@ const Admin = () => {
                 setLoading(false);
             }
         };
-    
+
         loadData();
     }, [view]);
-    
+
 
     const handleSellerClick = async (seller) => {
         setLoading(true);
@@ -554,6 +572,55 @@ const Admin = () => {
             )}
         </div>
     );
+    const renderProductReviews = () => {
+        if (!viewingProductReviews) return null;
+
+        const { product, reviews } = viewingProductReviews;
+
+        return (
+            <div className="reviews-modal">
+                <div className="reviews-content">
+                    <div className="reviews-header">
+                        <h3>Reviews for {product.productName}</h3>
+                        <button
+                            className="close-button"
+                            onClick={() => setViewingProductReviews(null)}
+                        >
+                            &times;
+                        </button>
+                    </div>
+
+                    {reviews.length === 0 ? (
+                        <p>No reviews found for this product.</p>
+                    ) : (
+                        <div className="reviews-list">
+                            {reviews.map(review => (
+                                <div key={review.reviewId} className="review-item">
+                                    <div className="review-header">
+                                        <span className="reviewer-name">{review.customerName}</span>
+                                        <div className="review-rating">
+                                            {[...Array(5)].map((_, i) => (
+                                                <span
+                                                    key={i}
+                                                    className={`star ${i < review.rating ? 'filled' : ''}`}
+                                                >
+                                                    ★
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <span className="review-date">
+                                            {new Date(review.reviewDate).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                    <p className="review-text">{review.reviewText}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
 
     const renderSellerDetails = () => {
         if (loading) return <div className="loading">Loading seller details...</div>;
@@ -589,7 +656,8 @@ const Admin = () => {
                         <p>No products found for this seller.</p>
                     ) : (
                         selectedSeller.products.map(product => (
-                            <div key={product.productId} className="product-card">
+                            <div key={product.productId} className="product-card" onClick={() => handleProductClick(product)}
+                                style={{ cursor: 'pointer' }}>
                                 <h4>{product.productName}</h4>
                                 {product.imageUrl && (
                                     <img
@@ -630,12 +698,12 @@ const Admin = () => {
                                     <p><strong>Customer:</strong> {order.customerName}</p>
 
                                     <div className="order-product">
-                                    <>
+                                        <>
 
 
-                            <p><strong>Product:</strong> {order.productName || 'Unknown Product'}</p>
-                            <p><strong>Price:</strong> Rs.{order.productPrice}</p>
-                            </ >
+                                            <p><strong>Product:</strong> {order.productName || 'Unknown Product'}</p>
+                                            <p><strong>Price:</strong> Rs.{order.productPrice}</p>
+                                        </ >
 
                                     </div>
 
@@ -771,26 +839,29 @@ const Admin = () => {
                 className="admin-login-button"
                 onClick={() => {
                     localStorage.clear()
-                    window.location.href = '/login'}}
+                    window.location.href = '/login'
+                }}
             >
                 Admin Logout
             </button>
         </div>
     );
-    
+
     return (
         <div className="admin-container">
-        {renderTopBar()}
-        {error && <div className="global-error">{error}</div>}
+            {renderTopBar()}
+            {error && <div className="global-error">{error}</div>}
 
-        {view === 'home' && renderHome()}
-        {view === 'products' && renderProducts()}
-        {view === 'sellers' && renderSellers()}
-        {view === 'seller-details' && renderSellerDetails()}
-        {view === 'customers' && renderCustomers()}
-        {view === 'customer-details' && renderCustomerDetails()}
-    </div>
-);
+            {view === 'home' && renderHome()}
+            {view === 'products' && renderProducts()}
+            {view === 'sellers' && renderSellers()}
+            {view === 'seller-details' && renderSellerDetails()}
+            {view === 'customers' && renderCustomers()}
+            {view === 'customer-details' && renderCustomerDetails()}
+            {renderProductReviews()}
+
+        </div>
+    );
 };
 
 export default Admin;

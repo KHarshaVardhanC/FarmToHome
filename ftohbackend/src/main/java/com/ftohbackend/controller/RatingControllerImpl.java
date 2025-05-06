@@ -90,6 +90,7 @@ public class RatingControllerImpl implements RatingController {
 		{
 			ProductRatingDTO productratingdto=new ProductRatingDTO();
 			
+			productratingdto.setCustomerName(rating.getCustomer().getCustomerFirstName()+rating.getCustomer().getCustomerLastName());
 			productratingdto.setRatingId(rating.getRatingId());
 			productratingdto.setProductName(rating.getProduct().getProductName());
 			productratingdto.setFeedback(rating.getFeedback());

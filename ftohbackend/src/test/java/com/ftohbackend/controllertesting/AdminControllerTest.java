@@ -10,34 +10,42 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ftohbackend.controller.AdminControllerImpl;
 import com.ftohbackend.dto.LoginRequest;
 
-@WebMvcTest
-@ContextConfiguration(classes = {AdminControllerImpl.class })
 public class AdminControllerTest {
-	
-	
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
+    
     private MockMvc mockMvc;
-
+    
+    @InjectMocks
+    private AdminControllerImpl adminController;
+    
+    private ObjectMapper objectMapper;
+    
     private LoginRequest validLoginRequest;
     private LoginRequest invalidLoginRequest;
 
     @BeforeEach
     public void setUp() {
+        // Initialize mockito annotations
+        MockitoAnnotations.openMocks(this);
+        
+        // Set up ObjectMapper
+        objectMapper = new ObjectMapper();
+        
+        // Configure mockMvc with standaloneSetup (without loading full Spring context)
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(adminController)
+                .build();
+            
         // Valid credentials setup
         validLoginRequest = new LoginRequest();
         validLoginRequest.setEmail("villagecart@gmail.com");

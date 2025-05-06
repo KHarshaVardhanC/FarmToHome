@@ -42,15 +42,15 @@ function CustomerHomePage() {
   useEffect(() => {
     // 1. Add a new history entry to ensure we have control
     window.history.pushState({ isCustomerHome: true }, '', window.location.href);
-  
+
     const handleBackButton = (event) => {
       console.log('Back navigation detected', event);
-      
+
       // 2. Only intercept if we're actually on the customer home page
       if (window.location.pathname.includes('/customer-home')) {
         // 3. Prevent default back navigation
         event.preventDefault();
-        
+
         // 4. Show confirmation dialog
         if (window.confirm('Are you sure you want to logout?')) {
           // Clear user data
@@ -64,17 +64,17 @@ function CustomerHomePage() {
         }
       }
     };
-  
+
     // 6. Add the listener with proper options
     window.addEventListener('popstate', handleBackButton, { passive: false });
-  
+
     return () => {
       // 7. Clean up the listener
       window.removeEventListener('popstate', handleBackButton);
     };
   }, [navigate]);
 
-  
+
   useEffect(() => {
     const fetchCustomerDetails = async () => {
       const id = localStorage.getItem('customerId');
@@ -161,42 +161,42 @@ function CustomerHomePage() {
       alert("Sorry, this product is out of stock");
       return;
     }
-    
+
     const customerId = localStorage.getItem("customerId");
-    
+
     // First check if product already exists in cart
     const existingCartItems = [...cartItems];
     const existingItemIndex = existingCartItems.findIndex(
-      item => item.productId === product.productId || 
-              (item.orderId && item.orderStatus && 
-               item.orderStatus.toLowerCase() === "incart" && 
-               parseInt(item.productId) === parseInt(product.productId))
+      item => item.productId === product.productId ||
+        (item.orderId && item.orderStatus &&
+          item.orderStatus.toLowerCase() === "incart" &&
+          parseInt(item.productId) === parseInt(product.productId))
     );
-    
+
     if (existingItemIndex >= 0) {
       // Product exists in cart - update quantity instead of adding new item
       try {
         // Get the existing order ID
         const orderId = existingCartItems[existingItemIndex].orderId;
         const newQuantity = existingCartItems[existingItemIndex].orderQuantity + 1;
-        
+
         // Check if requested quantity is available
         if (newQuantity > product.productQuantity) {
           alert(`Sorry, only ${product.productQuantity} ${product.productQuantityType || 'kg'} available in stock`);
           return;
         }
-        
+
         // Update the quantity on the server
         const response = await axios.put(`http://localhost:8080/order/updateQuantity/${orderId}`, {
           orderQuantity: newQuantity
         });
-        
+
         if (response.status === 200) {
           // Update local state
           const updatedCartItems = [...existingCartItems];
           updatedCartItems[existingItemIndex].orderQuantity = newQuantity;
           setCartItems(updatedCartItems);
-          
+
           // Also update localStorage
           if (!customerId) {
             localStorage.setItem("cart", JSON.stringify(updatedCartItems));
@@ -374,26 +374,26 @@ function CustomerHomePage() {
               </div>
               <div className="product-info">
                 <h3>{product.productName}</h3>
-                
+
                 {/* Truncated description with See more option */}
                 <div className="product-description-container">
                   <p className={`product-description ${expandedDescriptions[product.productId] ? 'expanded' : ''}`}>
-                    {expandedDescriptions[product.productId] || !needsSeeMore(product.productDescription) 
-                      ? product.productDescription 
+                    {expandedDescriptions[product.productId] || !needsSeeMore(product.productDescription)
+                      ? product.productDescription
                       : `${product.productDescription.substring(0, 30)}...`}
                   </p>
                   {needsSeeMore(product.productDescription) && (
-                    <button 
-                      className="see-more-btn" 
+                    <button
+                      className="see-more-btn"
                       onClick={(e) => toggleDescription(e, product.productId)}
                     >
                       {expandedDescriptions[product.productId] ? 'See less' : 'See more'}
                     </button>
                   )}
                 </div>
-                
+
                 <p className="price">₹{product.productPrice}/{product.productQuantityType || 'kg'}</p>
-                
+
                 {/* Display stock information with quantity type */}
                 {product.productQuantity > 0 && (
                   <p className={`product-quantity ${isLowStock(product.productQuantity) ? 'low-stock' : ''}`}>
@@ -401,7 +401,7 @@ function CustomerHomePage() {
                     {product.productQuantity} {product.productQuantityType || 'kg'} available
                   </p>
                 )}
-                
+
                 <div className="button-container">
                   <button
                     className={`add-to-cart-btn ${product.productQuantity === 0 ? 'disabled' : ''}`}

@@ -438,6 +438,19 @@ export const adminApi = {
     }
   }
 };
+// In your utils/api.js file
+export const fetchProductReviews = async (productId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/rating/product/${productId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching product reviews:', error);
+    throw error;
+  }
+};
 
 export const {
   fetchSellers,
