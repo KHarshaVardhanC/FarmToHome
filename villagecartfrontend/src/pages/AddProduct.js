@@ -11,7 +11,7 @@ const AddProduct = () => {
   const [error, setError] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const sellerId = localStorage.getItem('sellerId');
+  const sellerId = localStorage.getItem('esellerId');
 
   const [productData, setProductData] = useState({
     productName: '',
