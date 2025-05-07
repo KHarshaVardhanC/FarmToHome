@@ -477,7 +477,7 @@ public class ProductServiceTest {
         // Arrange
         List<Product> products = new ArrayList<>();
         products.add(sampleProduct);
-        when(productRepository.findByProductCategory("Fruits")).thenReturn(products);
+        when(productRepository.findByProductCategoryContainingIgnoreCase("Fruits")).thenReturn(products);
 
         // Act
         List<Product> result = productService.getCategoryProducts("Fruits");

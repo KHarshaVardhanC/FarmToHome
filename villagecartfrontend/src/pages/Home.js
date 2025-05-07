@@ -285,6 +285,17 @@ const Home = () => {
           <p className="card-text mb-1">
             <strong>Price: ₹{product.productPrice} /{product.productQuantityType || 'kg'}</strong>
           </p>
+
+          {/* Add discount information */}
+          {product.discountPercentage > 0 && product.minOrderQuantity > 0 && (
+            <p className="card-text mb-1 text-success">
+              <small>
+                <i className="fas fa-tag me-1"></i>
+                {product.discountPercentage}% off on min. order of {product.minOrderQuantity} {product.productQuantityType || 'kg'}
+              </small>
+            </p>
+          )}
+
           {productRatings[product.productId] ? (
             <p className="card-text mb-1">
               <span>{renderStars(parseFloat(productRatings[product.productId].average))}</span>
