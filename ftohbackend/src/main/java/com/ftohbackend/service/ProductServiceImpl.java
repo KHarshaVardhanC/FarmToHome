@@ -59,6 +59,8 @@ public class ProductServiceImpl implements ProductService {
 			product.setProductDescription(productRequest.getProductDescription());
 			product.setProductCategory(productRequest.getProductCategory());
 			product.setProductQuantityType(productRequest.getProductQuantityType());
+			product.setDiscountPercentage(productRequest.getDiscountPercentage());
+			product.setMinOrderQuantity(productRequest.getMinOrderQuantity());
 
 			try {
 				product.setSeller(sellerService.getSeller(productRequest.getSellerId()));
