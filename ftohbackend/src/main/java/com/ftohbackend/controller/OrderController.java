@@ -24,12 +24,13 @@ public interface OrderController {
 
 	String updateOrderStatus(Integer orderId, String orderStatus) throws OrderException, Exception;
 
-
 	CustomerOrderDTO getOrderInvoice(Integer orderId) throws Exception, OrderException;
 
 	List<CustomerOrderDTO> getCartOrdersByCustomerId(Integer customerId) throws OrderException, Exception;
 
 	String updateOrderQuantity(Integer orderId, Double orderQuantity);
 
-	
+
+	String addOrderReport(com.ftohbackend.dto.OrderReport orderReport) throws Exception;
+
 }
