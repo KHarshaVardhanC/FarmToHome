@@ -1,12 +1,18 @@
 package com.ftohbackend.service;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.ftohbackend.dto.CustomerOrderDTO;
+import com.ftohbackend.dto.OrderReport;
 import com.ftohbackend.exception.OrderException;
 import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Customer;
@@ -25,7 +31,8 @@ public class OrderServiceImpl implements OrderService {
 	private OrderRepository orderRepository;
 	@Autowired
 	private CustomerRepository customerRepository;
-
+	@Autowired
+	Cloudinary cloudinary;
 	@Autowired
 	private SellerRepository sellerRepository;
 
@@ -224,4 +231,25 @@ public class OrderServiceImpl implements OrderService {
 		
 		return "kk";
 	}
+
+	@Override
+	public String addOrderReport(OrderReport orderReport) throws Exception {
+		// TODO Auto-generated method stub
+		Order order=orderRepository.findById(orderReport.getOrderId()).get();
+		order.setOrderReportImageUrl(uploadImage(orderReport.getOrderImage()));
+		order.setReportReason(orderReport.getReportReason());
+		
+		orderRepository.save(order);
+		return "Order Reported Thanks for Reporting";
+	}
+	
+	private String uploadImage(MultipartFile file) throws IOException {
+		try {
+			Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+			return uploadResult.get("url").toString();
+		} catch (IOException e) {
+			throw new IOException("Failed to upload image to Cloudinary", e);
+		}
+	}
+	
 }

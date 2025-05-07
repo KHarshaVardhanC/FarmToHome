@@ -5,9 +5,11 @@ import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ftohbackend.dto.CustomerOrderDTO;
 import com.ftohbackend.dto.OrderDTO;
+import com.ftohbackend.dto.OrderReport;
 import com.ftohbackend.dto.SellerOrderDTO;
 import com.ftohbackend.exception.OrderException;
 import com.ftohbackend.model.Customer;
@@ -25,6 +28,7 @@ import com.ftohbackend.model.Product;
 import com.ftohbackend.model.Seller;
 import com.ftohbackend.service.CustomerService;
 import com.ftohbackend.service.OrderService;
+import com.ftohbackend.service.OrderServiceImpl;
 import com.ftohbackend.service.ProductService;
 import com.ftohbackend.service.RatingService;
 
@@ -210,5 +214,12 @@ public class OrderControllerImpl implements OrderController {
 	@GetMapping("/invoice/{orderId}")
 	public CustomerOrderDTO getOrderInvoice(@PathVariable Integer orderId) throws Exception, OrderException {
 		return orderService.getOrderInvoice(orderId);
+	}
+	
+	@Override
+	@PostMapping(value= "/report", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public String addOrderReport(@ModelAttribute OrderReport orderReport) throws Exception
+	{
+		return orderService.addOrderReport(orderReport);
 	}
 }
