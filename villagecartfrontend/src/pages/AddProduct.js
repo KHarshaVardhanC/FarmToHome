@@ -156,7 +156,7 @@ const AddProduct = () => {
                         value={productData.productQuantity} 
                         onChange={handleChange} 
                         required 
-                        min="0"
+                        min="1"
                         style={{ backgroundColor: 'white', color: '#212529' }}
                       />
                       <select 
@@ -216,6 +216,7 @@ const AddProduct = () => {
                       value={productData.minOrderQuantity} 
                       onChange={handleChange} 
                       placeholder="e.g. 10"
+                      min="0"
                       style={{ backgroundColor: 'white', color: '#212529' }}
                     />
                   </div>
@@ -229,6 +230,7 @@ const AddProduct = () => {
                       value={productData.discountPercentage} 
                       onChange={handleChange} 
                       placeholder="e.g. 5"
+                      min="0"
                       style={{ backgroundColor: 'white', color: '#212529' }}
                     />
                   </div>

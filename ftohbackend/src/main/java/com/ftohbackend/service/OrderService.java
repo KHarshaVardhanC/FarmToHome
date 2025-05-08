@@ -3,6 +3,7 @@ package com.ftohbackend.service;
 import java.util.List;
 
 import com.ftohbackend.dto.CustomerOrderDTO;
+import com.ftohbackend.dto.OrderReport;
 import com.ftohbackend.exception.OrderException;
 import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Order;
@@ -26,6 +27,8 @@ public interface OrderService {
 	CustomerOrderDTO getOrderInvoice(Integer orderId) throws Exception;
 
 	String updateOrderQuantity(Integer orderId, Double orderQuantity);
+
+	String addOrderReport(OrderReport orderReport) throws Exception;
 
 
 }
