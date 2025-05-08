@@ -1,7 +1,5 @@
 package com.ftohbackend.model;
 
-import java.util.List;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,6 +38,9 @@ public class Order {
 
 	@Column(nullable = false)
 	public Double orderQuantity;
+	
+	String orderReportImageUrl;
+	String reportReason;
 	
 	
 	@OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

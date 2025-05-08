@@ -129,7 +129,12 @@ function CartPage() {
           `http://localhost:8080/order/order/${item.orderId}/ordered`
         );
 
-        if (response.status === 200 || response.status === 201) {
+        console.log(response.status);
+        console.log(response.status);
+        console.log(response.status);
+        console.log(response.data);
+        // console.log(response.)
+        if ((response.status === 200 || response.status === 201) && response.data !== 'Quantity Exceeded! \n  Order failed \n try Again' ) {
           // Remove from cart items in state
           setCartItems(prev => prev.filter(cartItem => cartItem.orderId !== item.orderId));
 
@@ -148,7 +153,7 @@ function CartPage() {
         setShowOrderPopup(false);
         navigate("/my-orders");
       } else {
-        alert("Some orders failed to place. Please check console.");
+        alert("Order Quantity Exceeded! \n  Order failed \n try Again");
       }
     } catch (error) {
       console.error("Error placing order:", error);
