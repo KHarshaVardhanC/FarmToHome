@@ -43,8 +43,6 @@ public class Order {
 	String reportReason;
 	
 	
-	
-	
 	@OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	Rating rating;
 
