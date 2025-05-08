@@ -21,6 +21,12 @@ function CustomerHomePage() {
   const [showModal, setShowModal] = useState(false);
   const [productDetails, setProductDetails] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  // New state for the success message
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  // New state for special offer modal
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerProduct, setOfferProduct] = useState(null);
 
   const categories = [
     { name: 'Vegetables', image: '/images/vegetables.jpg' },
@@ -109,6 +115,17 @@ function CustomerHomePage() {
     }
   }, []);
 
+  // Hide success message after 3 seconds
+  useEffect(() => {
+    if (showSuccessMessage) {
+      const timer = setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessMessage]);
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -155,17 +172,7 @@ function CustomerHomePage() {
     }
   };
 
-  // Helper function to find a product in the cart
-  const findProductInCart = (productId) => {
-    return cartItems.find(item => 
-      item.productId === productId || 
-      (parseInt(item.productId) === parseInt(productId) && 
-      item.orderStatus && 
-      item.orderStatus.toLowerCase() === "incart")
-    );
-  };
-
-  const addToCart = async (product) => {
+  const addToCart = async (product, quantity = 1) => {
     // Check if product is in stock
     if (product.productQuantity <= 0) {
       alert("Sorry, this product is out of stock");
@@ -188,7 +195,8 @@ function CustomerHomePage() {
       try {
         // Get the existing order ID
         const orderId = existingCartItems[existingItemIndex].orderId;
-        const newQuantity = existingCartItems[existingItemIndex].orderQuantity + 1;
+        const currentQuantity = existingCartItems[existingItemIndex].orderQuantity;
+        const newQuantity = currentQuantity + quantity;
 
         // Check if requested quantity is available
         if (newQuantity > product.productQuantity) {
@@ -211,6 +219,10 @@ function CustomerHomePage() {
           if (!customerId) {
             localStorage.setItem("cart", JSON.stringify(updatedCartItems));
           }
+          
+          // Show success message for quantity update
+          setSuccessMessage(`${product.productName} quantity updated in cart!`);
+          setShowSuccessMessage(true);
         }
       } catch (error) {
         console.error("Error updating cart item quantity:", error);
@@ -219,7 +231,7 @@ function CustomerHomePage() {
       // Product doesn't exist in cart - add new item
       const orderData = {
         productId: product.productId,
-        orderQuantity: 1, // Set default to 1
+        orderQuantity: quantity, // Use the passed quantity parameter
         customerId: customerId ? parseInt(customerId) : null,
         orderStatus: "IN_CART"
       };
@@ -239,7 +251,7 @@ function CustomerHomePage() {
             productPrice: product.productPrice,
             productQuantityType: product.productQuantityType,
             imageUrl: product.imageUrl,
-            orderQuantity: 1,
+            orderQuantity: quantity,
             orderStatus: "Incart" // Match the case from API response
           };
 
@@ -252,6 +264,10 @@ function CustomerHomePage() {
             localStorage.setItem("cart", JSON.stringify(updatedCartItems));
           }
 
+          // Show success message for new item
+          setSuccessMessage(`${product.productName} added to cart successfully!`);
+          setShowSuccessMessage(true);
+
         } else {
           console.error("Failed to add to cart");
           alert("Failed to add item to cart. Please try again.");
@@ -260,73 +276,6 @@ function CustomerHomePage() {
         console.error("Error adding to cart:", error);
         alert("Error adding item to cart. Please try again.");
       }
-    }
-  };
-
-  // New function to update cart item quantity
-  const updateCartItemQuantity = async (cartItem, product, newQuantity) => {
-    // Validate the new quantity
-    if (newQuantity <= 0) {
-      // If quantity is 0 or less, remove the item from cart
-      await removeFromCart(cartItem);
-      return;
-    }
-
-    // Check if requested quantity is available
-    if (newQuantity > product.productQuantity) {
-      alert(`Sorry, only ${product.productQuantity} ${product.productQuantityType || 'kg'} available in stock`);
-      return;
-    }
-
-    const customerId = localStorage.getItem("customerId");
-
-    try {
-      // Update the quantity on the server
-      const response = await axios.put(`http://localhost:8080/order/updateQuantity/${cartItem.orderId}`, {
-        orderQuantity: newQuantity
-      });
-
-      if (response.status === 200) {
-        // Update local state
-        const updatedCartItems = cartItems.map(item => {
-          if (item.orderId === cartItem.orderId) {
-            return { ...item, orderQuantity: newQuantity };
-          }
-          return item;
-        });
-        
-        setCartItems(updatedCartItems);
-
-        // Also update localStorage for non-logged in users
-        if (!customerId) {
-          localStorage.setItem("cart", JSON.stringify(updatedCartItems));
-        }
-      }
-    } catch (error) {
-      console.error("Error updating cart item quantity:", error);
-      alert("Error updating cart item. Please try again.");
-    }
-  };
-
-  // New function to remove item from cart
-  const removeFromCart = async (cartItem) => {
-    const customerId = localStorage.getItem("customerId");
-
-    try {
-      // Delete the order on the server
-      await axios.delete(`http://localhost:8080/order/${cartItem.orderId}`);
-      
-      // Update local state
-      const updatedCartItems = cartItems.filter(item => item.orderId !== cartItem.orderId);
-      setCartItems(updatedCartItems);
-
-      // Also update localStorage for non-logged in users
-      if (!customerId) {
-        localStorage.setItem("cart", JSON.stringify(updatedCartItems));
-      }
-    } catch (error) {
-      console.error("Error removing item from cart:", error);
-      alert("Error removing item from cart. Please try again.");
     }
   };
 
@@ -362,6 +311,27 @@ function CustomerHomePage() {
     setProductDetails(null);
   };
 
+  // New function to open the special offer modal
+  const openOfferModal = (e, product) => {
+    e.stopPropagation(); // Prevent the card click event
+    setOfferProduct(product);
+    setShowOfferModal(true);
+  };
+
+  // New function to close the special offer modal
+  const closeOfferModal = () => {
+    setShowOfferModal(false);
+    setOfferProduct(null);
+  };
+
+  // New function to add the minimum quantity to cart
+  const addMinimumQuantityToCart = () => {
+    if (offerProduct && offerProduct.minOrderQuantity) {
+      addToCart(offerProduct, offerProduct.minOrderQuantity);
+      closeOfferModal();
+    }
+  };
+
   const carouselSettings = {
     dots: true,
     infinite: true,
@@ -390,6 +360,16 @@ function CustomerHomePage() {
     return description && description.length > 30; // Adjust character count as needed
   };
 
+  // Function to check if a product has a special offer
+  const hasSpecialOffer = (product) => {
+    return product.minOrderQuantity > 0 && product.discountPercentage > 0;
+  };
+
+  // Function to calculate the discounted price
+  const calculateDiscountedPrice = (price, discountPercentage) => {
+    return (price - (price * discountPercentage / 100)).toFixed(2);
+  };
+
   return (
     <div className="customer-home">
       <Navbar
@@ -398,6 +378,16 @@ function CustomerHomePage() {
         onSearch={handleSearch}
         userName={localStorage.getItem('userName')}
       />
+
+      {/* Success message popup */}
+      {showSuccessMessage && (
+        <div className="success-message-popup">
+          <div className="success-message-content">
+            <span className="success-icon">✓</span>
+            {successMessage}
+          </div>
+        </div>
+      )}
 
       <div className="category-carousel-container">
         <Slider {...carouselSettings}>
@@ -437,98 +427,91 @@ function CustomerHomePage() {
         )}
 
         <div className="products-grid">
-          {filteredProducts.map((product) => {
-            // Check if product is in cart
-            const cartItem = findProductInCart(product.productId);
-            
-            return (
-              <div
-                key={product.productId}
-                className={`product-card ${product.productQuantity === 0 ? 'out-of-stock' : ''}`}
-                onClick={() => handleProductClick(product)}
-              >
-                <div className="product-image">
-                  <img src={product.imageUrl} alt={product.productName} />
-                  {product.productQuantity === 0 && (
-                    <div className="out-of-stock-overlay">Out of Stock</div>
+          {filteredProducts.map((product) => (
+            <div
+              key={product.productId}
+              className={`product-card ${product.productQuantity === 0 ? 'out-of-stock' : ''}`}
+              onClick={() => handleProductClick(product)}
+            >
+              <div className="product-image">
+                <img src={product.imageUrl} alt={product.productName} />
+                {product.productQuantity === 0 && (
+                  <div className="out-of-stock-overlay">Out of Stock</div>
+                )}
+                {hasSpecialOffer(product) && (
+                  <div 
+                    className="offer-badge"
+                    onClick={(e) => openOfferModal(e, product)}
+                  >
+                    <div>SPECIAL OFFER!</div>
+                    <div className="offer-details">Buy {product.minOrderQuantity} Get {product.discountPercentage}% Off</div>
+                  </div>
+                )}
+              </div>
+              <div className="product-info">
+                <h3>{product.productName}</h3>
+
+                {/* Truncated description with See more option */}
+                <div className="product-description-container">
+                  <p className={`product-description ${expandedDescriptions[product.productId] ? 'expanded' : ''}`}>
+                    {expandedDescriptions[product.productId] || !needsSeeMore(product.productDescription)
+                      ? product.productDescription
+                      : `${product.productDescription.substring(0, 30)}...`}
+                  </p>
+                  {needsSeeMore(product.productDescription) && (
+                    <button
+                      className="see-more-btn"
+                      onClick={(e) => toggleDescription(e, product.productId)}
+                    >
+                      {expandedDescriptions[product.productId] ? 'See less' : 'See more'}
+                    </button>
                   )}
                 </div>
-                <div className="product-info">
-                  <h3>{product.productName}</h3>
 
-                  {/* Truncated description with See more option */}
-                  <div className="product-description-container">
-                    <p className={`product-description ${expandedDescriptions[product.productId] ? 'expanded' : ''}`}>
-                      {expandedDescriptions[product.productId] || !needsSeeMore(product.productDescription)
-                        ? product.productDescription
-                        : `${product.productDescription.substring(0, 30)}...`}
-                    </p>
-                    {needsSeeMore(product.productDescription) && (
-                      <button
-                        className="see-more-btn"
-                        onClick={(e) => toggleDescription(e, product.productId)}
-                      >
-                        {expandedDescriptions[product.productId] ? 'See less' : 'See more'}
-                      </button>
-                    )}
+                {/* Price with discount if applicable */}
+                {hasSpecialOffer(product) ? (
+                  <div className="discount-price">
+                    <span className="original-price">₹{product.productPrice}/{product.productQuantityType || 'kg'}</span>
+                    <span className="price">₹{calculateDiscountedPrice(product.productPrice, product.discountPercentage)}/{product.productQuantityType || 'kg'}</span>
+                    <span className="discount-percentage">{product.discountPercentage}% OFF</span>
                   </div>
-
+                ) : (
                   <p className="price">₹{product.productPrice}/{product.productQuantityType || 'kg'}</p>
+                )}
 
-                  {/* Display stock information with quantity type */}
-                  {product.productQuantity > 0 && (
-                    <p className={`product-quantity ${isLowStock(product.productQuantity) ? 'low-stock' : ''}`}>
-                      {isLowStock(product.productQuantity) ? 'Only ' : ''}
-                      {product.productQuantity} {product.productQuantityType || 'kg'} available
-                    </p>
-                  )}
+                {/* Display stock information with quantity type */}
+                {product.productQuantity > 0 && (
+                  <p className={`product-quantity ${isLowStock(product.productQuantity) ? 'low-stock' : ''}`}>
+                    {isLowStock(product.productQuantity) ? 'Only ' : ''}
+                    {product.productQuantity} {product.productQuantityType || 'kg'} available
+                  </p>
+                )}
 
-                  <div className="button-container" onClick={(e) => e.stopPropagation()}>
-                    {cartItem ? (
-                      <div className="quantity-control">
-                        <button 
-                          className="quantity-btn" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateCartItemQuantity(cartItem, product, cartItem.orderQuantity - 1);
-                          }}
-                        >
-                          -
-                        </button>
-                        <span className="quantity-display">{cartItem.orderQuantity}</span>
-                        <button 
-                          className="quantity-btn" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateCartItemQuantity(cartItem, product, cartItem.orderQuantity + 1);
-                          }}
-                          disabled={cartItem.orderQuantity >= product.productQuantity}
-                        >
-                          +
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        className={`add-to-cart-btn ${product.productQuantity === 0 ? 'disabled' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (product.productQuantity > 0) {
-                            addToCart(product);
-                          }
-                        }}
-                        disabled={product.productQuantity === 0}
-                      >
-                        {product.productQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
-                      </button>
-                    )}
-                  </div>
+                <div className="button-container">
+                  <button
+                    className={`add-to-cart-btn ${product.productQuantity === 0 ? 'disabled' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (product.productQuantity > 0) {
+                        if (hasSpecialOffer(product)) {
+                          openOfferModal(e, product);
+                        } else {
+                          addToCart(product);
+                        }
+                      }
+                    }}
+                    disabled={product.productQuantity === 0}
+                  >
+                    {product.productQuantity > 0 ? (hasSpecialOffer(product) ? 'View Offer' : 'Add to Cart') : 'Out of Stock'}
+                  </button>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
 
+      {/* Product Detail Modal */}
       {showModal && selectedProduct && productDetails && (
         <ProductDetailModal
           product={selectedProduct}
@@ -536,23 +519,41 @@ function CustomerHomePage() {
           onClose={closeModal}
           onAddToCart={() => {
             if (selectedProduct.productQuantity > 0) {
-              const cartItem = findProductInCart(selectedProduct.productId);
-              if (cartItem) {
-                updateCartItemQuantity(cartItem, selectedProduct, cartItem.orderQuantity + 1);
+              if (hasSpecialOffer(selectedProduct)) {
+                closeModal();
+                setOfferProduct(selectedProduct);
+                setShowOfferModal(true);
               } else {
                 addToCart(selectedProduct);
+                closeModal();
               }
-              closeModal();
-            }
-          }}
-          cartItem={findProductInCart(selectedProduct.productId)}
-          updateCartItemQuantity={(newQuantity) => {
-            const cartItem = findProductInCart(selectedProduct.productId);
-            if (cartItem) {
-              updateCartItemQuantity(cartItem, selectedProduct, newQuantity);
             }
           }}
         />
+      )}
+
+      {/* Special Offer Modal */}
+      {showOfferModal && offerProduct && (
+        <div className="special-offer-modal" onClick={closeOfferModal}>
+          <div className="special-offer-content" onClick={(e) => e.stopPropagation()}>
+            <div className="offer-header">
+              <span className="offer-icon">🎁</span>
+              <h2 className="offer-title">Special Offer</h2>
+            </div>
+            <div className="offer-description">
+              <p>We have a special discount for {offerProduct.productName}!</p>
+            </div>
+            <div className="offer-highlight">
+              <p>Buy <strong>{offerProduct.minOrderQuantity} {offerProduct.productQuantityType || 'kg'}</strong> and get <strong>{offerProduct.discountPercentage}% discount</strong>!</p>
+              <p>Original price: <strong>₹{offerProduct.productPrice}/{offerProduct.productQuantityType || 'kg'}</strong></p>
+              <p>Discounted price: <strong>₹{calculateDiscountedPrice(offerProduct.productPrice, offerProduct.discountPercentage)}/{offerProduct.productQuantityType || 'kg'}</strong></p>
+            </div>
+            <div className="offer-actions">
+              <button className="close-offer-btn" onClick={closeOfferModal}>No Thanks</button>
+              <button className="add-offer-btn" onClick={addMinimumQuantityToCart}>Add to Cart</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

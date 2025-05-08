@@ -10,9 +10,26 @@ function MyOrders() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const customerId = localStorage.getItem('customerId');
+  
+  // State for report modal
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportData, setReportData] = useState({
+    orderId: '',
+    reason: '',
+    image: null,
+    previewImage: null
+  });
+  
+  // State to track reported orders
+  const [reportedOrders, setReportedOrders] = useState([]);
 
   useEffect(() => {
     fetchOrders();
+    // Load reported orders from localStorage if available
+    const savedReportedOrders = localStorage.getItem('reportedOrders');
+    if (savedReportedOrders) {
+      setReportedOrders(JSON.parse(savedReportedOrders));
+    }
   }, []);
 
   const fetchOrders = async () => {
@@ -81,31 +98,87 @@ function MyOrders() {
     navigate(`/review/${orderId}`);
   };
 
-  // const handleBuyAgain = async (order) => {
-  //   try {
-  //     // Create the order object to send to the backend
-  //     const orderData = {
-  //        // The backend will assign a proper ID
-  //       productId: order.productId,
-  //       orderQuantity: order.orderQuantity,
-  //       customerId: customerId,
-  //       orderStatus: "Incart" // This should match what your backend expects for cart items
-  //     };
+  // Report functions
+  const openReportModal = (orderId) => {
+    setReportData({
+      orderId: orderId,
+      reason: '',
+      image: null,
+      previewImage: null
+    });
+    setShowReportModal(true);
+  };
 
-  //     // Make the API call to add the item to cart
-  //     const response = await axios.post('http://localhost:8080/order/add', orderData);
-      
-  //     if (response.status === 200 || response.status === 201) {
-  //       alert(`${order.productName} added to your cart!`);
-  //       navigate('/cart');
-  //     } else {
-  //       alert('Failed to add product to cart. Please try again.');
-  //     }
-  //   } catch (err) {
-  //     console.error('Error adding product to cart:', err);
-  //     alert('Failed to add product to cart. Please try again.');
-  //   }
-  // };
+  const closeReportModal = () => {
+    setShowReportModal(false);
+    setReportData({
+      orderId: '',
+      reason: '',
+      image: null,
+      previewImage: null
+    });
+  };
+
+  const handleReasonChange = (e) => {
+    setReportData({ ...reportData, reason: e.target.value });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setReportData({
+        ...reportData,
+        image: file,
+        previewImage: URL.createObjectURL(file)
+      });
+    }
+  };
+
+  const handleSubmitReport = async (e) => {
+    e.preventDefault();
+    
+    if (!reportData.reason.trim()) {
+      alert('Please provide a reason for your report');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('orderId', reportData.orderId);
+      formData.append('reportReason', reportData.reason);
+      if (reportData.image) {
+        formData.append('orderImage', reportData.image);
+      }
+      formData.append('customerId', customerId);
+
+      const response = await axios.post('http://localhost:8080/order/report', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        // Add order ID to reported orders list
+        const updatedReportedOrders = [...reportedOrders, reportData.orderId];
+        setReportedOrders(updatedReportedOrders);
+        
+        // Save reported orders to localStorage for persistence
+        localStorage.setItem('reportedOrders', JSON.stringify(updatedReportedOrders));
+        
+        alert('Report submitted successfully');
+        closeReportModal();
+        
+        // Refresh orders and navigate back to the orders page
+        fetchOrders();
+        navigate('/my-orders');
+      } else {
+        alert('Failed to submit report. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error submitting report:', err);
+      alert('Failed to submit report. Please try again.');
+    }
+  };
 
   if (loading) return (
     <div className="my-orders-page">
@@ -180,6 +253,26 @@ function MyOrders() {
                     Get Invoice
                   </button>
 
+                  {/* Report button logic */}
+                  {order.orderStatus === 'Delivered' && !reportedOrders.includes(order.orderId) && (
+                    <button
+                      className="report-btn"
+                      onClick={() => openReportModal(order.orderId)}
+                    >
+                      Report Issue
+                    </button>
+                  )}
+                  
+                  {/* Reported button (disabled) */}
+                  {order.orderStatus === 'Delivered' && reportedOrders.includes(order.orderId) && (
+                    <button
+                      className="report-btn reported-btn"
+                      disabled
+                    >
+                      Reported
+                    </button>
+                  )}
+
                   {/* Write a Review button only appears for delivered orders that haven't been rated yet */}
                   {order.orderStatus === 'Delivered' && order.orderRatingStatus !== 'Rated' && (
                     <button
@@ -199,22 +292,56 @@ function MyOrders() {
                       Already Reviewed
                     </button>
                   )}
-
-                  {/* Buy Again button only appears for delivered orders */}
-                  {/* {order.orderStatus === 'Delivered' && (
-                    <button
-                      className="reorder-btn"
-                      onClick={() => handleBuyAgain(order)}
-                    >
-                      Buy Again
-                    </button>
-                  )} */}
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div className="report-modal-overlay">
+          <div className="report-modal">
+            <div className="report-modal-header">
+              <h2>Report Issue with Order #{reportData.orderId}</h2>
+              <button className="close-btn" onClick={closeReportModal}>&times;</button>
+            </div>
+            <form className="report-form" onSubmit={handleSubmitReport}>
+              <div className="form-group">
+                <label htmlFor="report-reason">Reason for Report:</label>
+                <textarea
+                  id="report-reason"
+                  value={reportData.reason}
+                  onChange={handleReasonChange}
+                  placeholder="Please describe the issue with your order..."
+                  required
+                ></textarea>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="report-image">Upload Image (Optional):</label>
+                <input
+                  type="file"
+                  id="report-image"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+                {reportData.previewImage && (
+                  <div className="image-preview">
+                    <img src={reportData.previewImage} alt="Preview" />
+                  </div>
+                )}
+              </div>
+              
+              <div className="form-actions">
+                <button type="button" className="cancel-btn" onClick={closeReportModal}>Cancel</button>
+                <button type="submit" className="submit-btn">Submit Report</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
