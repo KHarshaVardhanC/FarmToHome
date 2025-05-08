@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ftohbackend.dto.CustomerOrderDTO;
+import com.ftohbackend.dto.MailBody;
 import com.ftohbackend.exception.OrderException;
 import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Customer;
@@ -21,6 +22,8 @@ import com.ftohbackend.repository.SellerRepository;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
+	@Autowired
+	private EmailService emailService;	
 	@Autowired
 	private OrderRepository orderRepository;
 	@Autowired
@@ -136,44 +139,110 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public String updateOrderStatus(Integer orderId, String newStatus)
-			throws Exception, OrderException, ProductException {
-		if (orderId == null) {
-			throw new OrderException("Order ID cannot be null");
-		}
+	        throws Exception, OrderException, ProductException {
+	    
+	    if (orderId == null) {
+	        throw new OrderException("Order ID cannot be null");
+	    }
 
-		Order order = orderRepository.findById(orderId)
-				.orElseThrow(() -> new OrderException("Order not found with ID: " + orderId));
+	    Order order = orderRepository.findById(orderId)
+	            .orElseThrow(() -> new OrderException("Order not found with ID: " + orderId));
 
-		// Validate the new status
-		if (!isValidOrderStatus(newStatus)) {
-			throw new OrderException("Invalid order status: " + newStatus);
-		}
-		if (newStatus.equalsIgnoreCase("ordered") || newStatus.equalsIgnoreCase("Ordered")) {
+	    // Validate the new status
+	    if (!isValidOrderStatus(newStatus)) {
+	        throw new OrderException("Invalid order status: " + newStatus);
+	    }
+	    
+	    if (newStatus.equalsIgnoreCase("ordered") || newStatus.equalsIgnoreCase("Ordered")) {
+	        Product product = order.getProduct();
+	        
+	        // Debug step 1: Verify product and seller are not null
+	        System.out.println("Product: " + (product != null ? product.getProductId() : "null"));
+	        
+	        if (product != null && product.getSeller() != null) {
+	            System.out.println("Seller: " + product.getSeller().getSellerEmail());
+	        } else {
+	            System.out.println("Seller is null or has no email");
+	            // Handle missing seller data
+	            if (product.getProductQuantity() >= order.getOrderQuantity()) {
+	                product.setProductQuantity(product.getProductQuantity() - order.getOrderQuantity());
+	                productService.updateProduct(product.getProductId(), product);
+	                order.setOrderStatus(newStatus);
+	                orderRepository.save(order);
+	                return "Order Status updated Successfully (no email sent - missing seller data)";
+	            }
+	            return "Quantity Exceeded! Order failed";
+	        }
 
-//        System.out.println(order.getOrderStatus());
-			Product product = order.getProduct();
+	        if (product.getProductQuantity() >= order.getOrderQuantity()) {
+	            product.setProductQuantity(product.getProductQuantity() - order.getOrderQuantity());
+	            productService.updateProduct(product.getProductId(), product);
+	            order.setOrderStatus(newStatus);
+	            orderRepository.save(order);
 
-			if (product.getProductQuantity() >= order.getOrderQuantity()) {
+	            try {
+	                String sellerEmail = product.getSeller().getSellerEmail();
+	                // Debug step 2: Print email details
+	                System.out.println("Attempting to send email to: " + sellerEmail);
+	                
+	                String subject = "New Order Received";
+	                String body = "You have received a new order for your product: " + product.getProductName()
+	                        + "\nOrder ID: " + order.getOrderId()
+	                        + "\nQuantity: " + order.getOrderQuantity();
 
-				product.setProductQuantity(product.getProductQuantity() - order.getOrderQuantity());
-				productService.updateProduct(product.getProductId(), product);
-				order.setOrderStatus(newStatus);
-				orderRepository.save(order);
-				return "Order Status updated Succesfully " + newStatus;
-			} else {
-				order.setOrderStatus("failed");
-				orderRepository.save(order);
-				return "Quantity Exceeded! \n  Order failed \n try Again";
-			}
-		} else if (newStatus.equalsIgnoreCase("delivered") || newStatus.equalsIgnoreCase("Delivered")) {
-			order.setOrderStatus(newStatus);
-			orderRepository.save(order);
-			return "Ordered Delivered Successfully";
+	                MailBody mail = new MailBody(sellerEmail, subject, body);
+	                emailService.sendMail(mail);
+	                System.out.println("Email sending attempted");
+	                
+	                return "Order Status updated Successfully";
+	            } catch (Exception e) {
+	                // Debug step 3: Catch and log any exceptions during email sending
+	                System.out.println("Failed to send email: " + e.getMessage());
+	                e.printStackTrace();
+	                return "Order Status updated Successfully (but email failed: " + e.getMessage() + ")";
+	            }
+	        } else {
+	            order.setOrderStatus("failed");
+	            orderRepository.save(order);
+	            return "Quantity Exceeded! \n Order failed \n try Again";
+	        }
+	    } else if (newStatus.equalsIgnoreCase("delivered") || newStatus.equalsIgnoreCase("Delivered")) {
+	        order.setOrderStatus(newStatus);
+	        orderRepository.save(order);
+	        
+	        try {
+	            Product product = order.getProduct();
+	            // Debug delivered status
+	            System.out.println("Delivered status - Product: " + (product != null ? product.getProductId() : "null"));
+	            
+	            if (product != null && product.getSeller() != null) {
+	                String sellerEmail = product.getSeller().getSellerEmail();
+	                System.out.println("Attempting to send delivery email to: " + sellerEmail);
+	                
+	                String subject = "Order Delivered";
+	                String body = "The order for your product '" + product.getProductName()
+	                        + "' has been delivered.\nOrder ID: " + order.getOrderId()
+	                        + "\nDelivered Quantity: " + order.getOrderQuantity();
 
-		}
+	                MailBody mail = new MailBody(sellerEmail, subject, body);
+	                emailService.sendMail(mail);
+	                System.out.println("Delivery email sending attempted");
+	            } else {
+	                System.out.println("Cannot send delivery email - missing product or seller data");
+	            }
+	            
+	            return "Order Delivered Successfully";
+	        } catch (Exception e) {
+	            System.out.println("Failed to send delivery email: " + e.getMessage());
+	            e.printStackTrace();
+	            return "Order Delivered Successfully (but email failed: " + e.getMessage() + ")";
+	        }
+	    }
 
-		return "success";
-
+	    // For other status updates
+	    order.setOrderStatus(newStatus);
+	    orderRepository.save(order);
+	    return "Order status updated to " + newStatus;
 	}
 
 	private boolean isValidOrderStatus(String status) {
