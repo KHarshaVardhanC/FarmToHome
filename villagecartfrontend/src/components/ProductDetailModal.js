@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/ProductDetailModal.css';
 
-function ProductDetailModal({ product, productDetails, onClose, onAddToCart }) {
+function ProductDetailModal({ product, productDetails, onClose, onAddToCart,cartItem, updateCartItemQuantity  }) {
   const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -141,13 +141,32 @@ function ProductDetailModal({ product, productDetails, onClose, onAddToCart }) {
               <p>Location: {sellerPlace}, {sellerCity}</p>
             </div>
 
-            <button
-              className={`add-to-cart-modal-btn ${productQuantity === 0 ? 'disabled' : ''}`}
-              onClick={onAddToCart}
-              disabled={productQuantity === 0}
-            >
-              {productQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
-            </button>
+            {cartItem ? (
+              <div className="modal-quantity-control">
+                <button 
+                  className="modal-quantity-btn" 
+                  onClick={() => updateCartItemQuantity(cartItem.orderQuantity - 1)}
+                >
+                  -
+                </button>
+                <span className="modal-quantity-display">{cartItem.orderQuantity}</span>
+                <button 
+                  className="modal-quantity-btn" 
+                  onClick={() => updateCartItemQuantity(cartItem.orderQuantity + 1)}
+                  disabled={cartItem.orderQuantity >= product.productQuantity}
+                >
+                  +
+                </button>
+              </div>
+            ) : (
+              <button 
+                className="add-to-cart-modal-btn" 
+                onClick={onAddToCart}
+                disabled={product.productQuantity <= 0}
+              >
+                {product.productQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
+              </button>
+            )}
           </div>
         </div>
 

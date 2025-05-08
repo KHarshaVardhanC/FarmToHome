@@ -361,3 +361,60 @@
   background-color: #cccccc;
   cursor: not-allowed;
 }
+/* Add these styles to your existing CustomerHomePage.css */
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 38px;
+  border-radius: 6px;
+  background-color: #f0f8f0;
+  overflow: hidden;
+  border: 1px solid #4CAF50;
+}
+
+.quantity-btn {
+  width: 38px;
+  height: 100%;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-btn:hover {
+  background-color: #388E3C;
+}
+
+.quantity-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.quantity-display {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  color: #333;
+  font-size: 15px;
+}
+
+/* Make sure button container takes the full width */
+.button-container {
+  width: 100%;
+  margin-top: auto;
+}
+
+/* Prevent pointer events on the parent when clicking button */
+.product-card .button-container {
+  position: relative;
+  z-index: 5;
+}

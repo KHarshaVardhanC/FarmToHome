@@ -155,6 +155,16 @@ function CustomerHomePage() {
     }
   };
 
+  // Helper function to find a product in the cart
+  const findProductInCart = (productId) => {
+    return cartItems.find(item => 
+      item.productId === productId || 
+      (parseInt(item.productId) === parseInt(productId) && 
+      item.orderStatus && 
+      item.orderStatus.toLowerCase() === "incart")
+    );
+  };
+
   const addToCart = async (product) => {
     // Check if product is in stock
     if (product.productQuantity <= 0) {
@@ -250,6 +260,73 @@ function CustomerHomePage() {
         console.error("Error adding to cart:", error);
         alert("Error adding item to cart. Please try again.");
       }
+    }
+  };
+
+  // New function to update cart item quantity
+  const updateCartItemQuantity = async (cartItem, product, newQuantity) => {
+    // Validate the new quantity
+    if (newQuantity <= 0) {
+      // If quantity is 0 or less, remove the item from cart
+      await removeFromCart(cartItem);
+      return;
+    }
+
+    // Check if requested quantity is available
+    if (newQuantity > product.productQuantity) {
+      alert(`Sorry, only ${product.productQuantity} ${product.productQuantityType || 'kg'} available in stock`);
+      return;
+    }
+
+    const customerId = localStorage.getItem("customerId");
+
+    try {
+      // Update the quantity on the server
+      const response = await axios.put(`http://localhost:8080/order/updateQuantity/${cartItem.orderId}`, {
+        orderQuantity: newQuantity
+      });
+
+      if (response.status === 200) {
+        // Update local state
+        const updatedCartItems = cartItems.map(item => {
+          if (item.orderId === cartItem.orderId) {
+            return { ...item, orderQuantity: newQuantity };
+          }
+          return item;
+        });
+        
+        setCartItems(updatedCartItems);
+
+        // Also update localStorage for non-logged in users
+        if (!customerId) {
+          localStorage.setItem("cart", JSON.stringify(updatedCartItems));
+        }
+      }
+    } catch (error) {
+      console.error("Error updating cart item quantity:", error);
+      alert("Error updating cart item. Please try again.");
+    }
+  };
+
+  // New function to remove item from cart
+  const removeFromCart = async (cartItem) => {
+    const customerId = localStorage.getItem("customerId");
+
+    try {
+      // Delete the order on the server
+      await axios.delete(`http://localhost:8080/order/${cartItem.orderId}`);
+      
+      // Update local state
+      const updatedCartItems = cartItems.filter(item => item.orderId !== cartItem.orderId);
+      setCartItems(updatedCartItems);
+
+      // Also update localStorage for non-logged in users
+      if (!customerId) {
+        localStorage.setItem("cart", JSON.stringify(updatedCartItems));
+      }
+    } catch (error) {
+      console.error("Error removing item from cart:", error);
+      alert("Error removing item from cart. Please try again.");
     }
   };
 
@@ -360,65 +437,95 @@ function CustomerHomePage() {
         )}
 
         <div className="products-grid">
-          {filteredProducts.map((product) => (
-            <div
-              key={product.productId}
-              className={`product-card ${product.productQuantity === 0 ? 'out-of-stock' : ''}`}
-              onClick={() => handleProductClick(product)}
-            >
-              <div className="product-image">
-                <img src={product.imageUrl} alt={product.productName} />
-                {product.productQuantity === 0 && (
-                  <div className="out-of-stock-overlay">Out of Stock</div>
-                )}
-              </div>
-              <div className="product-info">
-                <h3>{product.productName}</h3>
-
-                {/* Truncated description with See more option */}
-                <div className="product-description-container">
-                  <p className={`product-description ${expandedDescriptions[product.productId] ? 'expanded' : ''}`}>
-                    {expandedDescriptions[product.productId] || !needsSeeMore(product.productDescription)
-                      ? product.productDescription
-                      : `${product.productDescription.substring(0, 30)}...`}
-                  </p>
-                  {needsSeeMore(product.productDescription) && (
-                    <button
-                      className="see-more-btn"
-                      onClick={(e) => toggleDescription(e, product.productId)}
-                    >
-                      {expandedDescriptions[product.productId] ? 'See less' : 'See more'}
-                    </button>
+          {filteredProducts.map((product) => {
+            // Check if product is in cart
+            const cartItem = findProductInCart(product.productId);
+            
+            return (
+              <div
+                key={product.productId}
+                className={`product-card ${product.productQuantity === 0 ? 'out-of-stock' : ''}`}
+                onClick={() => handleProductClick(product)}
+              >
+                <div className="product-image">
+                  <img src={product.imageUrl} alt={product.productName} />
+                  {product.productQuantity === 0 && (
+                    <div className="out-of-stock-overlay">Out of Stock</div>
                   )}
                 </div>
+                <div className="product-info">
+                  <h3>{product.productName}</h3>
 
-                <p className="price">₹{product.productPrice}/{product.productQuantityType || 'kg'}</p>
+                  {/* Truncated description with See more option */}
+                  <div className="product-description-container">
+                    <p className={`product-description ${expandedDescriptions[product.productId] ? 'expanded' : ''}`}>
+                      {expandedDescriptions[product.productId] || !needsSeeMore(product.productDescription)
+                        ? product.productDescription
+                        : `${product.productDescription.substring(0, 30)}...`}
+                    </p>
+                    {needsSeeMore(product.productDescription) && (
+                      <button
+                        className="see-more-btn"
+                        onClick={(e) => toggleDescription(e, product.productId)}
+                      >
+                        {expandedDescriptions[product.productId] ? 'See less' : 'See more'}
+                      </button>
+                    )}
+                  </div>
 
-                {/* Display stock information with quantity type */}
-                {product.productQuantity > 0 && (
-                  <p className={`product-quantity ${isLowStock(product.productQuantity) ? 'low-stock' : ''}`}>
-                    {isLowStock(product.productQuantity) ? 'Only ' : ''}
-                    {product.productQuantity} {product.productQuantityType || 'kg'} available
-                  </p>
-                )}
+                  <p className="price">₹{product.productPrice}/{product.productQuantityType || 'kg'}</p>
 
-                <div className="button-container">
-                  <button
-                    className={`add-to-cart-btn ${product.productQuantity === 0 ? 'disabled' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (product.productQuantity > 0) {
-                        addToCart(product);
-                      }
-                    }}
-                    disabled={product.productQuantity === 0}
-                  >
-                    {product.productQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
-                  </button>
+                  {/* Display stock information with quantity type */}
+                  {product.productQuantity > 0 && (
+                    <p className={`product-quantity ${isLowStock(product.productQuantity) ? 'low-stock' : ''}`}>
+                      {isLowStock(product.productQuantity) ? 'Only ' : ''}
+                      {product.productQuantity} {product.productQuantityType || 'kg'} available
+                    </p>
+                  )}
+
+                  <div className="button-container" onClick={(e) => e.stopPropagation()}>
+                    {cartItem ? (
+                      <div className="quantity-control">
+                        <button 
+                          className="quantity-btn" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateCartItemQuantity(cartItem, product, cartItem.orderQuantity - 1);
+                          }}
+                        >
+                          -
+                        </button>
+                        <span className="quantity-display">{cartItem.orderQuantity}</span>
+                        <button 
+                          className="quantity-btn" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateCartItemQuantity(cartItem, product, cartItem.orderQuantity + 1);
+                          }}
+                          disabled={cartItem.orderQuantity >= product.productQuantity}
+                        >
+                          +
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className={`add-to-cart-btn ${product.productQuantity === 0 ? 'disabled' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (product.productQuantity > 0) {
+                            addToCart(product);
+                          }
+                        }}
+                        disabled={product.productQuantity === 0}
+                      >
+                        {product.productQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -429,8 +536,20 @@ function CustomerHomePage() {
           onClose={closeModal}
           onAddToCart={() => {
             if (selectedProduct.productQuantity > 0) {
-              addToCart(selectedProduct);
+              const cartItem = findProductInCart(selectedProduct.productId);
+              if (cartItem) {
+                updateCartItemQuantity(cartItem, selectedProduct, cartItem.orderQuantity + 1);
+              } else {
+                addToCart(selectedProduct);
+              }
               closeModal();
+            }
+          }}
+          cartItem={findProductInCart(selectedProduct.productId)}
+          updateCartItemQuantity={(newQuantity) => {
+            const cartItem = findProductInCart(selectedProduct.productId);
+            if (cartItem) {
+              updateCartItemQuantity(cartItem, selectedProduct, newQuantity);
             }
           }}
         />

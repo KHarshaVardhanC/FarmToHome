@@ -351,3 +351,49 @@
   background-color: #cccccc;
   cursor: not-allowed;
 }
+/* Add these styles to your existing ProductDetailModal.css */
+
+.modal-quantity-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 180px;
+  height: 40px;
+  border-radius: 6px;
+  background-color: #f0f8f0;
+  overflow: hidden;
+  border: 1px solid #4CAF50;
+  margin-top: 10px;
+}
+
+.modal-quantity-btn {
+  width: 40px;
+  height: 100%;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-quantity-btn:hover {
+  background-color: #388E3C;
+}
+
+.modal-quantity-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.modal-quantity-display {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+}
