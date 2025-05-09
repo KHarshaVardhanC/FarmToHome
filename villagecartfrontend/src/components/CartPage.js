@@ -4,6 +4,9 @@ import axios from 'axios';
 import Navbar from './CustomerNavbar';
 import '../styles/CartPage.css';
 
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
+
 function CartPage() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +29,7 @@ function CartPage() {
     }
 
     try {
-      const response = await axios.get(`http://localhost:8080/order/orders/incart/${customerId}`);
+      const response = await axios.get(`${API_BASE_URL}/order/orders/incart/${customerId}`);
 
       if (Array.isArray(response.data)) {
         setCartItems(response.data);
@@ -50,7 +53,7 @@ function CartPage() {
 
     try {
       // 1. Update backend (assumes you have an endpoint like this)
-      await axios.put(`http://localhost:8080/order/update/${orderId}/${newQuantity}`);
+      await axios.put(`${API_BASE_URL}/order/update/${orderId}/${newQuantity}`);
 
       // 2. Update state
       setCartItems(prevItems =>
@@ -91,7 +94,7 @@ function CartPage() {
 
   const removeFromCart = async (orderId) => {
     try {
-      await axios.delete(`http://localhost:8080/order/delete/${orderId}`);
+      await axios.delete(`${API_BASE_URL}/order/delete/${orderId}`);
       setCartItems(prevItems => prevItems.filter(item => item.orderId !== orderId));
 
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -126,7 +129,7 @@ function CartPage() {
       for (const item of itemsToOrder) {
         // Use PUT request to update order status
         const response = await axios.put(
-          `http://localhost:8080/order/order/${item.orderId}/ordered`
+          `${API_BASE_URL}/order/order/${item.orderId}/ordered`
         );
 
         console.log(response.status);

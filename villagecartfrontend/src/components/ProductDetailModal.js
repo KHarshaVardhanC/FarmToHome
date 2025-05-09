@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/ProductDetailModal.css';
 
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
 function ProductDetailModal({ product, productDetails, onClose, onAddToCart,cartItem, updateCartItemQuantity  }) {
   const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,7 +28,7 @@ function ProductDetailModal({ product, productDetails, onClose, onAddToCart,cart
 
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8080/rating/product/${productId}`);
+        const response = await axios.get(`${API_BASE_URL}/rating/product/${productId}`);
         // Make sure we're setting all ratings from the response
         setRatings(response.data || []);
         console.log('Fetched ratings:', response.data);

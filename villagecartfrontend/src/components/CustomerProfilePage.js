@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from './CustomerNavbar';
 import '../styles/CustomerProfilePage.css';
 
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
 function CustomerProfilePage() {
   const [customerData, setCustomerData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ useEffect(() => {
           return;
         }
         
-        const response = await axios.get(`http://localhost:8080/customer/${customerId}`);
+        const response = await axios.get(`${API_BASE_URL}/customer/${customerId}`);
         console.log("Profile - Customer data response:", response.data);
         
         if (response.data) {

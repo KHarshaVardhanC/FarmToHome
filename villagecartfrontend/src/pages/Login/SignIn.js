@@ -43,7 +43,7 @@ const Signin = () => {
 
     try {
       // Determine the backend endpoint based on the selected role
-      let endpoint = "http://localhost:8080";
+      let endpoint = "${API_BASE_URL}";
       if (formData.userType === "customer") {
         endpoint += "/customer/login";
       } else if (formData.userType === "seller") {
@@ -250,7 +250,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../assets/signin.css";
 import VerifyEmailPopup from "./VerifyEmailPopup"; // Import the popup component
-
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 const Signin = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -290,7 +290,7 @@ const Signin = () => {
 
     try {
       // Updated endpoint URLs
-      let endpoint = "http://localhost:8080"; // Base URL
+      let endpoint = API_BASE_URL; // Base URL
       if (formData.userType === "customer") {
         endpoint += "/customer/login";
       } else if (formData.userType === "seller") {

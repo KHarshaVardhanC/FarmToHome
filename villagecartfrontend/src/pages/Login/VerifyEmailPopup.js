@@ -340,7 +340,7 @@ const handleSendOtp = async (e) => {
   setIsLoading(true);
 
   try {
-    const response = await fetch(`http://localhost:8080/auth/verifyEmail/${userType}/${email}`, {
+    const response = await fetch(`${API_BASE_URL}/auth/verifyEmail/${userType}/${email}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -379,7 +379,7 @@ const handleSendOtp = async (e) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:8080/auth/verifyOtp/${email}/${otp}`, {
+      const response = await fetch(`${API_BASE_URL}/auth/verifyOtp/${email}/${otp}`, {
         method: "POST",
       });
 
@@ -428,7 +428,7 @@ const handleSendOtp = async (e) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/auth/resetPassword", {
+      const response = await fetch("${API_BASE_URL}/auth/resetPassword", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

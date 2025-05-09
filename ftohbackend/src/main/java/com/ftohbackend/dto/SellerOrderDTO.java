@@ -18,5 +18,6 @@ public class SellerOrderDTO {
 	Double productPrice;
 	String customerName;
 	String orderStatus;
-
+	String orderReportStatus;
+	String reportReason;
 }

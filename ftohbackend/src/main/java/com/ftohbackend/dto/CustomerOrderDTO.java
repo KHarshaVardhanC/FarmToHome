@@ -28,5 +28,6 @@ public class CustomerOrderDTO {
 	String customerPincode;
 	String productQuantityType;
 	String orderRatingStatus;
+	
 
 }
