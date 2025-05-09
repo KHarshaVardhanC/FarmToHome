@@ -29,6 +29,14 @@ public interface OrderService {
 	String updateOrderQuantity(Integer orderId, Double orderQuantity);
 
 	String addOrderReport(OrderReport orderReport) throws Exception;
+	
+	public String updatePaymentDetails(String razorpayOrderId, String receiptId, String paymentStatus)
+            throws OrderException;
+	
+	  public Order saveOrder(Order order);
+	  
+	  
+	  public Order getOrderByRazorpayOrderId(String razorpayOrderId) throws OrderException;
 
 
 }

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class CustomerOrderDTO {
 
 	Integer orderId;
+	Integer productId;
 	String productName;
 	String ImageUrl;
 	String ProductDescription;

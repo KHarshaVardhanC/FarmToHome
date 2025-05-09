@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import com.ftohbackend.dto.CustomerOrderDTO;
 import com.ftohbackend.dto.MailBody;
@@ -41,6 +42,9 @@ public class OrderServiceImpl implements OrderService {
 
 	@Autowired
 	ProductService productService;
+
+	 @Autowired
+    private RazorpayService razorpayService;
 
 	@Override
 	public List<Order> getAllOrders() throws OrderException {
@@ -76,42 +80,153 @@ public class OrderServiceImpl implements OrderService {
 		return orders;
 	}
 
-	@Override
-	public String addOrder(Order order) throws OrderException, ProductException, Exception {
-		if (order == null || order.getCustomer() == null || order.getProduct() == null) {
-			throw new OrderException("Order, customer, or product details cannot be null");
-		}
-		Product product = productService.getProduct(order.getProduct().getProductId());
+//=============================================================================================
 
-		List<Order> orders = orderRepository.findByProductProductIdAndCustomerCustomerId(
-				order.getProduct().getProductId(), order.getCustomer().getCustomerId());
+// 	@Override
+// 	public String addOrder(Order order) throws OrderException, ProductException, Exception {
+// 		if (order == null || order.getCustomer() == null || order.getProduct() == null) {
+// 			throw new OrderException("Order, customer, or product details cannot be null");
+// 		}
+// 		Product product = productService.getProduct(order.getProduct().getProductId());
+		
+// 		List<Order> orders=orderRepository.findByProductProductIdAndCustomerCustomerId(order.getProduct().getProductId() , order.getCustomer().getCustomerId());
+		
+// 		if(orders.size() != 0 )
+// 		{
+// 			for(Order ord: orders)
+// 			{
+// 				if(ord.getOrderStatus().equalsIgnoreCase("incart") || ord.getOrderStatus().equalsIgnoreCase("in cart"))
+// 				{
+// 					if(order.getOrderQuantity() + ord.getOrderQuantity() <= product.getProductQuantity())
+// 					{
+// 						ord.setOrderQuantity(order.getOrderQuantity()+ord.getOrderQuantity());
+// 						orderRepository.save(ord);
+// 						return "Order added Successfully";
+						
+// 					}
+// 					else
+// 					{
+// 						return "Order Quantity Exceeded";
+// 					}
+// 				}
+// 			}
+// 		}
+// 		if (order.getOrderQuantity() <= product.getProductQuantity()) {
+// //    		 product.setProductQuantity( product.getProductQuantity() - order.getOrderQuantity());
+// 			productService.updateProduct(product.getProductId(), product);
+// 			orderRepository.save(order);
+// 			return "Order Successful";
+// 		} else {
+// 			return "Order Unsuccessful and Not had Sufficient Quantity";
+// 		}
 
-		if (orders.size() != 0) {
-			for (Order ord : orders) {
-				if (ord.getOrderStatus().equalsIgnoreCase("incart")
-						|| ord.getOrderStatus().equalsIgnoreCase("in cart")) {
-					if (order.getOrderQuantity() + ord.getOrderQuantity() <= product.getProductQuantity()) {
-						ord.setOrderQuantity(order.getOrderQuantity() + ord.getOrderQuantity());
-						orderRepository.save(ord);
-						return "Order added Successfully";
+// 	}
 
-					} else {
-						return "Order Quantity Exceeded";
-					}
-				}
-			}
-		}
-		if (order.getOrderQuantity() <= product.getProductQuantity()) {
-			// product.setProductQuantity( product.getProductQuantity() -
-			// order.getOrderQuantity());
-			productService.updateProduct(product.getProductId(), product);
-			orderRepository.save(order);
-			return "Order Successful";
-		} else {
-			return "Order Unsuccessful and Not had Sufficient Quantity";
-		}
 
-	}
+
+@Override
+public String addOrder(Order order) throws OrderException, ProductException, Exception {
+    if (order == null || order.getCustomer() == null || order.getProduct() == null) {
+        throw new OrderException("Order, customer, or product details cannot be null");
+    }
+
+    Product product = productService.getProduct(order.getProduct().getProductId());
+
+    // Check for existing 'in cart' orders by same customer for same product
+    List<Order> orders = orderRepository.findByProductProductIdAndCustomerCustomerId(
+        order.getProduct().getProductId(),
+        order.getCustomer().getCustomerId()
+    );
+
+    if (orders.size() != 0) {
+        for (Order ord : orders) {
+            if (ord.getOrderStatus().equalsIgnoreCase("incart") || ord.getOrderStatus().equalsIgnoreCase("in cart")) {
+                //int totalQty = order.getOrderQuantity() + ord.getOrderQuantity();
+                int totalQty = order.getOrderQuantity().intValue() + ord.getOrderQuantity().intValue();
+
+
+                if (totalQty <= product.getProductQuantity()) {
+                   // ord.setOrderQuantity(totalQty);
+                    ord.setOrderQuantity((double) totalQty);
+
+
+                    // Razorpay integration
+                    int totalAmountPaise = (int) (totalQty * product.getProductPrice() * 100);
+                    String razorpayOrderId = razorpayService.createOrder(
+                        totalAmountPaise,
+                        "INR",
+                        "rcpt_" + order.getCustomer().getCustomerId() + "_" + System.currentTimeMillis()
+                    );
+
+                    ord.setRazorpayOrderId(razorpayOrderId);
+                    ord.setPaymentStatus("Pending");
+
+                    orderRepository.save(ord);
+                    return "Order updated successfully. Razorpay Order ID: " + razorpayOrderId;
+                } else {
+                    return "Order quantity exceeded available stock.";
+                }
+            }
+        }
+    }
+
+    // If no existing cart entry, create a new one
+    if (order.getOrderQuantity() <= product.getProductQuantity()) {
+        int totalAmountPaise = (int) (order.getOrderQuantity() * product.getProductPrice() * 100);
+
+        String razorpayOrderId = razorpayService.createOrder(
+            totalAmountPaise,
+            "INR",
+            "rcpt_" + order.getCustomer().getCustomerId() + "_" + System.currentTimeMillis()
+        );
+
+        order.setRazorpayOrderId(razorpayOrderId);
+        order.setPaymentStatus("Pending");
+        order.setOrderStatus("incart"); // default cart status
+        orderRepository.save(order);
+
+        return "Order placed successfully. Razorpay Order ID: " + razorpayOrderId;
+    } else {
+        return "Order Unsuccessful. Not enough stock available.";
+    }
+}
+
+
+    @Override
+    public String updatePaymentDetails(String razorpayOrderId, String receiptId, String paymentStatus)
+            throws OrderException {
+        Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
+                .orElseThrow(() -> new OrderException("Order not found with Razorpay Order ID: " + razorpayOrderId));
+
+        order.setReceiptId(receiptId);
+        order.setPaymentStatus(paymentStatus);
+        orderRepository.save(order);
+
+        return "Payment details updated successfully.";
+    }
+
+    @Override
+    public Order saveOrder(Order order) {
+        return orderRepository.save(order);
+    }
+    
+    @Override
+    public Order getOrderByRazorpayOrderId(String razorpayOrderId) throws OrderException {
+        if (razorpayOrderId == null) {
+            throw new OrderException("Razorpay Order ID cannot be null");
+        }
+        
+        // Use Optional's orElseThrow to throw exception if the order is not found
+        Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
+            .orElseThrow(() -> new OrderException("Order not found with Razorpay Order ID: " + razorpayOrderId));
+
+        return order;
+    }
+
+
+	//==========================================================================================
+
+   
 
 	@Override
 	public List<Order> getOrdersBySellerId(Integer sellerId) throws OrderException {
@@ -288,18 +403,35 @@ public class OrderServiceImpl implements OrderService {
 		Order order = orderRepository.findById(orderReport.getOrderId()).get();
 		order.setOrderReportImageUrl(uploadImage(orderReport.getOrderImage()));
 		order.setReportReason(orderReport.getReportReason());
-
+		order.setOrderStatus("Reported");
 		orderRepository.save(order);
 		return "Order Reported Thanks for Reporting";
 	}
-
+	
+//	private String uploadImage(MultipartFile file) throws IOException {
+//		try {
+//			Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+//			return uploadResult.get("url").toString();
+//		} catch (IOException e) {
+//			throw new IOException("Failed to upload image to Cloudinary", e);
+//		}
+//	}
+	
+	
 	private String uploadImage(MultipartFile file) throws IOException {
-		try {
-			Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-			return uploadResult.get("url").toString();
-		} catch (IOException e) {
-			throw new IOException("Failed to upload image to Cloudinary", e);
-		}
+	    try {
+	        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+	            "transformation", new Transformation()
+	                .width(300)
+	                .height(300)
+	                .crop("fill")
+	                .gravity("auto")
+	                .fetchFormat("webp")
+	        ));
+	        return uploadResult.get("url").toString(); // Transformed image URL
+	    } catch (IOException e) {
+	        throw new IOException("Failed to upload image to Cloudinary", e);
+	    }
 	}
 
 }

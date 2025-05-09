@@ -39,6 +39,8 @@ public interface ProductService {
 	List<Product> getCategoryProducts(String productCategory) throws ProductException;
 
 	List<Product> searchProductsWithSellerDetails(String productName) throws ProductException;
+	
+	public Product getProductById(Integer productId) throws Exception;
 
 
 
