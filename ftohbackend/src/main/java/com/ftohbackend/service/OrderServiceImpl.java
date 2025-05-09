@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import com.ftohbackend.dto.CustomerOrderDTO;
 import com.ftohbackend.dto.OrderReport;
@@ -178,6 +179,12 @@ public class OrderServiceImpl implements OrderService {
 			return "Ordered Delivered Successfully";
 
 		}
+		else if(newStatus.equalsIgnoreCase("Reported"))
+		{
+			order.setOrderStatus("Reported");
+			orderRepository.save(order);
+			
+		}
 
 		return "success";
 
@@ -239,18 +246,35 @@ public class OrderServiceImpl implements OrderService {
 		Order order=orderRepository.findById(orderReport.getOrderId()).get();
 		order.setOrderReportImageUrl(uploadImage(orderReport.getOrderImage()));
 		order.setReportReason(orderReport.getReportReason());
-		
+		order.setOrderStatus("Reported");
 		orderRepository.save(order);
 		return "Order Reported Thanks for Reporting";
 	}
 	
-	private String uploadImage(MultipartFile file) throws IOException {
-		try {
-			Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-			return uploadResult.get("url").toString();
-		} catch (IOException e) {
-			throw new IOException("Failed to upload image to Cloudinary", e);
-		}
-	}
+//	private String uploadImage(MultipartFile file) throws IOException {
+//		try {
+//			Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+//			return uploadResult.get("url").toString();
+//		} catch (IOException e) {
+//			throw new IOException("Failed to upload image to Cloudinary", e);
+//		}
+//	}
 	
+	
+	private String uploadImage(MultipartFile file) throws IOException {
+	    try {
+	        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+	            "transformation", new Transformation()
+	                .width(300)
+	                .height(300)
+	                .crop("fill")
+	                .gravity("auto")
+	                .fetchFormat("webp")
+	        ));
+	        return uploadResult.get("url").toString(); // Transformed image URL
+	    } catch (IOException e) {
+	        throw new IOException("Failed to upload image to Cloudinary", e);
+	    }
+	}
+
 }

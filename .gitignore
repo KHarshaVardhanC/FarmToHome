@@ -18,3 +18,6 @@ villagecartfrontend/dist/
 villagecartfrontend/.env
 villagecartfrontend/.DS_Store
 .qodo
+
+# Local Netlify folder
+.netlify

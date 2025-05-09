@@ -1,7 +1,6 @@
   package com.ftohbackend.service;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -11,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
-import com.ftohbackend.dto.CustomerProductDTO;
 import com.ftohbackend.dto.ProductCity;
 import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
@@ -86,12 +85,22 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	private String uploadImage(MultipartFile file) throws IOException {
-		try {
-			Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-			return uploadResult.get("url").toString();
-		} catch (IOException e) {
-			throw new IOException("Failed to upload image to Cloudinary", e);
-		}
+	    try {
+	        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+	            "transformation", new Transformation()
+	                .width(300)
+	                .height(300)
+	                .crop("fill")
+	                .gravity("auto")
+	                .fetchFormat("webp")
+	                .quality("100")
+	                .dpr("2.0")
+	                .effect("sharpen")
+	        ));
+	        return uploadResult.get("url").toString(); // Transformed image URL
+	    } catch (IOException e) {
+	        throw new IOException("Failed to upload image to Cloudinary", e);
+	    }
 	}
 
 //	private ProductDTO convertToDTO(Product product) {
