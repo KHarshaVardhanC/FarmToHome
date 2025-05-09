@@ -273,6 +273,12 @@ public class ProductServiceImpl implements ProductService {
 		
 		return productRepository.findByProductNameContainingIgnoreCaseAndSeller_SellerCityIgnoreCase(productCity.getProductName(), productCity.getCityName());
 	}
+	
+	@Override
+	public Product getProductById(Integer productId) throws Exception {
+	    return productRepository.findById(productId)
+	        .orElseThrow(() -> new Exception("Product not found with ID: " + productId));
+	}
 
 	
 

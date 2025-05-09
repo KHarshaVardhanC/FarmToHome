@@ -20,4 +20,6 @@ public interface CustomerService {
 
 
 	Customer authenticateCustomer(String email, String password) throws CustomerException, Exception;
+	
+	public Customer getCustomerById(Integer customerId) throws Exception;
 }
