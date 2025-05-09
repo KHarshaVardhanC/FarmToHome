@@ -1,7 +1,6 @@
   package com.ftohbackend.service;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.ftohbackend.dto.CustomerProductDTO;
 import com.ftohbackend.dto.ProductCity;
 import com.ftohbackend.dto.ProductDTO;
 import com.ftohbackend.dto.ProductRequest;
@@ -263,6 +261,12 @@ public class ProductServiceImpl implements ProductService {
 
 		
 		return productRepository.findByProductNameContainingIgnoreCaseAndSeller_SellerCityIgnoreCase(productCity.getProductName(), productCity.getCityName());
+	}
+	
+	@Override
+	public Product getProductById(Integer productId) throws Exception {
+	    return productRepository.findById(productId)
+	        .orElseThrow(() -> new Exception("Product not found with ID: " + productId));
 	}
 
 	

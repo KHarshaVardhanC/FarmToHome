@@ -48,4 +48,20 @@ public class Order {
 	@OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	Rating rating;
 
+	
+	@Column(name = "razorpay_order_id")
+	private String razorpayOrderId;
+
+	@Column(name = "payment_status")
+	private String paymentStatus;
+
+	@Column(name = "receipt_id")
+	private String receiptId;       // For tracking
+	
+	@Column(name = "razorpay_payment_id")
+	private String razorpayPaymentId;
+
+	@Column(name = "razorpay_signature")
+	private String razorpaySignature;
+
 }

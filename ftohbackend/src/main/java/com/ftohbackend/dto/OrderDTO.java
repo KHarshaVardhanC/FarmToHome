@@ -21,4 +21,11 @@ public class OrderDTO {
 	private Integer customerId;
 	public String orderStatus;
 
+	 private String receiptId;
+    // Razorpay-related fields
+    private String razorpayOrderId;
+    private String razorpayPaymentId;
+    private String razorpaySignature;
+
+    private String paymentStatus; // Optional: Paid, Pending, Failed, etc.
 }
