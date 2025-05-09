@@ -278,7 +278,19 @@ public class OrderControllerImpl implements OrderController {
 				customerorderdto.setSellerName(seller.getSellerFirstName() + " " + seller.getSellerLastName());
 				customerorders.add(customerorderdto);
 			}
+			
+			
 		}
+		
+		
+		Collections.sort(customerorders, (order1, order2)->{
+			if(order1.getOrderRatingStatus().equals(order2.getOrderRatingStatus()))
+			{
+				return order2.getOrderId()-order1.getOrderId();
+				
+			}
+			return order1.getOrderRatingStatus().compareTo(order2.getOrderRatingStatus());
+		});
 		return customerorders;
 	}
 
@@ -295,9 +307,7 @@ public class OrderControllerImpl implements OrderController {
 	@PutMapping("/update/{orderId}/{orderQuantity}")
 	public String updateOrderQuantity(@PathVariable Integer orderId,@PathVariable Double orderQuantity)
 	{
-//		System.out.println(orderId);
 		return orderService.updateOrderQuantity(orderId, orderQuantity);
-//		return "";
 	}
 	
 	
@@ -311,7 +321,9 @@ public class OrderControllerImpl implements OrderController {
 
 		for (Order order : orders) {
 			if (!order.getOrderStatus().equalsIgnoreCase("Incart")
-					&& !order.getOrderStatus().equalsIgnoreCase("In cart")) {
+					&& !order.getOrderStatus().equalsIgnoreCase("In cart") ) 
+			{
+				
 
 				SellerOrderDTO sellerorderdto = new SellerOrderDTO();
 				sellerorderdto.setOrderId(order.getOrderId());
@@ -329,10 +341,22 @@ public class OrderControllerImpl implements OrderController {
 				Customer customer = order.getCustomer();
 				sellerorderdto.setCustomerName(customer.getCustomerFirstName() + " " + customer.getCustomerLastName());
 
+				
 				sellerorders.add(sellerorderdto);
 
 			}
 		}
+		
+		Collections.sort(sellerorders, (order1,order2)->{
+			if(order1.getOrderStatus().toLowerCase().equals(order2.getOrderStatus().toLowerCase()))
+			{
+				return order1.getOrderId()-order2.getOrderId();
+			}
+			return order2.getOrderStatus().toLowerCase().compareTo(order1.getOrderStatus().toLowerCase());
+		});
+		
+		
+		
 		return sellerorders;
 	}
 

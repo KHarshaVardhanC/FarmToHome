@@ -450,17 +450,7 @@ const Admin = () => {
                                     <option value="GRAINS">Grains</option>
                                 </select>
                             </div>
-                            <div className="form-group">
-                                <label>Image URL:</label>
-                                <input
-                                    type="text"
-                                    value={editingProduct.ImageUrl || ''}
-                                    onChange={(e) => setEditingProduct({
-                                        ...editingProduct,
-                                        ImageUrl: e.target.value
-                                    })}
-                                />
-                            </div>
+
                             <div className="form-actions">
                                 <button type="submit" className="save-button">
                                     Save Changes
@@ -482,19 +472,27 @@ const Admin = () => {
                         ) : (
                             products.map(product => (
                                 <div key={product.productId} className="product-card">
-                                    <h4>{product.productName}</h4>
-                                    {product.imageUrl && (
-                                        <img
-                                            src={product.imageUrl}
-                                            alt={product.productName}
-                                            className="product-image"
-                                        />
-                                    )}
+                                    <h4 title={product.productName}>{product.productName}</h4>
+                                    <div className="product-image-container">
+                                        {product.imageUrl ? (
+                                            <img
+                                                src={product.imageUrl}
+                                                alt={product.productName}
+                                                className="product-image"
+                                            />
+                                        ) : (
+                                            <div className="no-image">No Image Available</div>
+                                        )}
+                                    </div>
                                     <p><strong>Seller:</strong> {getSellerNameById(product.sellerId)}</p>
-                                    <p>{product.productDescription}</p>
-                                    <p><strong>Price:</strong> Rs.{product.productPrice}</p>
-                                    <p><strong>Category:</strong> {product.productCategory}</p>
-                                    <p><strong>Quantity:</strong> {product.productQuantity} {product.productQuantityType}</p>
+                                    <div className="product-description" title={product.productDescription}>
+                                        {product.productDescription}
+                                    </div>
+                                    <div className="product-info">
+                                        <p><strong>Price:</strong> Rs.{product.productPrice}</p>
+                                        <p><strong>Category:</strong> {product.productCategory}</p>
+                                        <p><strong>Quantity:</strong> {product.productQuantity} {product.productQuantityType}</p>
+                                    </div>
 
                                     {product.productRatingValue > 0 && (
                                         <div className="product-rating">
@@ -529,6 +527,7 @@ const Admin = () => {
                                     </div>
                                 </div>
                             ))
+
                         )}
                     </div>
                 )}
@@ -666,25 +665,42 @@ const Admin = () => {
                         <p>No products found for this seller.</p>
                     ) : (
                         selectedSeller.products.map(product => (
-                            <div key={product.productId} className="product-card" onClick={() => handleProductClick(product)}
-                                style={{ cursor: 'pointer' }}>
-                                <h4>{product.productName}</h4>
-                                {product.imageUrl && (
-                                    <img
-                                        src={product.imageUrl}
-                                        alt={product.productName}
-                                        className="product-image"
-                                    />
-                                )}
-                                <p>{product.productDescription}</p>
-                                <p><strong>Price:</strong> Rs.{product.productPrice}</p>
-                                <p><strong>Category:</strong> {product.productCategory}</p>
-                                <p><strong>Quantity:</strong> {product.productQuantity} {product.productQuantityType}</p>
+                            <div key={product.productId} className="product-card" onClick={() => handleProductClick(product)} style={{ cursor: 'pointer' }}>
+                                <h4 title={product.productName}>{product.productName}</h4>
+                                <div className="product-image-container">
+                                    {product.imageUrl ? (
+                                        <img
+                                            src={product.imageUrl}
+                                            alt={product.productName}
+                                            className="product-image"
+                                        />
+                                    ) : (
+                                        <div className="no-image">No Image Available</div>
+                                    )}
+                                </div>
+                                <div className="product-description" title={product.productDescription}>
+                                    {product.productDescription}
+                                </div>
+                                <div className="product-info">
+                                    <p><strong>Price:</strong> Rs.{product.productPrice}</p>
+                                    <p><strong>Category:</strong> {product.productCategory}</p>
+                                    <p><strong>Quantity:</strong> {product.productQuantity} {product.productQuantityType}</p>
+                                </div>
 
                                 {product.productRatingValue > 0 && (
                                     <div className="product-rating">
                                         <p><strong>Rating:</strong> {product.productRatingValue.toFixed(1)}/5
                                             ({product.productRatingCount} review{product.productRatingCount !== 1 ? 's' : ''})</p>
+                                        <div className="rating-stars">
+                                            {[...Array(5)].map((_, i) => (
+                                                <span
+                                                    key={i}
+                                                    className={`star ${i < Math.round(product.productRatingValue) ? 'filled' : ''}`}
+                                                >
+                                                    ★
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>

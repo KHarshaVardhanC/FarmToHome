@@ -10,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import com.ftohbackend.dto.CustomerOrderDTO;
+import com.ftohbackend.dto.MailBody;
 import com.ftohbackend.dto.OrderReport;
 import com.ftohbackend.exception.OrderException;
 import com.ftohbackend.exception.ProductException;
@@ -27,6 +29,8 @@ import com.ftohbackend.repository.SellerRepository;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
+	@Autowired
+	private EmailService emailService;
 	@Autowired
 	private OrderRepository orderRepository;
 	@Autowired
@@ -231,10 +235,7 @@ public String addOrder(Order order) throws OrderException, ProductException, Exc
 			throw new OrderException("Seller ID cannot be null");
 		}
 
-		
 		List<Order> orders = orderRepository.findByProductSellerSellerId(sellerId);
-		
-		
 
 		if (orders.isEmpty()) {
 			throw new OrderException("No orders found for seller ID: " + sellerId);
@@ -254,44 +255,96 @@ public String addOrder(Order order) throws OrderException, ProductException, Exc
 
 	@Override
 	public String updateOrderStatus(Integer orderId, String newStatus)
-			throws Exception, OrderException, ProductException {
-		if (orderId == null) {
-			throw new OrderException("Order ID cannot be null");
-		}
+	        throws Exception, OrderException, ProductException {
 
-		Order order = orderRepository.findById(orderId)
-				.orElseThrow(() -> new OrderException("Order not found with ID: " + orderId));
+	    if (orderId == null) {
+	        throw new OrderException("Order ID cannot be null");
+	    }
 
-		// Validate the new status
-		if (!isValidOrderStatus(newStatus)) {
-			throw new OrderException("Invalid order status: " + newStatus);
-		}
-		if (newStatus.equalsIgnoreCase("ordered") || newStatus.equalsIgnoreCase("Ordered")) {
+	    Order order = orderRepository.findById(orderId)
+	            .orElseThrow(() -> new OrderException("Order not found with ID: " + orderId));
 
-//        System.out.println(order.getOrderStatus());
-			Product product = order.getProduct();
+	    // Validate the new status
+	    if (!isValidOrderStatus(newStatus)) {
+	        throw new OrderException("Invalid order status: " + newStatus);
+	    }
 
-			if (product.getProductQuantity() >= order.getOrderQuantity()) {
+	    Product product = order.getProduct();
 
-				product.setProductQuantity(product.getProductQuantity() - order.getOrderQuantity());
-				productService.updateProduct(product.getProductId(), product);
-				order.setOrderStatus(newStatus);
-				orderRepository.save(order);
-				return "Order Status updated Succesfully " + newStatus;
-			} else {
-				order.setOrderStatus("failed");
-				orderRepository.save(order);
-				return "Quantity Exceeded! \n  Order failed \n try Again";
-			}
-		} else if (newStatus.equalsIgnoreCase("delivered") || newStatus.equalsIgnoreCase("Delivered")) {
-			order.setOrderStatus(newStatus);
-			orderRepository.save(order);
-			return "Ordered Delivered Successfully";
+	    if (newStatus.equalsIgnoreCase("ordered")) {
 
-		}
+	        if (product == null) {
+	            throw new ProductException("Product not found in the order");
+	        }
 
-		return "success";
+	        if (product.getProductQuantity() >= order.getOrderQuantity()) {
+	            product.setProductQuantity(product.getProductQuantity() - order.getOrderQuantity());
+	            productService.updateProduct(product.getProductId(), product);
 
+	            order.setOrderStatus(newStatus);
+	            orderRepository.save(order);
+
+	            // Send email to seller
+	            if (product.getSeller() != null) {
+	                String sellerEmail = product.getSeller().getSellerEmail();
+	                String subject = "New Order Received";
+	                String body = "You have received a new order for your product: " + product.getProductName()
+	                        + "\nOrder ID: " + order.getOrderId()
+	                        + "\nQuantity: " + order.getOrderQuantity();
+
+	                try {
+	                    emailService.sendMail(new MailBody(sellerEmail, subject, body));
+	                    System.out.println("Order mail sent to seller: " + sellerEmail);
+	                } catch (Exception e) {
+	                    System.out.println("Failed to send order mail to seller: " + e.getMessage());
+	                    e.printStackTrace();
+	                    return "Order placed, but failed to notify seller via email.";
+	                }
+	            } else {
+	                System.out.println("Seller information is missing.");
+	                return "Order placed successfully, but seller info is missing.";
+	            }
+
+	            return "Order placed successfully and seller notified.";
+	        } else {
+	            order.setOrderStatus("failed");
+	            orderRepository.save(order);
+	            return "Order failed: Insufficient product quantity.";
+	        }
+
+	    } else if (newStatus.equalsIgnoreCase("delivered")) {
+
+	        order.setOrderStatus(newStatus);
+	        orderRepository.save(order);
+
+	        // Send email to customer
+	        if (order.getCustomer() != null) {
+	            String customerEmail = order.getCustomer().getCustomerEmail();
+	            String subject = "Your Order has been Delivered";
+	            String body = "Your order for product: " + product.getProductName()
+	                    + "\nhas been delivered successfully.\nOrder ID: " + order.getOrderId()
+	                    + "\nQuantity: " + order.getOrderQuantity();
+
+	            try {
+	                emailService.sendMail(new MailBody(customerEmail, subject, body));
+	                System.out.println("Delivery email sent to customer: " + customerEmail);
+	            } catch (Exception e) {
+	                System.out.println("Failed to send delivery email to customer: " + e.getMessage());
+	                e.printStackTrace();
+	                return "Order marked as delivered, but failed to notify customer via email.";
+	            }
+
+	            return "Order delivered successfully and customer notified.";
+	        } else {
+	            System.out.println("Customer information is missing.");
+	            return "Order delivered successfully, but customer info is missing.";
+	        }
+
+	    } else {
+	        order.setOrderStatus(newStatus);
+	        orderRepository.save(order);
+	        return "Order status updated to " + newStatus;
+	    }
 	}
 
 	private boolean isValidOrderStatus(String status) {
@@ -336,31 +389,49 @@ public String addOrder(Order order) throws OrderException, ProductException, Exc
 	@Override
 	public String updateOrderQuantity(Integer orderId, Double orderQuantity) {
 		// TODO Auto-generated method stub
-		Order order=orderRepository.findById(orderId).get();
+		Order order = orderRepository.findById(orderId).get();
+
 		order.setOrderQuantity(orderQuantity);
 		orderRepository.save(order);
-		
+
 		return "kk";
 	}
 
 	@Override
 	public String addOrderReport(OrderReport orderReport) throws Exception {
 		// TODO Auto-generated method stub
-		Order order=orderRepository.findById(orderReport.getOrderId()).get();
+		Order order = orderRepository.findById(orderReport.getOrderId()).get();
 		order.setOrderReportImageUrl(uploadImage(orderReport.getOrderImage()));
 		order.setReportReason(orderReport.getReportReason());
-		
+		order.setOrderStatus("Reported");
 		orderRepository.save(order);
 		return "Order Reported Thanks for Reporting";
 	}
 	
-	private String uploadImage(MultipartFile file) throws IOException {
-		try {
-			Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-			return uploadResult.get("url").toString();
-		} catch (IOException e) {
-			throw new IOException("Failed to upload image to Cloudinary", e);
-		}
-	}
+//	private String uploadImage(MultipartFile file) throws IOException {
+//		try {
+//			Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+//			return uploadResult.get("url").toString();
+//		} catch (IOException e) {
+//			throw new IOException("Failed to upload image to Cloudinary", e);
+//		}
+//	}
 	
+	
+	private String uploadImage(MultipartFile file) throws IOException {
+	    try {
+	        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+	            "transformation", new Transformation()
+	                .width(300)
+	                .height(300)
+	                .crop("fill")
+	                .gravity("auto")
+	                .fetchFormat("webp")
+	        ));
+	        return uploadResult.get("url").toString(); // Transformed image URL
+	    } catch (IOException e) {
+	        throw new IOException("Failed to upload image to Cloudinary", e);
+	    }
+	}
+
 }

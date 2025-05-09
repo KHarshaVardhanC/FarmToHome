@@ -16,10 +16,10 @@ const ViewOrders = () => {
   const sellerId = localStorage.getItem('sellerId');
 
   const statusOptions = [
-    { label: 'In Cart', value: 'Incart' },
+    // { label: 'In Cart', value: 'Incart' },
     { label: 'Ordered', value: 'Ordered' },
     { label: 'Delivered', value: 'Delivered' },
-    { label: 'Deleted', value: 'Deleted' },
+    // { label: 'Deleted', value: 'Deleted' },
     { label: 'Failed', value: 'Failed' }
   ];
 
@@ -28,7 +28,8 @@ const ViewOrders = () => {
       setLoading(true);
       const response = await ordersApi.getSellerOrders(sellerId);
       const ordersData = response.data || [];
-      setOrders(ordersData.sort((a, b) => b.orderId - a.orderId));
+      setOrders(ordersData);
+      // setOrders(ordersData.sort((a, b) => b.orderId - a.orderId));
     } catch (err) {
       console.log('Orders fetch error:', err);
       setOrders([]);
@@ -89,7 +90,7 @@ const ViewOrders = () => {
       case 'ordered': return 'bg-info';
       case 'delivered': return 'bg-success';
       case 'failed': return 'bg-danger';
-      case 'deleted': return 'bg-secondary';
+      // case 'deleted': return 'bg-secondary';
       default: return 'bg-warning'; // incart
     }
   };
@@ -106,7 +107,8 @@ const ViewOrders = () => {
         setLoading(true);
         const response = await ordersApi.getSellerOrders(sellerId);
         const ordersData = response.data || [];
-        setOrders(ordersData.sort((a, b) => b.orderId - a.orderId));
+        setOrders(ordersData);
+        // setOrders(ordersData.sort((a, b) => b.orderId - a.orderId));
       } catch (err) {
         console.log('Orders fetch error:', err);
         setOrders([]);

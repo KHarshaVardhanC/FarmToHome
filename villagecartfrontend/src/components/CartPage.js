@@ -365,16 +365,43 @@ function CartPage() {
     if (newQuantity < 1) return;
     try {
       await axios.put(`http://localhost:8080/order/update/${orderId}/${newQuantity}`);
-      setCartItems(prev =>
-        prev.map(item =>
+
+      // 2. Update state
+      setCartItems(prevItems =>
+        prevItems.map(item =>
           item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
         )
       );
+
+      // 3. Update localStorage
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const updatedCart = cart.map(item =>
+        item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
+      );
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
     } catch (error) {
       console.error("Failed to update quantity:", error);
       alert("Failed to update quantity. Please try again.");
     }
   };
+
+
+  // const handleQuantityChange = (orderId, newQuantity) => {
+  //   if (newQuantity < 1) return;
+
+  //   setCartItems(prevItems =>
+  //     prevItems.map(item =>
+  //       item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
+  //     )
+  //   );
+  //   // console.log(prevItems);
+
+  //   const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  //   const updatedCart = cart.map(item =>
+  //     item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
+  //   );
+  //   localStorage.setItem('cart', JSON.stringify(updatedCart));
+  // };
 
   const removeFromCart = async (orderId) => {
     try {
@@ -420,6 +447,30 @@ function CartPage() {
         if (!item.productId) {
           console.error(`Missing productId in item at index ${index}:`, item);
           throw new Error(`Product ID is missing from item at index ${index}`);
+      let allOrdersSuccessful = true;
+
+      for (const item of itemsToOrder) {
+        // Use PUT request to update order status
+        const response = await axios.put(
+          `http://localhost:8080/order/order/${item.orderId}/ordered`
+        );
+
+        console.log(response.status);
+        console.log(response.status);
+        console.log(response.status);
+        console.log(response.data);
+        // console.log(response.)
+        if ((response.status === 200 || response.status === 201) && response.data !== 'Quantity Exceeded! \n  Order failed \n try Again' ) {
+          // Remove from cart items in state
+          setCartItems(prev => prev.filter(cartItem => cartItem.orderId !== item.orderId));
+
+          // Update local storage cart
+          const cart = JSON.parse(localStorage.getItem('cart')) || [];
+          const updatedCart = cart.filter(cartItem => cartItem.orderId !== item.orderId);
+          localStorage.setItem('cart', JSON.stringify(updatedCart));
+        } else {
+          allOrdersSuccessful = false;
+          console.error("Order failed with status", response.status);
         }
         if (!item.productName) {
           console.error(`Missing productName in item at index ${index}:`, item);
@@ -504,6 +555,13 @@ function CartPage() {
       const rzp = new window.Razorpay(options);
       rzp.open();
   
+      if (allOrdersSuccessful) {
+        alert("Order placed successfully!");
+        setShowOrderPopup(false);
+        navigate("/my-orders");
+      } else {
+        alert("Order Quantity Exceeded! \n  Order failed \n try Again");
+      }
     } catch (error) {
       console.error("Error details:", error);
       console.error("Response data:", error.response?.data);
