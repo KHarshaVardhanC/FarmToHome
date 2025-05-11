@@ -51,10 +51,17 @@ const ViewOrders = () => {
     setSelectedReportOrder(order);
     setShowReportModal(true);
   };
-
+  // Updates for handleStatusUpdate function
   const handleStatusUpdate = async (orderId, newStatus) => {
-    // Check if current order is delivered before making API call
+    // Check if current order is already refunded or exchanged before making API call
     const currentOrder = orders.find(o => o.orderId === orderId);
+
+    // Block status change if already refunded or exchanged
+    if (currentOrder &&
+      ['refunded', 'exchanged'].includes(currentOrder.orderStatus?.toLowerCase())) {
+      window.alert(`❌ Order is already ${currentOrder.orderStatus}. Status cannot be changed.`);
+      return;
+    }
 
     // Allow status changes to Refunded or Exchanged even if delivered
     const isSpecialStatusChange = ['Refunded', 'Exchanged'].includes(newStatus);
@@ -62,7 +69,7 @@ const ViewOrders = () => {
     if (currentOrder &&
       currentOrder.orderStatus?.toLowerCase() === 'delivered' &&
       !isSpecialStatusChange) {
-      window.alert('❌ Order is already delivered. Status cannot be changed.');
+      window.alert('❌ Order is already delivered. Status can only be changed to Refunded or Exchanged.');
       return;
     }
 
@@ -96,7 +103,9 @@ const ViewOrders = () => {
       }
 
       if (errorMessage.includes('already delivered')) {
-        window.alert('❌ Order is already delivered. Status cannot be changed.');
+        window.alert('❌ Order is already delivered. Status can only be changed to Refunded or Exchanged.');
+      } else if (errorMessage.includes('already Refunded') || errorMessage.includes('already Exchanged')) {
+        window.alert(`❌ ${errorMessage}`);
       } else if (errorMessage.includes('Quantity Exceeded')) {
         window.alert('❌ Quantity exceeds stock! Please update the quantity or restock.');
       } else {

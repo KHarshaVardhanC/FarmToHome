@@ -13,7 +13,7 @@ function MyOrders() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const customerId = localStorage.getItem('customerId');
-  
+
   // State for report modal
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportData, setReportData] = useState({
@@ -22,7 +22,7 @@ function MyOrders() {
     image: null,
     previewImage: null
   });
-  
+
   // State to track reported orders
   const [reportedOrders, setReportedOrders] = useState([]);
 
@@ -139,7 +139,7 @@ function MyOrders() {
 
   const handleSubmitReport = async (e) => {
     e.preventDefault();
-    
+
     if (!reportData.reason.trim()) {
       alert('Please provide a reason for your report');
       return;
@@ -164,13 +164,13 @@ function MyOrders() {
         // Add order ID to reported orders list
         const updatedReportedOrders = [...reportedOrders, reportData.orderId];
         setReportedOrders(updatedReportedOrders);
-        
+
         // Save reported orders to localStorage for persistence
         localStorage.setItem('reportedOrders', JSON.stringify(updatedReportedOrders));
-        
+
         alert('Report submitted successfully');
         closeReportModal();
-        
+
         // Refresh orders and navigate back to the orders page
         fetchOrders();
         navigate('/my-orders');
@@ -265,7 +265,7 @@ function MyOrders() {
                       Report Issue
                     </button>
                   )}
-                  
+
                   {/* Reported button (disabled) */}
                   {order.orderStatus === 'Delivered' && reportedOrders.includes(order.orderId) && (
                     <button
@@ -321,7 +321,7 @@ function MyOrders() {
                   required
                 ></textarea>
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="report-image">Upload Image (Optional):</label>
                 <input
@@ -336,7 +336,7 @@ function MyOrders() {
                   </div>
                 )}
               </div>
-              
+
               <div className="form-actions">
                 <button type="button" className="cancel-btn" onClick={closeReportModal}>Cancel</button>
                 <button type="submit" className="submit-btn">Submit Report</button>
