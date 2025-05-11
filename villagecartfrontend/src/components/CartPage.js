@@ -303,6 +303,8 @@ import axios from 'axios';
 import Navbar from './CustomerNavbar';
 import '../styles/CartPage.css';
 
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
 function loadRazorpayScript(src) {
   return new Promise((resolve) => {
     const script = document.createElement("script");
@@ -335,7 +337,8 @@ function CartPage() {
       return;
     }
     try {
-      const response = await axios.get(`http://localhost:8080/order/orders/incart/${customerId}`);
+      const response = await axios.get(`${API_BASE_URL}/order/orders/incart/${customerId}`);
+
       if (Array.isArray(response.data)) {
         // Transform the data to ensure product information is properly structured
         const transformedItems = response.data.map(item => ({
@@ -364,7 +367,8 @@ function CartPage() {
   const handleQuantityChange = async (orderId, newQuantity) => {
     if (newQuantity < 1) return;
     try {
-      await axios.put(`http://localhost:8080/order/update/${orderId}/${newQuantity}`);
+      // 1. Update backend (assumes you have an endpoint like this)
+      await axios.put(`${API_BASE_URL}/order/update/${orderId}/${newQuantity}`);
 
       // 2. Update state
       setCartItems(prevItems =>
@@ -405,8 +409,12 @@ function CartPage() {
 
   const removeFromCart = async (orderId) => {
     try {
-      await axios.delete(`http://localhost:8080/order/delete/${orderId}`);
-      setCartItems(prev => prev.filter(item => item.orderId !== orderId));
+      await axios.delete(`${API_BASE_URL}/order/delete/${orderId}`);
+      setCartItems(prevItems => prevItems.filter(item => item.orderId !== orderId));
+
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const updatedCart = cart.filter(item => item.orderId !== orderId);
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
     } catch (err) {
       console.error('Error removing item from cart:', err);
       setError('Failed to remove item from cart.');
@@ -452,7 +460,7 @@ function CartPage() {
       for (const item of itemsToOrder) {
         // Use PUT request to update order status
         const response = await axios.put(
-          `http://localhost:8080/order/order/${item.orderId}/ordered`
+          `${API_BASE_URL}/order/order/${item.orderId}/ordered`
         );
 
         console.log(response.status);

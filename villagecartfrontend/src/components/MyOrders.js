@@ -4,6 +4,9 @@ import axios from 'axios';
 import Navbar from './CustomerNavbar';
 import '../styles/MyOrders.css';
 
+
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
 function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +43,7 @@ function MyOrders() {
     }
 
     try {
-      const response = await axios.get(`http://localhost:8080/order/customer/${customerId}`);
+      const response = await axios.get(`${API_BASE_URL}/order/customer/${customerId}`);
 
       if (Array.isArray(response.data)) {
         const sortedOrders = response.data.sort((a, b) => {
@@ -151,7 +154,7 @@ function MyOrders() {
       }
       formData.append('customerId', customerId);
 
-      const response = await axios.post('http://localhost:8080/order/report', formData, {
+      const response = await axios.post('${API_BASE_URL}/order/report', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
