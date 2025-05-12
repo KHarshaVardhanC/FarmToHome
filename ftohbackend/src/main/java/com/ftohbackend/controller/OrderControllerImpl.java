@@ -550,7 +550,7 @@ public class OrderControllerImpl implements OrderController {
 				if(order.getReportReason()!=null)
 				{
 					
-					sellerorderdto.setOrderReportStatus("Reported");
+					sellerorderdto.setOrderStatus("Reported");
 					sellerorderdto.setReportReason(order.getReportReason());
 				}
 				Customer customer = order.getCustomer();
