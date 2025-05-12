@@ -193,28 +193,32 @@ public class OrderServiceImpl implements OrderService {
 		order.setPaymentStatus(paymentStatus);
 		orderRepository.save(order);
 
-		return "Payment details updated successfully.";
-	}
 
-	@Override
-	public Order saveOrder(Order order) {
-		return orderRepository.save(order);
-	}
+        return "Payment details updated successfully.";
+    }
 
-	@Override
-	public Order getOrderByRazorpayOrderId(String razorpayOrderId) throws OrderException {
-		if (razorpayOrderId == null) {
-			throw new OrderException("Razorpay Order ID cannot be null");
-		}
+    @Override
+    public Order saveOrder(Order order) {
+        return orderRepository.save(order);
+    }
+    
+    @Override
+    public Order getOrderByRazorpayOrderId(String razorpayOrderId) throws OrderException {
+        if (razorpayOrderId == null) {
+            throw new OrderException("Razorpay Order ID cannot be null");
+        }
+        
+        // Use Optional's orElseThrow to throw exception if the order is not found
+        Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
+            .orElseThrow(() -> new OrderException("Order not found with Razorpay Order ID: " + razorpayOrderId));
 
-		// Use Optional's orElseThrow to throw exception if the order is not found
-		Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
-				.orElseThrow(() -> new OrderException("Order not found with Razorpay Order ID: " + razorpayOrderId));
-
-		return order;
-	}
-
-	// ==========================================================================================
+        return order;
+    }
+    
+    
+    public List<Order> getAllOrdersByRazorpayOrderId(String razorpayOrderId) {
+        return orderRepository.findAllByRazorpayOrderId(razorpayOrderId);
+    }
 
 	@Override
 	public List<Order> getOrdersBySellerId(Integer sellerId) throws OrderException {

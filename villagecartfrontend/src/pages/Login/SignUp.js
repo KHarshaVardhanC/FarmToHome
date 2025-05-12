@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import '../../assets/signupp.css';
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
@@ -84,39 +86,65 @@ const Signup = () => {
 
     return newErrors;
   };
+  
+  // // Function to check if email already exists
+  // const checkEmailExists = async () => {
+  //   try {
+  //     // First check customer endpoint
+  //     const customerResponse = await fetch(`http://localhost:8080/customer`);
+  //     const customerData = await customerResponse.json();
+      
+  //     // Check if email exists in customer data
+  //     const customerExists = customerData.some(
+  //       customer => customer.customerEmail.toLowerCase() === formData.email.toLowerCase()
+  //     );
+      
+  //     if (customerExists) {
+  //       return true;
+  //     }
+      
+  //     // Then check seller endpoint
+  //     const sellerResponse = await fetch(`http://localhost:8080/seller`);
+  //     const sellerData = await sellerResponse.json();
+      
+  //     // Check if email exists in seller data
+  //     const sellerExists = sellerData.some(
+  //       seller => seller.sellerEmail.toLowerCase() === formData.email.toLowerCase()
+  //     );
+      
+  //     return sellerExists;
+      
+  //   } catch (error) {
+  //     console.error("Error checking email existence:", error);
+  //     return false;
+  //   }
+  // };
+  
 
   // Function to check if email already exists
-  const checkEmailExists = async () => {
-    try {
-      // First check customer endpoint
-      const customerResponse = await fetch(`${API_BASE_URL}/customer`);
-      const customerData = await customerResponse.json();
-
-      // Check if email exists in customer data
-      const customerExists = customerData.some(
-        customer => customer.customerEmail.toLowerCase() === formData.email.toLowerCase()
-      );
-
-      if (customerExists) {
-        return true;
-      }
-
-      // Then check seller endpoint
-      const sellerResponse = await fetch(`${API_BASE_URL}/seller`);
-      const sellerData = await sellerResponse.json();
-
-      // Check if email exists in seller data
-      const sellerExists = sellerData.some(
-        seller => seller.sellerEmail.toLowerCase() === formData.email.toLowerCase()
-      );
-
-      return sellerExists;
-
-    } catch (error) {
-      console.error("Error checking email existence:", error);
-      return false;
+const checkEmailExists = async () => {
+  try {
+    // First check customer endpoint
+    const customerResponse = await fetch(`http://localhost:8080/customer`);
+    
+    if (customerResponse.status === 409) {
+      return true; // Email exists
     }
-  };
+    
+    // Then check seller endpoint
+    const sellerResponse = await fetch(`http://localhost:8080/seller`);
+    
+    if (sellerResponse.status === 409) {
+      return true; // Email exists
+    }
+    
+    return false; // No email exists
+    
+  } catch (error) {
+    console.error("Error checking email existence:", error);
+    return false;
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -133,16 +161,22 @@ const Signup = () => {
     try {
       // First check if email already exists
       const emailExists = await checkEmailExists();
+      
+      // if (emailExists) {
+      //   // Show alert and set error
+      //   alert(`This email is already registered. Please use a different email or login with your existing account.`);
+        
+      //   // Set a specific email error
+      //   setErrors({
+      //     email: `Email already registered`
+      //   });
 
-      if (emailExists) {
-        // Show alert and set error
-        alert(`This email is already registered. Please use a different email or login with your existing account.`);
+        if (emailExists) {
+    // Show toast notification
+    toast.error('This email is already registered. Please use a different email or log in with your existing account.');
 
-        // Set a specific email error
-        setErrors({
-          email: `Email already registered`
-        });
 
+        
         setIsLoading(false);
         return; // Stop execution here
       }

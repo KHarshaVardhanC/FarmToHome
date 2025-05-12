@@ -28,6 +28,9 @@ import Rating from './pages/Rating';
 import ViewOrders from './pages/ViewOrders';
 import ViewProducts from './pages/ViewProducts';
 import ViewRatings from './pages/ViewRatings';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 
 // Styles
@@ -148,6 +151,17 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<SignIn />} />
         </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </div>
     </Router>
   );

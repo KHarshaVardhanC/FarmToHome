@@ -1,11 +1,11 @@
 package com.ftohbackend.controller;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -26,12 +26,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ftohbackend.dto.CustomerOrderDTO;
 import com.ftohbackend.dto.OrderDTO;
 import com.ftohbackend.dto.OrderReport;
+import com.ftohbackend.dto.PaymentVerificationRequest;
+import com.ftohbackend.dto.PaymentVerificationRequest.Item;
 import com.ftohbackend.dto.SellerOrderDTO;
 import com.ftohbackend.exception.OrderException;
 import com.ftohbackend.model.Customer;
@@ -152,27 +153,167 @@ public class OrderControllerImpl implements OrderController {
                     .body("Failed to create Razorpay order");
         }
     }
+    
+    
+    @PostMapping("/payment/createAll")
+    public ResponseEntity<?> createAllPaymentOrder(@RequestBody List<OrderDTO> orderDTOList) {
+        try {
+            // Step 1: Validate that the order list is not empty
+            if (orderDTOList == null || orderDTOList.isEmpty()) {
+                return ResponseEntity.badRequest().body("Order list cannot be empty");
+            }
 
+            // Step 2: Ensure all items belong to the same customer
+            Integer customerId = orderDTOList.get(0).getCustomerId();
+            for (OrderDTO orderDTO : orderDTOList) {
+                if (!orderDTO.getCustomerId().equals(customerId)) {
+                    return ResponseEntity.badRequest().body("All items must belong to the same customer");
+                }
+            }
+
+            if (customerId == null) {
+                return ResponseEntity.badRequest().body("Customer ID is required");
+            }
+
+            // Step 3: Get customer information
+            Customer customer = customerService.getCustomerById(customerId);
+            if (customer == null) {
+                return ResponseEntity.badRequest().body("Invalid customer ID");
+            }
+
+            // Step 4: Calculate the total amount for all items and prepare order details
+            double totalAmount = 0;
+            List<Order> orders = new ArrayList<>();
+            List<String> errorMessages = new ArrayList<>();
+
+            for (OrderDTO orderDTO : orderDTOList) {
+                // Validate product ID and quantity
+                if (orderDTO.getProductId() == null || orderDTO.getOrderQuantity() == null) {
+                    errorMessages.add("Product ID and Quantity are required for product with ID: " + orderDTO.getProductId());
+                    continue;
+                }
+
+                // Get the product details
+                Product product = productService.getProductById(orderDTO.getProductId());
+                if (product == null) {
+                    errorMessages.add("Invalid product ID for product with ID: " + orderDTO.getProductId());
+                    continue;
+                }
+
+                // Create an order object for each item
+                Order order = new Order();
+                order.setProduct(product);
+                order.setCustomer(customer);
+                order.setOrderQuantity(orderDTO.getOrderQuantity());
+                order.setOrderStatus("PENDING");
+                order.setPaymentStatus("CREATED");
+
+                // Calculate price for each item and add to total amount
+                double itemPrice = product.getProductPrice() * orderDTO.getOrderQuantity();
+                totalAmount += itemPrice;
+
+                orders.add(order);
+            }
+
+            // If there are any validation errors, return them
+            if (!errorMessages.isEmpty()) {
+                return ResponseEntity.badRequest().body(errorMessages);
+            }
+
+            // Step 5: Create a Razorpay order for the total amount
+            RazorpayClient razorpay = new RazorpayClient(razorpayKey, razorpaySecret);
+
+            // Generate a unique receipt ID
+            String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+            String receiptId = "rcpt_" + uuid;
+
+            // Convert the total amount to paise (100x for INR)
+            int amount = (int) (totalAmount * 100); // In paise
+
+            // Razorpay options for creating an order
+            JSONObject options = new JSONObject();
+            options.put("amount", amount); // Amount in paise
+            options.put("currency", "INR");
+            options.put("receipt", receiptId);
+
+            // Create the Razorpay order
+            com.razorpay.Order razorpayOrder = razorpay.orders.create(options);
+
+            // Step 6: Save the orders to the database
+            for (Order order : orders) {
+                order.setRazorpayOrderId(razorpayOrder.get("id"));
+                order.setReceiptId(receiptId);
+                order.setPaymentStatus("CREATED");
+                orderService.saveOrder(order);
+            }
+
+            // Step 7: Return the response with Razorpay order details
+            return ResponseEntity.ok(Map.of(
+                    "orderId", razorpayOrder.get("id"),
+                    "razorpayKey", razorpayKey,
+                    "amount", razorpayOrder.get("amount"),
+                    "currency", "INR",
+                    "orderDBIds", orders.stream().map(Order::getOrderId).collect(Collectors.toList())
+            ));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to create Razorpay order for all items in cart");
+        }
+    }
+
+
+//    @PostMapping("/payment/verify")
+//    public ResponseEntity<?> verifyPayment(@RequestBody Map<String, String> payload) {
+//        try {
+//            String orderId = payload.get("razorpayOrderId");
+//            String paymentId = payload.get("razorpayPaymentId");
+//            String signature = payload.get("razorpaySignature");
+//
+//            String generatedSignature = generateSignature(orderId, paymentId);
+//
+//            if (generatedSignature.equals(signature)) {
+//                Order order = orderService.getOrderByRazorpayOrderId(orderId);
+//
+//                if (order != null) {
+//                    order.setPaymentStatus("SUCCESS");
+//                    order.setRazorpayPaymentId(paymentId);
+//                    orderService.saveOrder(order);
+//                    return ResponseEntity.ok("Payment verified successfully.");
+//                } else {
+//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order not found.");
+//                }
+//            } else {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payment signature.");
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Payment verification failed.");
+//        }
+//    }
+    
     
     @PostMapping("/payment/verify")
-    public ResponseEntity<?> verifyPayment(
-        @RequestParam("razorpay_order_id") String orderId, 
-        @RequestParam("razorpay_payment_id") String paymentId, 
-        @RequestParam("razorpay_signature") String signature) {
-
+    public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerificationRequest payload) {
         try {
-            // Generate the expected signature from Razorpay API using Razorpay secret and order details
+            String orderId = payload.getRazorpayOrderId();
+            String paymentId = payload.getRazorpayPaymentId();
+            String signature = payload.getRazorpaySignature();
+
             String generatedSignature = generateSignature(orderId, paymentId);
 
-            // Verify if the provided signature matches the generated signature
             if (generatedSignature.equals(signature)) {
-                // Signature is valid, proceed with order update
                 Order order = orderService.getOrderByRazorpayOrderId(orderId);
-                
+
                 if (order != null) {
                     order.setPaymentStatus("SUCCESS");
                     order.setRazorpayPaymentId(paymentId);
-                    orderService.saveOrder(order);  // Make sure this method exists and works
+                    order.setOrderStatus("ORDERED");
+                    orderService.saveOrder(order);
+
+                    // You may store other fields like amount, items, etc., if needed
+
                     return ResponseEntity.ok("Payment verified successfully.");
                 } else {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order not found.");
@@ -180,30 +321,94 @@ public class OrderControllerImpl implements OrderController {
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payment signature.");
             }
-        } catch (OrderException e) {
-            // Specific exception handling for Order not found
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Payment verification failed.");
         }
     }
+    
+    
+    
+    @PostMapping("/payment/verifyAll")
+    public ResponseEntity<?> verifyPaymentForAll(@RequestBody PaymentVerificationRequest payload) {
+        try {
+            String orderId = payload.getRazorpayOrderId();
+            String paymentId = payload.getRazorpayPaymentId();
+            String signature = payload.getRazorpaySignature();
+
+            // Generate expected signature
+            String generatedSignature = generateSignature(orderId, paymentId);
+
+            // Check if the signature is valid
+            if (!generatedSignature.equals(signature)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payment signature.");
+            }
+
+            // Fetch all orders with the given Razorpay Order ID
+            List<Order> orders = orderService.getAllOrdersByRazorpayOrderId(orderId);
+
+            if (orders == null || orders.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Orders not found.");
+            }
+
+            // Update each order
+            for (Order order : orders) {
+                order.setPaymentStatus("SUCCESS");
+                order.setRazorpayPaymentId(paymentId);
+                order.setOrderStatus("ORDERED");
+                orderService.saveOrder(order);
+            }
+
+            // Optional: handle items from payload.getItems() if needed
+
+            return ResponseEntity.ok("Bulk payment verified successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Bulk payment verification failed.");
+        }
+    }
+
+
+
 
     // Helper method to generate the expected signature for verification
+//    private String generateSignature(String orderId, String paymentId) throws Exception {
+//        String keySecret = razorpaySecret;  // Razorpay Secret Key
+//        String data = orderId + "|" + paymentId;  // Concatenate orderId and paymentId
+//
+//        // Create HMAC using SHA256
+//        SecretKeySpec keySpec = new SecretKeySpec(keySecret.getBytes(), "HmacSHA256");
+//        Mac mac = Mac.getInstance("HmacSHA256");
+//        mac.init(keySpec);
+//
+//        byte[] hashBytes = mac.doFinal(data.getBytes());
+//
+//        // Return the signature in Base64 encoded format
+//        return Base64.getEncoder().encodeToString(hashBytes);
+//    }
+    
+    
+    
     private String generateSignature(String orderId, String paymentId) throws Exception {
-        String keySecret = razorpaySecret;  // Razorpay Secret Key
-        String data = orderId + "|" + paymentId;  // Concatenate orderId and paymentId
+        String keySecret = razorpaySecret;
+        String data = orderId + "|" + paymentId;
 
-        // Create HMAC using SHA256
         SecretKeySpec keySpec = new SecretKeySpec(keySecret.getBytes(), "HmacSHA256");
         Mac mac = Mac.getInstance("HmacSHA256");
         mac.init(keySpec);
 
         byte[] hashBytes = mac.doFinal(data.getBytes());
 
-        // Return the signature in Base64 encoded format
-        return Base64.getEncoder().encodeToString(hashBytes);
+        // Convert to HEX string (not Base64!)
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hashBytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
+
 
 //===================================================================================================================================
 

@@ -45,24 +45,41 @@ public class CustomerControllerImpl implements CustomerController {
 	@Autowired
 	MailServiceImpl mailServiceImpl;
 
+//	@PostMapping("")
+//	public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerdto) throws CustomerException {
+//		String result = "";
+//
+//		if (!mailServiceImpl.isMailExists(customerdto.getCustomerEmail())) {
+//			Customer customer = modelmapper.map(customerdto, Customer.class);
+//			BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//
+//			customer.setCustomerPassword(passwordEncoder.encode( customerdto.getCustomerPassword()));
+//			customerService.addCustomer(customer);
+//			mailServiceImpl.addMail(new Mails(customerdto.getCustomerEmail()));
+//
+//			result = "You Registered Successfully";
+//		} else {
+//			result = "Provided Email All ready Exists";
+//		}
+//
+//		return ResponseEntity.status(HttpStatus.CREATED).body(result);
+//	}
+
+	
+	
 	@PostMapping("")
 	public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerdto) throws CustomerException {
-		String result = "";
+	    if (mailServiceImpl.isMailExists(customerdto.getCustomerEmail())) {
+	        return ResponseEntity.status(HttpStatus.CONFLICT).body("Provided Email Already Exists");
+	    }
 
-		if (!mailServiceImpl.isMailExists(customerdto.getCustomerEmail())) {
-			Customer customer = modelmapper.map(customerdto, Customer.class);
-			BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+	    Customer customer = modelmapper.map(customerdto, Customer.class);
+	    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+	    customer.setCustomerPassword(passwordEncoder.encode(customerdto.getCustomerPassword()));
+	    customerService.addCustomer(customer);
+	    mailServiceImpl.addMail(new Mails(customerdto.getCustomerEmail()));
 
-			customer.setCustomerPassword(passwordEncoder.encode( customerdto.getCustomerPassword()));
-			customerService.addCustomer(customer);
-			mailServiceImpl.addMail(new Mails(customerdto.getCustomerEmail()));
-
-			result = "You Registered Successfully";
-		} else {
-			result = "Provided Email All ready Exists";
-		}
-
-		return ResponseEntity.status(HttpStatus.CREATED).body(result);
+	    return ResponseEntity.status(HttpStatus.CREATED).body("You Registered Successfully");
 	}
 
 	@GetMapping("/{customerId}")
