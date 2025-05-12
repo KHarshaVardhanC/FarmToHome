@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
 
 // Create axios instance with default config
 const api = axios.create({
@@ -114,11 +115,12 @@ export const customerApi = {
 
 export async function getAllProducts() {
   const res = await axios.get(`${API_BASE_URL}/products`); // Fixed BASE_URL to API_BASE_URL
+  console.log("hello");
   return res.data;
 }
 export const getCategoryProducts = async (category) => {
   try {
-    const response = await fetch(`http://localhost:8080/products/${category}`);
+    const response = await fetch(`${API_BASE_URL}/products/${category}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch category products');

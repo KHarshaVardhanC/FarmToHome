@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/Rating.css';
 
+
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
 const Rating = () => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
@@ -34,7 +37,7 @@ const Rating = () => {
 
             try {
                 // Fetch all orders for the customer
-                const response = await axios.get(`http://localhost:8080/order/customer/${customerId}`);
+                const response = await axios.get(`${API_BASE_URL}/order/customer/${customerId}`);
                 const orders = response.data;
                 
                 // Find the specific order by orderId
@@ -89,7 +92,7 @@ const Rating = () => {
         try {
             setIsSubmitting(true);
             // Submit the rating to your API endpoint
-            await axios.post('http://localhost:8080/rating', ratingData);
+            await axios.post('${API_BASE_URL}/rating', ratingData);
             
             setMessage('Thank you for your feedback!');
             // Reset form

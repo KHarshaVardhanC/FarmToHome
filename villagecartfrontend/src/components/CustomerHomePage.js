@@ -8,6 +8,9 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { useNavigate } from 'react-router-dom';
 
+
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
 function CustomerHomePage() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -86,7 +89,7 @@ function CustomerHomePage() {
       const id = localStorage.getItem('customerId');
       if (id) {
         try {
-          const response = await axios.get(`http://localhost:8080/customer/${id}`);
+          const response = await axios.get(`${API_BASE_URL}/customer/${id}`);
           if (response.data && response.data.name) {
             localStorage.setItem('userName', response.data.name);
             window.dispatchEvent(new Event('storage'));
@@ -129,7 +132,7 @@ function CustomerHomePage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:8080/products');
+      const response = await axios.get(`${API_BASE_URL}/products`);
       // Filter out products with 0 quantity
       const availableProducts = response.data.filter(product => product.productQuantity > 0);
       setProducts(response.data); // Keep all products in state for filtering
@@ -143,7 +146,7 @@ function CustomerHomePage() {
 
   const fetchCustomerCart = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:8080/order/orders/incart/${id}`);
+      const response = await axios.get(`${API_BASE_URL}/order/orders/incart/${id}`);
       // Store the cart items returned from the API
       setCartItems(response.data);
     } catch (err) {
@@ -161,7 +164,7 @@ function CustomerHomePage() {
     try {
       setLoading(true);
       setSelectedCategory(category);
-      const response = await axios.get(`http://localhost:8080/products/${category}`);
+      const response = await axios.get(`${API_BASE_URL}/products/${category}`);
       // Filter out products with 0 quantity
       const availableProducts = response.data.filter(product => product.productQuantity > 0);
       setFilteredProducts(availableProducts);
@@ -224,7 +227,7 @@ function CustomerHomePage() {
         }
 
         // Update the quantity on the server
-        const response = await axios.put(`http://localhost:8080/order/updateQuantity/${orderId}`, {
+        const response = await axios.put(`${API_BASE_URL}/order/updateQuantity/${orderId}`, {
           orderQuantity: newQuantity
         });
 
@@ -270,7 +273,7 @@ function CustomerHomePage() {
       };
 
       try {
-        const response = await axios.post("http://localhost:8080/order/add", orderData);
+        const response = await axios.post(`${API_BASE_URL}/order/add`, orderData);
 
         if (response.status === 200 || response.status === 201) {
           const result = response.data;
@@ -334,7 +337,7 @@ function CustomerHomePage() {
   const handleProductClick = async (product) => {
     setSelectedProduct(product);
     try {
-      const response = await axios.get(`http://localhost:8080/product2/${product.productId}`);
+      const response = await axios.get(`${API_BASE_URL}/product2/${product.productId}`);
       setProductDetails(response.data);
       setShowModal(true);
     } catch (error) {

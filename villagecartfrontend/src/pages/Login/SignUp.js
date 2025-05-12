@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 import '../../assets/signupp.css';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -82,40 +84,40 @@ const Signup = () => {
 
     return newErrors;
   };
-  
+
   // Function to check if email already exists
   const checkEmailExists = async () => {
     try {
       // First check customer endpoint
-      const customerResponse = await fetch(`http://localhost:8080/customer`);
+      const customerResponse = await fetch(`${API_BASE_URL}/customer`);
       const customerData = await customerResponse.json();
-      
+
       // Check if email exists in customer data
       const customerExists = customerData.some(
         customer => customer.customerEmail.toLowerCase() === formData.email.toLowerCase()
       );
-      
+
       if (customerExists) {
         return true;
       }
-      
+
       // Then check seller endpoint
-      const sellerResponse = await fetch(`http://localhost:8080/seller`);
+      const sellerResponse = await fetch(`${API_BASE_URL}/seller`);
       const sellerData = await sellerResponse.json();
-      
+
       // Check if email exists in seller data
       const sellerExists = sellerData.some(
         seller => seller.sellerEmail.toLowerCase() === formData.email.toLowerCase()
       );
-      
+
       return sellerExists;
-      
+
     } catch (error) {
       console.error("Error checking email existence:", error);
       return false;
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
@@ -131,26 +133,26 @@ const Signup = () => {
     try {
       // First check if email already exists
       const emailExists = await checkEmailExists();
-      
+
       if (emailExists) {
         // Show alert and set error
         alert(`This email is already registered. Please use a different email or login with your existing account.`);
-        
+
         // Set a specific email error
         setErrors({
           email: `Email already registered`
         });
-        
+
         setIsLoading(false);
         return; // Stop execution here
       }
-      
+
       // If email doesn't exist, proceed with registration
       let endpoint;
       let requestBody;
 
       if (formData.userType === "customer") {
-        endpoint = "http://localhost:8080/customer";
+        endpoint = "${API_BASE_URL}/customer";
         requestBody = {
           customerFirstName: formData.firstName,
           customerLastName: formData.lastName,
@@ -164,7 +166,7 @@ const Signup = () => {
           customerRole: "CUSTOMER"
         };
       } else if (formData.userType === "seller") {
-        endpoint = "http://localhost:8080/seller";
+        endpoint = "${API_BASE_URL}/seller";
         requestBody = {
           sellerFirstName: formData.firstName,
           sellerLastName: formData.lastName,
@@ -196,19 +198,19 @@ const Signup = () => {
       console.log('Response text:', responseText);
 
       // Fallback check for already exists message in response
-      if (responseText.toLowerCase().includes('already exists') || 
-          responseText.toLowerCase().includes('already registered')) {
-          
-          // Show alert with user type and stay on the same page
-          alert(`This email is already registered. Please use a different email or login with your existing account.`);
-          
-          // Set a specific email error
-          setErrors({
-            email: `Email already registered`
-          });
-          
-          setIsLoading(false);
-          return; // Important: stop execution here to prevent navigation
+      if (responseText.toLowerCase().includes('already exists') ||
+        responseText.toLowerCase().includes('already registered')) {
+
+        // Show alert with user type and stay on the same page
+        alert(`This email is already registered. Please use a different email or login with your existing account.`);
+
+        // Set a specific email error
+        setErrors({
+          email: `Email already registered`
+        });
+
+        setIsLoading(false);
+        return; // Important: stop execution here to prevent navigation
       }
 
       let data;
@@ -242,7 +244,7 @@ const Signup = () => {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <motion.div
       className="signup-page"
@@ -426,7 +428,7 @@ const Signup = () => {
           </p>
         </div>
       </div>
-      <motion.div 
+      <motion.div
         className="right-content"
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
