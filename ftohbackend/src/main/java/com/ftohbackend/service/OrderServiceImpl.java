@@ -23,6 +23,7 @@ import com.ftohbackend.model.Product;
 import com.ftohbackend.model.Seller;
 import com.ftohbackend.repository.CustomerRepository;
 import com.ftohbackend.repository.OrderRepository;
+import com.ftohbackend.repository.ProductRepository;
 import com.ftohbackend.repository.SellerRepository;
 
 @Service
@@ -34,6 +35,8 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	private OrderRepository orderRepository;
 	@Autowired
+	private ProductRepository productRepository;
+	@Autowired
 	private CustomerRepository customerRepository;
 	@Autowired
 	Cloudinary cloudinary;
@@ -43,8 +46,8 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	ProductService productService;
 
-	 @Autowired
-    private RazorpayService razorpayService;
+	@Autowired
+	private RazorpayService razorpayService;
 
 	@Override
 	public List<Order> getAllOrders() throws OrderException {
@@ -88,9 +91,9 @@ public class OrderServiceImpl implements OrderService {
 // 			throw new OrderException("Order, customer, or product details cannot be null");
 // 		}
 // 		Product product = productService.getProduct(order.getProduct().getProductId());
-		
+
 // 		List<Order> orders=orderRepository.findByProductProductIdAndCustomerCustomerId(order.getProduct().getProductId() , order.getCustomer().getCustomerId());
-		
+
 // 		if(orders.size() != 0 )
 // 		{
 // 			for(Order ord: orders)
@@ -102,7 +105,7 @@ public class OrderServiceImpl implements OrderService {
 // 						ord.setOrderQuantity(order.getOrderQuantity()+ord.getOrderQuantity());
 // 						orderRepository.save(ord);
 // 						return "Order added Successfully";
-						
+
 // 					}
 // 					else
 // 					{
@@ -122,111 +125,96 @@ public class OrderServiceImpl implements OrderService {
 
 // 	}
 
+	@Override
+	public String addOrder(Order order) throws OrderException, ProductException, Exception {
+		if (order == null || order.getCustomer() == null || order.getProduct() == null) {
+			throw new OrderException("Order, customer, or product details cannot be null");
+		}
 
+		Product product = productService.getProduct(order.getProduct().getProductId());
 
-@Override
-public String addOrder(Order order) throws OrderException, ProductException, Exception {
-    if (order == null || order.getCustomer() == null || order.getProduct() == null) {
-        throw new OrderException("Order, customer, or product details cannot be null");
-    }
+		// Check for existing 'in cart' orders by same customer for same product
+		List<Order> orders = orderRepository.findByProductProductIdAndCustomerCustomerId(
+				order.getProduct().getProductId(), order.getCustomer().getCustomerId());
 
-    Product product = productService.getProduct(order.getProduct().getProductId());
+		if (orders.size() != 0) {
+			for (Order ord : orders) {
+				if (ord.getOrderStatus().equalsIgnoreCase("incart")
+						|| ord.getOrderStatus().equalsIgnoreCase("in cart")) {
+					// int totalQty = order.getOrderQuantity() + ord.getOrderQuantity();
+					int totalQty = order.getOrderQuantity().intValue() + ord.getOrderQuantity().intValue();
 
-    // Check for existing 'in cart' orders by same customer for same product
-    List<Order> orders = orderRepository.findByProductProductIdAndCustomerCustomerId(
-        order.getProduct().getProductId(),
-        order.getCustomer().getCustomerId()
-    );
+					if (totalQty <= product.getProductQuantity()) {
+						// ord.setOrderQuantity(totalQty);
+						ord.setOrderQuantity((double) totalQty);
 
-    if (orders.size() != 0) {
-        for (Order ord : orders) {
-            if (ord.getOrderStatus().equalsIgnoreCase("incart") || ord.getOrderStatus().equalsIgnoreCase("in cart")) {
-                //int totalQty = order.getOrderQuantity() + ord.getOrderQuantity();
-                int totalQty = order.getOrderQuantity().intValue() + ord.getOrderQuantity().intValue();
+						// Razorpay integration
+						int totalAmountPaise = (int) (totalQty * product.getProductPrice() * 100);
+						String razorpayOrderId = razorpayService.createOrder(totalAmountPaise, "INR",
+								"rcpt_" + order.getCustomer().getCustomerId() + "_" + System.currentTimeMillis());
 
+						ord.setRazorpayOrderId(razorpayOrderId);
+						ord.setPaymentStatus("Pending");
 
-                if (totalQty <= product.getProductQuantity()) {
-                   // ord.setOrderQuantity(totalQty);
-                    ord.setOrderQuantity((double) totalQty);
+						orderRepository.save(ord);
+						return "Order updated successfully. Razorpay Order ID: " + razorpayOrderId;
+					} else {
+						return "Order quantity exceeded available stock.";
+					}
+				}
+			}
+		}
 
+		// If no existing cart entry, create a new one
+		if (order.getOrderQuantity() <= product.getProductQuantity()) {
+			int totalAmountPaise = (int) (order.getOrderQuantity() * product.getProductPrice() * 100);
 
-                    // Razorpay integration
-                    int totalAmountPaise = (int) (totalQty * product.getProductPrice() * 100);
-                    String razorpayOrderId = razorpayService.createOrder(
-                        totalAmountPaise,
-                        "INR",
-                        "rcpt_" + order.getCustomer().getCustomerId() + "_" + System.currentTimeMillis()
-                    );
+			String razorpayOrderId = razorpayService.createOrder(totalAmountPaise, "INR",
+					"rcpt_" + order.getCustomer().getCustomerId() + "_" + System.currentTimeMillis());
 
-                    ord.setRazorpayOrderId(razorpayOrderId);
-                    ord.setPaymentStatus("Pending");
+			order.setRazorpayOrderId(razorpayOrderId);
+			order.setPaymentStatus("Pending");
+			order.setOrderStatus("incart"); // default cart status
+			orderRepository.save(order);
 
-                    orderRepository.save(ord);
-                    return "Order updated successfully. Razorpay Order ID: " + razorpayOrderId;
-                } else {
-                    return "Order quantity exceeded available stock.";
-                }
-            }
-        }
-    }
+			return "Order placed successfully. Razorpay Order ID: " + razorpayOrderId;
+		} else {
+			return "Order Unsuccessful. Not enough stock available.";
+		}
+	}
 
-    // If no existing cart entry, create a new one
-    if (order.getOrderQuantity() <= product.getProductQuantity()) {
-        int totalAmountPaise = (int) (order.getOrderQuantity() * product.getProductPrice() * 100);
+	@Override
+	public String updatePaymentDetails(String razorpayOrderId, String receiptId, String paymentStatus)
+			throws OrderException {
+		Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
+				.orElseThrow(() -> new OrderException("Order not found with Razorpay Order ID: " + razorpayOrderId));
 
-        String razorpayOrderId = razorpayService.createOrder(
-            totalAmountPaise,
-            "INR",
-            "rcpt_" + order.getCustomer().getCustomerId() + "_" + System.currentTimeMillis()
-        );
+		order.setReceiptId(receiptId);
+		order.setPaymentStatus(paymentStatus);
+		orderRepository.save(order);
 
-        order.setRazorpayOrderId(razorpayOrderId);
-        order.setPaymentStatus("Pending");
-        order.setOrderStatus("incart"); // default cart status
-        orderRepository.save(order);
+		return "Payment details updated successfully.";
+	}
 
-        return "Order placed successfully. Razorpay Order ID: " + razorpayOrderId;
-    } else {
-        return "Order Unsuccessful. Not enough stock available.";
-    }
-}
+	@Override
+	public Order saveOrder(Order order) {
+		return orderRepository.save(order);
+	}
 
+	@Override
+	public Order getOrderByRazorpayOrderId(String razorpayOrderId) throws OrderException {
+		if (razorpayOrderId == null) {
+			throw new OrderException("Razorpay Order ID cannot be null");
+		}
 
-    @Override
-    public String updatePaymentDetails(String razorpayOrderId, String receiptId, String paymentStatus)
-            throws OrderException {
-        Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
-                .orElseThrow(() -> new OrderException("Order not found with Razorpay Order ID: " + razorpayOrderId));
+		// Use Optional's orElseThrow to throw exception if the order is not found
+		Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
+				.orElseThrow(() -> new OrderException("Order not found with Razorpay Order ID: " + razorpayOrderId));
 
-        order.setReceiptId(receiptId);
-        order.setPaymentStatus(paymentStatus);
-        orderRepository.save(order);
+		return order;
+	}
 
-        return "Payment details updated successfully.";
-    }
-
-    @Override
-    public Order saveOrder(Order order) {
-        return orderRepository.save(order);
-    }
-    
-    @Override
-    public Order getOrderByRazorpayOrderId(String razorpayOrderId) throws OrderException {
-        if (razorpayOrderId == null) {
-            throw new OrderException("Razorpay Order ID cannot be null");
-        }
-        
-        // Use Optional's orElseThrow to throw exception if the order is not found
-        Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
-            .orElseThrow(() -> new OrderException("Order not found with Razorpay Order ID: " + razorpayOrderId));
-
-        return order;
-    }
-
-
-	//==========================================================================================
-
-   
+	// ==========================================================================================
 
 	@Override
 	public List<Order> getOrdersBySellerId(Integer sellerId) throws OrderException {
@@ -255,172 +243,164 @@ public String addOrder(Order order) throws OrderException, ProductException, Exc
 
 	@Override
 	public String updateOrderStatus(Integer orderId, String newStatus)
-	        throws Exception, OrderException, ProductException {
+			throws Exception, OrderException, ProductException {
 
-	    if (orderId == null) {
-	        throw new OrderException("Order ID cannot be null");
-	    }
+		if (orderId == null) {
+			throw new OrderException("Order ID cannot be null");
+		}
 
-	    Order order = orderRepository.findById(orderId)
-	            .orElseThrow(() -> new OrderException("Order not found with ID: " + orderId));
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new OrderException("Order not found with ID: " + orderId));
 
-	    // Validate the new status
-	    if (!isValidOrderStatus(newStatus)) {
-	        throw new OrderException("Invalid order status: " + newStatus);
-	    }
-	    
-	    // Check if order is already refunded or exchanged - prevent any further status changes
-	    if (order.getOrderStatus() != null && 
-	        (order.getOrderStatus().equalsIgnoreCase("Refunded") || 
-	         order.getOrderStatus().equalsIgnoreCase("Exchanged"))) {
-	        throw new OrderException("Order is already " + order.getOrderStatus() + ". Status cannot be changed.");
-	    }
+		// Validate the new status
+		if (!isValidOrderStatus(newStatus)) {
+			throw new OrderException("Invalid order status: " + newStatus);
+		}
 
-	    // Check if order is already delivered - only allow special status changes
-	    if (order.getOrderStatus() != null && 
-	        order.getOrderStatus().equalsIgnoreCase("Delivered") && 
-	        !newStatus.equalsIgnoreCase("Refunded") && 
-	        !newStatus.equalsIgnoreCase("Exchanged")) {
-	        throw new OrderException("Order is already delivered. Status can only be changed to Refunded or Exchanged.");
-	    }
+		// Check if order is already refunded or exchanged - prevent any further status
+		// changes
+		if (order.getOrderStatus() != null && (order.getOrderStatus().equalsIgnoreCase("Refunded")
+				|| order.getOrderStatus().equalsIgnoreCase("Exchanged"))) {
+			throw new OrderException("Order is already " + order.getOrderStatus() + ". Status cannot be changed.");
+		}
 
-	    Product product = order.getProduct();
+		// Check if order is already delivered - only allow special status changes
+		if (order.getOrderStatus() != null && order.getOrderStatus().equalsIgnoreCase("Delivered")
+				&& !newStatus.equalsIgnoreCase("Refunded") && !newStatus.equalsIgnoreCase("Exchanged")) {
+			throw new OrderException(
+					"Order is already delivered. Status can only be changed to Refunded or Exchanged.");
+		}
 
-	    if (newStatus.equalsIgnoreCase("ordered")) {
+		Product product = order.getProduct();
 
-	        if (product == null) {
-	            throw new ProductException("Product not found in the order");
-	        }
+		if (newStatus.equalsIgnoreCase("ordered")) {
 
-	        if (product.getProductQuantity() >= order.getOrderQuantity()) {
-	            product.setProductQuantity(product.getProductQuantity() - order.getOrderQuantity());
-	            productService.updateProduct(product.getProductId(), product);
+			if (product == null) {
+				throw new ProductException("Product not found in the order");
+			}
 
-	            order.setOrderStatus(newStatus);
-	            orderRepository.save(order);
+			if (product.getProductQuantity() >= order.getOrderQuantity()) {
+				product.setProductQuantity(product.getProductQuantity() - order.getOrderQuantity());
+				productService.updateProduct(product.getProductId(), product);
 
-	            // Send email to seller
-	            if (product.getSeller() != null) {
-	                String sellerEmail = product.getSeller().getSellerEmail();
-	                String subject = "New Order Received";
-	                String body = "You have received a new order for your product: " + product.getProductName()
-	                        + "\nOrder ID: " + order.getOrderId()
-	                        + "\nQuantity: " + order.getOrderQuantity();
+				order.setOrderStatus(newStatus);
+				orderRepository.save(order);
 
-	                try {
-	                    emailService.sendMail(new MailBody(sellerEmail, subject, body));
-	                    System.out.println("Order mail sent to seller: " + sellerEmail);
-	                } catch (Exception e) {
-	                    System.out.println("Failed to send order mail to seller: " + e.getMessage());
-	                    e.printStackTrace();
-	                    return "Order placed, but failed to notify seller via email.";
-	                }
-	            } else {
-	                System.out.println("Seller information is missing.");
-	                return "Order placed successfully, but seller info is missing.";
-	            }
+				// Send email to seller
+				if (product.getSeller() != null) {
+					String sellerEmail = product.getSeller().getSellerEmail();
+					String subject = "New Order Received";
+					String body = "You have received a new order for your product: " + product.getProductName()
+							+ "\nOrder ID: " + order.getOrderId() + "\nQuantity: " + order.getOrderQuantity();
 
-	            return "Order placed successfully and seller notified.";
-	        } else {
-	            order.setOrderStatus("failed");
-	            orderRepository.save(order);
-	            return "Order failed: Insufficient product quantity.";
-	        }
+					try {
+						emailService.sendMail(new MailBody(sellerEmail, subject, body));
+						System.out.println("Order mail sent to seller: " + sellerEmail);
+					} catch (Exception e) {
+						System.out.println("Failed to send order mail to seller: " + e.getMessage());
+						e.printStackTrace();
+						return "Order placed, but failed to notify seller via email.";
+					}
+				} else {
+					System.out.println("Seller information is missing.");
+					return "Order placed successfully, but seller info is missing.";
+				}
 
-	    } else if (newStatus.equalsIgnoreCase("delivered")) {
+				return "Order placed successfully and seller notified.";
+			} else {
+				order.setOrderStatus("failed");
+				orderRepository.save(order);
+				return "Order failed: Insufficient product quantity.";
+			}
 
-	        order.setOrderStatus(newStatus);
-	        orderRepository.save(order);
+		} else if (newStatus.equalsIgnoreCase("delivered")) {
 
-	        // Send email to customer
-	        if (order.getCustomer() != null) {
-	            String customerEmail = order.getCustomer().getCustomerEmail();
-	            String subject = "Your Order has been Delivered";
-	            String body = "Your order for product: " + product.getProductName()
-	                    + "\nhas been delivered successfully.\nOrder ID: " + order.getOrderId()
-	                    + "\nQuantity: " + order.getOrderQuantity();
+			order.setOrderStatus(newStatus);
+			orderRepository.save(order);
 
-	            try {
-	                emailService.sendMail(new MailBody(customerEmail, subject, body));
-	                System.out.println("Delivery email sent to customer: " + customerEmail);
-	            } catch (Exception e) {
-	                System.out.println("Failed to send delivery email to customer: " + e.getMessage());
-	                e.printStackTrace();
-	                return "Order marked as delivered, but failed to notify customer via email.";
-	            }
+			// Send email to customer
+			if (order.getCustomer() != null) {
+				String customerEmail = order.getCustomer().getCustomerEmail();
+				String subject = "Your Order has been Delivered";
+				String body = "Your order for product: " + product.getProductName()
+						+ "\nhas been delivered successfully.\nOrder ID: " + order.getOrderId() + "\nQuantity: "
+						+ order.getOrderQuantity();
 
-	            return "Order delivered successfully and customer notified.";
-	        } else {
-	            System.out.println("Customer information is missing.");
-	            return "Order delivered successfully, but customer info is missing.";
-	        }
+				try {
+					emailService.sendMail(new MailBody(customerEmail, subject, body));
+					System.out.println("Delivery email sent to customer: " + customerEmail);
+				} catch (Exception e) {
+					System.out.println("Failed to send delivery email to customer: " + e.getMessage());
+					e.printStackTrace();
+					return "Order marked as delivered, but failed to notify customer via email.";
+				}
 
-	    } else if (newStatus.equalsIgnoreCase("refunded")) {
-	        // Handle refund logic
-	        order.setOrderStatus(newStatus);
-	        orderRepository.save(order);
-	        
-	        // Send email to customer about refund if needed
-	        if (order.getCustomer() != null) {
-	            String customerEmail = order.getCustomer().getCustomerEmail();
-	            String subject = "Your Order Refund Processed";
-	            String body = "Your refund for product: " + product.getProductName()
-	                    + "\nhas been processed.\nOrder ID: " + order.getOrderId()
-	                    + "\nQuantity: " + order.getOrderQuantity();
+				return "Order delivered successfully and customer notified.";
+			} else {
+				System.out.println("Customer information is missing.");
+				return "Order delivered successfully, but customer info is missing.";
+			}
 
-	            try {
-	                emailService.sendMail(new MailBody(customerEmail, subject, body));
-	                System.out.println("Refund email sent to customer: " + customerEmail);
-	            } catch (Exception e) {
-	                System.out.println("Failed to send refund email to customer: " + e.getMessage());
-	                e.printStackTrace();
-	            }
-	        }
-	        
-	        return "Order refunded successfully";
-	        
-	    } else if (newStatus.equalsIgnoreCase("exchanged")) {
-	        // Handle exchange logic
-	        order.setOrderStatus(newStatus);
-	        orderRepository.save(order);
-	        
-	        // Send email to customer about exchange if needed
-	        if (order.getCustomer() != null) {
-	            String customerEmail = order.getCustomer().getCustomerEmail();
-	            String subject = "Your Order Exchange Processed";
-	            String body = "Your exchange for product: " + product.getProductName()
-	                    + "\nhas been processed.\nOrder ID: " + order.getOrderId()
-	                    + "\nQuantity: " + order.getOrderQuantity()
-	                    + "\nPlease contact the seller for further instructions.";
+		} else if (newStatus.equalsIgnoreCase("refunded")) {
+			// Handle refund logic
+			order.setOrderStatus(newStatus);
+			orderRepository.save(order);
 
-	            try {
-	                emailService.sendMail(new MailBody(customerEmail, subject, body));
-	                System.out.println("Exchange email sent to customer: " + customerEmail);
-	            } catch (Exception e) {
-	                System.out.println("Failed to send exchange email to customer: " + e.getMessage());
-	                e.printStackTrace();
-	            }
-	        }
-	        
-	        return "Order exchange processed successfully";
-	        
-	    } else {
-	        order.setOrderStatus(newStatus);
-	        orderRepository.save(order);
-	        return "Order status updated to " + newStatus;
-	    }
+			// Send email to customer about refund if needed
+			if (order.getCustomer() != null) {
+				String customerEmail = order.getCustomer().getCustomerEmail();
+				String subject = "Your Order Refund Processed";
+				String body = "Your refund for product: " + product.getProductName()
+						+ "\nhas been processed.\nOrder ID: " + order.getOrderId() + "\nQuantity: "
+						+ order.getOrderQuantity();
+
+				try {
+					emailService.sendMail(new MailBody(customerEmail, subject, body));
+					System.out.println("Refund email sent to customer: " + customerEmail);
+				} catch (Exception e) {
+					System.out.println("Failed to send refund email to customer: " + e.getMessage());
+					e.printStackTrace();
+				}
+			}
+
+			return "Order refunded successfully";
+
+		} else if (newStatus.equalsIgnoreCase("exchanged")) {
+			// Handle exchange logic
+			order.setOrderStatus(newStatus);
+			orderRepository.save(order);
+
+			// Send email to customer about exchange if needed
+			if (order.getCustomer() != null) {
+				String customerEmail = order.getCustomer().getCustomerEmail();
+				String subject = "Your Order Exchange Processed";
+				String body = "Your exchange for product: " + product.getProductName()
+						+ "\nhas been processed.\nOrder ID: " + order.getOrderId() + "\nQuantity: "
+						+ order.getOrderQuantity() + "\nPlease contact the seller for further instructions.";
+
+				try {
+					emailService.sendMail(new MailBody(customerEmail, subject, body));
+					System.out.println("Exchange email sent to customer: " + customerEmail);
+				} catch (Exception e) {
+					System.out.println("Failed to send exchange email to customer: " + e.getMessage());
+					e.printStackTrace();
+				}
+			}
+
+			return "Order exchange processed successfully";
+
+		} else {
+			order.setOrderStatus(newStatus);
+			orderRepository.save(order);
+			return "Order status updated to " + newStatus;
+		}
 	}
 
 	private boolean isValidOrderStatus(String status) {
-	    return status != null && (
-	        status.equalsIgnoreCase("Incart") || 
-	        status.equalsIgnoreCase("Ordered") ||
-	        status.equalsIgnoreCase("Delivered") || 
-	        status.equalsIgnoreCase("Deleted") ||
-	        status.equalsIgnoreCase("Failed") ||
-	        status.equalsIgnoreCase("Refunded") ||
-	        status.equalsIgnoreCase("Exchanged")
-	    );
+		return status != null && (status.equalsIgnoreCase("Incart") || status.equalsIgnoreCase("Ordered")
+				|| status.equalsIgnoreCase("Delivered") || status.equalsIgnoreCase("Deleted")
+				|| status.equalsIgnoreCase("Failed") || status.equalsIgnoreCase("Refunded")
+				|| status.equalsIgnoreCase("Exchanged"));
 	}
 
 	@Override
@@ -460,8 +440,22 @@ public String addOrder(Order order) throws OrderException, ProductException, Exc
 	public String updateOrderQuantity(Integer orderId, Double orderQuantity) {
 		// TODO Auto-generated method stub
 		Order order = orderRepository.findById(orderId).get();
-
+		Product product=productRepository.findById(order.getProduct().getProductId()).get();
+//		System.out.println(order.getProduct());
+		if(product.getMinOrderQuantity() == null)
+		{
+			order.setOrderPrice(product.getProductPrice()*order.getOrderQuantity());
+		}
+		else if(product.getMinOrderQuantity() <= orderQuantity)
+		{
+			order.setOrderPrice(((100 - product.getDiscountPercentage())/100.0) * product.getProductPrice() * orderQuantity);
+		}
+		else
+		{
+			order.setOrderPrice(product.getProductPrice()*orderQuantity);
+		}
 		order.setOrderQuantity(orderQuantity);
+		
 		orderRepository.save(order);
 
 		return "kk";
@@ -477,7 +471,7 @@ public String addOrder(Order order) throws OrderException, ProductException, Exc
 		orderRepository.save(order);
 		return "Order Reported Thanks for Reporting";
 	}
-	
+
 //	private String uploadImage(MultipartFile file) throws IOException {
 //		try {
 //			Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
@@ -486,22 +480,15 @@ public String addOrder(Order order) throws OrderException, ProductException, Exc
 //			throw new IOException("Failed to upload image to Cloudinary", e);
 //		}
 //	}
-	
-	
+
 	private String uploadImage(MultipartFile file) throws IOException {
-	    try {
-	        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-	            "transformation", new Transformation()
-	                .width(300)
-	                .height(300)
-	                .crop("fill")
-	                .gravity("auto")
-	                .fetchFormat("webp")
-	        ));
-	        return uploadResult.get("url").toString(); // Transformed image URL
-	    } catch (IOException e) {
-	        throw new IOException("Failed to upload image to Cloudinary", e);
-	    }
+		try {
+			Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("transformation",
+					new Transformation().width(300).height(300).crop("fill").gravity("auto").fetchFormat("webp")));
+			return uploadResult.get("url").toString(); // Transformed image URL
+		} catch (IOException e) {
+			throw new IOException("Failed to upload image to Cloudinary", e);
+		}
 	}
 
 }

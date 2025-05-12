@@ -232,6 +232,22 @@ public class OrderControllerImpl implements OrderController {
 				customerorderdto.setImageUrl(product.getImageUrl());
 				customerorderdto.setProductDescription(product.getProductDescription());
 				customerorderdto.setProductQuantityType(product.getProductQuantityType());
+				System.out.println(product.getProductQuantityType());
+				customerorderdto.setDiscountPercentage(product.getDiscountPercentage());
+				customerorderdto.setMinOrderQuantity(product.getMinOrderQuantity());
+				if(product.getMinOrderQuantity() == null)
+				{
+					customerorderdto.setOrderPrice(customerorderdto.getProductPrice()*customerorderdto.getOrderQuantity());
+				}
+				else if(product.getMinOrderQuantity() == 1.0)
+				{
+					customerorderdto.setOrderPrice(((100-customerorderdto.getDiscountPercentage())/100.0) * product.getProductPrice());
+				}
+				else
+				{
+					customerorderdto.setOrderPrice(product.getProductPrice());
+				}
+				
 				customerorderdto.setOrderRatingStatus(ratingService.getRatingByOrderId(customerId) + "");
 				
 				Seller seller = product.getSeller();
@@ -265,8 +281,6 @@ public class OrderControllerImpl implements OrderController {
 				customerorderdto.setOrderStatus(order.getOrderStatus());
 				customerorderdto.setProductQuantityType(product.getProductQuantityType());
 				
-				
-
 				
 				if(ratingService.getRatingByOrderId(order.getOrderId()))
 				{
@@ -387,6 +401,19 @@ public class OrderControllerImpl implements OrderController {
 		Order order = modelMapper.map(orderDTO, Order.class);
 		order.setProduct(product);        // important
         order.setCustomer(customer);      // important
+        if(product.getMinOrderQuantity() == null)
+		{
+			order.setOrderPrice(product.getProductPrice()*order.getOrderQuantity());
+		}
+		else if(product.getMinOrderQuantity() == 1.0)
+		{
+			order.setOrderPrice(((100 - product.getDiscountPercentage())/100.0) * product.getProductPrice());
+		}
+		else
+		{
+			order.setOrderPrice(product.getProductPrice());
+		}
+//        order.setOrderPrice(product.getProductPrice());
 		order.setOrderStatus("Incart");
 
 		

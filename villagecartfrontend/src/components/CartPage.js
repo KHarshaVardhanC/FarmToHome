@@ -48,18 +48,18 @@
 
 //   const handleQuantityChange = async (orderId, newQuantity) => {
 //     if (newQuantity < 1) return;
-  
+
 //     try {
 //       // 1. Update backend (assumes you have an endpoint like this)
 //       await axios.put(`http://localhost:8080/order/update/${orderId}/${newQuantity}`);
-  
+
 //       // 2. Update state
 //       setCartItems(prevItems =>
 //         prevItems.map(item =>
 //           item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
 //         )
 //       );
-  
+
 //       // 3. Update localStorage
 //       const cart = JSON.parse(localStorage.getItem('cart')) || [];
 //       const updatedCart = cart.map(item =>
@@ -71,7 +71,7 @@
 //       alert("Failed to update quantity. Please try again.");
 //     }
 //   };
-  
+
 
 //     // const handleQuantityChange = (orderId, newQuantity) => {
 //     //   if (newQuantity < 1) return;
@@ -348,9 +348,9 @@ function CartPage() {
           productPrice: item.product?.price || item.productPrice
         }));
 
-      setCartItems(transformedItems);
+        setCartItems(transformedItems);
 
-      setError(null);
+        setError(null);
       } else {
         setCartItems([]);
         setError(null);
@@ -421,9 +421,28 @@ function CartPage() {
     }
   };
 
+  // const calculateTotal = (items = cartItems) => {
+
+  //   return items.reduce((total, item) => total + item.productPrice * item.orderQuantity, 0).toFixed(2);
+  // };
+
   const calculateTotal = (items = cartItems) => {
-    return items.reduce((total, item) => total + item.productPrice * item.orderQuantity, 0).toFixed(2);
+    return items.reduce((total, item) => {
+      const { productPrice, orderQuantity, discountPercentage = 0, minOrderQuantity = 0 } = item;
+
+      // Check if order quantity meets or exceeds minimum
+      const isEligibleForDiscount = orderQuantity >= minOrderQuantity;
+
+      // Apply discount if eligible
+      const finalPrice = isEligibleForDiscount
+        ? productPrice * (1 - discountPercentage / 100)
+        : productPrice;
+
+      // Add to total
+      return total + finalPrice * orderQuantity;
+    }, 0).toFixed(2);
   };
+
 
   const handleBuyNow = (item) => {
     setSelectedItem(item);
@@ -435,7 +454,307 @@ function CartPage() {
     setShowOrderPopup(true);
   };
 
- /*
+  /*
+   const placeOrder = async () => {
+     if (!customerId) {
+       alert('Please login to place an order.');
+       return;
+     }
+     try {
+       setPlacingOrder(true);
+       const itemsToOrder = selectedItem ? [selectedItem] : cartItems;
+   
+       // Validate the items before proceeding
+       if (!itemsToOrder || itemsToOrder.length === 0) {
+         throw new Error('No items to order');
+       }
+   
+       // Check if all items have the necessary fields (e.g., productId)
+       itemsToOrder.forEach((item, index) => {
+         if (!item.productId) {
+           console.error(`Missing productId in item at index ${index}:`, item);
+           throw new Error(`Product ID is missing from item at index ${index}`);
+       let allOrdersSuccessful = true;
+ 
+       for (const item of itemsToOrder) {
+         // Use PUT request to update order status
+         const response = await axios.put(
+           `${API_BASE_URL}/order/order/${item.orderId}/ordered`
+         );
+ 
+         console.log(response.status);
+         console.log(response.status);
+         console.log(response.status);
+         console.log(response.data);
+         // console.log(response.)
+         if ((response.status === 200 || response.status === 201) && response.data !== 'Quantity Exceeded! \n  Order failed \n try Again' ) {
+           // Remove from cart items in state
+           setCartItems(prev => prev.filter(cartItem => cartItem.orderId !== item.orderId));
+ 
+           // Update local storage cart
+           const cart = JSON.parse(localStorage.getItem('cart')) || [];
+           const updatedCart = cart.filter(cartItem => cartItem.orderId !== item.orderId);
+           localStorage.setItem('cart', JSON.stringify(updatedCart));
+         } else {
+           allOrdersSuccessful = false;
+           console.error("Order failed with status", response.status);
+         }
+         if (!item.productName) {
+           console.error(`Missing productName in item at index ${index}:`, item);
+           throw new Error(`Product Name is missing from item at index ${index}`);
+         }
+       });
+   
+       // Now that validation is complete, proceed with the order
+       const firstItem = itemsToOrder[0];
+   
+       const orderRequest = {
+         productId: parseInt(firstItem.productId),
+         customerId: parseInt(customerId),
+         orderQuantity: parseFloat(firstItem.orderQuantity),
+         orderStatus: "PENDING",
+         paymentStatus: "INITIATED"
+       };
+   
+       // Debug logging
+       console.log('Order Request:', orderRequest);
+   
+       const paymentInitRes = await axios.post(
+         "http://localhost:8080/order/payment/create", 
+         orderRequest
+       );
+   
+       if (!paymentInitRes.data) {
+         throw new Error('No response data from payment creation');
+       }
+   
+       const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
+       setOrderId(orderId); // Store the orderId
+   
+       const options = {
+         key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
+         amount: amount,
+         currency: currency || "INR",
+         order_id: orderId,
+         name: "Farm To Home",
+         description: `Order for ${firstItem.productName}`,
+         handler: async function (response) {
+           try {
+             const verificationRequest = {
+               orderId: orderId,
+               razorpayOrderId: response.razorpay_order_id,
+               razorpayPaymentId: response.razorpay_payment_id,
+               razorpaySignature: response.razorpay_signature,
+               productId: firstItem.productId,
+               customerId: parseInt(customerId),
+               orderQuantity: firstItem.orderQuantity,
+               orderStatus: "CONFIRMED",
+               paymentStatus: "COMPLETED"
+             };
+   
+             const verificationResponse = await axios.post(
+               "http://localhost:8080/order/payment/verify",
+               verificationRequest
+             );
+   
+             if (verificationResponse.status === 200) {
+               alert("Payment successful! Order confirmed.");
+               navigate("/my-orders");
+             } else {
+               alert("Payment verification failed.");
+             }
+           } catch (error) {
+             console.error("Payment verification error:", error);
+             alert("Error verifying payment: " + (error.response?.data || error.message));
+           }
+         },
+         prefill: {
+           name: "Customer",
+           email: "",
+           contact: ""
+         },
+         theme: {
+           color: "#F37254"
+         }
+       };
+       await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
+ 
+       const rzp = new window.Razorpay(options);
+       rzp.open();
+   
+       if (allOrdersSuccessful) {
+         alert("Order placed successfully!");
+         setShowOrderPopup(false);
+         navigate("/my-orders");
+       } else {
+         alert("Order Quantity Exceeded! \n  Order failed \n try Again");
+       }
+     } catch (error) {
+       console.error("Error details:", error);
+       console.error("Response data:", error.response?.data);
+       alert(error.message || error.response?.data || "An error occurred while placing the order.");
+     } finally {
+       setPlacingOrder(false);
+     }
+   };
+ 
+   */
+
+
+  // //===================
+  //   const placeOrder = async () => {
+  //     if (!customerId) {
+  //       alert('Please login to place an order.');
+  //       return;
+  //     }
+  //     try {
+  //       setPlacingOrder(true);
+  //       const itemsToOrder = selectedItem ? [selectedItem] : cartItems;
+
+  //       // Validate the items before proceeding
+  //       if (!itemsToOrder || itemsToOrder.length === 0) {
+  //         throw new Error('No items to order');
+  //       }
+
+  //       // Validate all items
+  //       itemsToOrder.forEach((item, index) => {
+  //         if (!item.productId) {
+  //           console.error(`Missing productId in item at index ${index}:`, item);
+  //           throw new Error(`Product ID is missing from item at index ${index}`);
+  //         }
+  //         if (!item.productName) {
+  //           console.error(`Missing productName in item at index ${index}:`, item);
+  //           throw new Error(`Product Name is missing from item at index ${index}`);
+  //         }
+  //       });
+
+  //       /*
+  //       // Calculate total amount for all items
+  //       const totalAmount = itemsToOrder.reduce((sum, item) => 
+  //         sum + (item.productPrice * item.orderQuantity), 0);
+
+  //       // Create order request with total amount
+  //       const orderRequest = {
+  //         productId: itemsToOrder[0].productId, // Still need one product ID for reference
+  //         customerId: parseInt(customerId),
+  //         orderQuantity: itemsToOrder.length === 1 ? 
+  //           parseFloat(itemsToOrder[0].orderQuantity) : 
+  //           itemsToOrder.reduce((sum, item) => sum + item.orderQuantity, 0),
+  //         orderStatus: "PENDING",
+  //         paymentStatus: "INITIATED",
+  //         totalAmount: totalAmount, // Add total amount to request
+  //         items: itemsToOrder.map(item => ({
+  //           productId: item.productId,
+  //           quantity: item.orderQuantity,
+  //           price: item.productPrice
+  //         }))
+  //       };
+
+
+  //       */
+
+  //       const totalAmount = Math.round(itemsToOrder.reduce((sum, item) => 
+  //         sum + (item.productPrice * item.orderQuantity), 0) * 100); // Multiply by 100 to convert to paise
+
+  //       // Create order request with total amount
+  //       const orderRequest = {
+  //         productId: itemsToOrder[0].productId,
+  //         customerId: parseInt(customerId),
+  //         orderQuantity: itemsToOrder.length === 1 ? 
+  //           parseFloat(itemsToOrder[0].orderQuantity) : 
+  //           itemsToOrder.reduce((sum, item) => sum + item.orderQuantity, 0),
+  //         orderStatus: "PENDING",
+  //         paymentStatus: "INITIATED",
+  //         totalAmount: totalAmount, // This will now be in paise
+  //         items: itemsToOrder.map(item => ({
+  //           productId: item.productId,
+  //           quantity: item.orderQuantity,
+  //           price: item.productPrice * 100 // Convert price to paise as well
+  //         }))
+  //       };
+
+  //       console.log('Order Request:', orderRequest);
+
+  //       const paymentInitRes = await axios.post(
+  //         "http://localhost:8080/order/payment/create", 
+  //         orderRequest
+  //       );
+
+  //       if (!paymentInitRes.data) {
+  //         throw new Error('No response data from payment creation');
+  //       }
+
+  //       const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
+  //       setOrderId(orderId);
+
+  //       const options = {
+  //         key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
+  //         amount: amount, // This should now reflect the total amount
+  //         currency: currency || "INR",
+  //         order_id: orderId,
+  //         name: "Farm To Home",
+  //         description: itemsToOrder.length === 1 
+  //           ? `Order for ${itemsToOrder[0].productName}`
+  //           : `Order for ${itemsToOrder.length} items`,
+  //         handler: async function (response) {
+  //           try {
+  //             const verificationRequest = {
+  //               orderId: orderId,
+  //               razorpayOrderId: response.razorpay_order_id,
+  //               razorpayPaymentId: response.razorpay_payment_id,
+  //               razorpaySignature: response.razorpay_signature,
+  //               productId: itemsToOrder[0].productId,
+  //               customerId: parseInt(customerId),
+  //               orderQuantity: orderRequest.orderQuantity,
+  //               orderStatus: "CONFIRMED",
+  //               paymentStatus: "COMPLETED",
+  //               items: itemsToOrder.map(item => ({
+  //                 productId: item.productId,
+  //                 quantity: item.orderQuantity,
+  //                 price: item.productPrice
+  //               }))
+  //             };
+
+  //             const verificationResponse = await axios.post(
+  //               "http://localhost:8080/order/payment/verify",
+  //               verificationRequest
+  //             );
+
+  //             if (verificationResponse.status === 200) {
+  //               alert("Payment successful! Order confirmed.");
+  //               navigate("/my-orders");
+  //             } else {
+  //               alert("Payment verification failed.");
+  //             }
+  //           } catch (error) {
+  //             console.error("Payment verification error:", error);
+  //             alert("Error verifying payment: " + (error.response?.data || error.message));
+  //           }
+  //         },
+  //         prefill: {
+  //           name: "Customer",
+  //           email: "",
+  //           contact: ""
+  //         },
+  //         theme: {
+  //           color: "#F37254"
+  //         }
+  //       };
+
+  //       await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
+  //       const rzp = new window.Razorpay(options);
+  //       rzp.open();
+
+  //     } catch (error) {
+  //       console.error("Error details:", error);
+  //       console.error("Response data:", error.response?.data);
+  //       alert(error.message || error.response?.data || "An error occurred while placing the order.");
+  //     } finally {
+  //       setPlacingOrder(false);
+  //     }
+  //   };
+
+
   const placeOrder = async () => {
     if (!customerId) {
       alert('Please login to place an order.');
@@ -444,81 +763,93 @@ function CartPage() {
     try {
       setPlacingOrder(true);
       const itemsToOrder = selectedItem ? [selectedItem] : cartItems;
-  
-      // Validate the items before proceeding
+
+      // Validation checks
       if (!itemsToOrder || itemsToOrder.length === 0) {
         throw new Error('No items to order');
       }
-  
-      // Check if all items have the necessary fields (e.g., productId)
+
+      // Validate all items
       itemsToOrder.forEach((item, index) => {
         if (!item.productId) {
-          console.error(`Missing productId in item at index ${index}:`, item);
           throw new Error(`Product ID is missing from item at index ${index}`);
-      let allOrdersSuccessful = true;
-
-      for (const item of itemsToOrder) {
-        // Use PUT request to update order status
-        const response = await axios.put(
-          `${API_BASE_URL}/order/order/${item.orderId}/ordered`
-        );
-
-        console.log(response.status);
-        console.log(response.status);
-        console.log(response.status);
-        console.log(response.data);
-        // console.log(response.)
-        if ((response.status === 200 || response.status === 201) && response.data !== 'Quantity Exceeded! \n  Order failed \n try Again' ) {
-          // Remove from cart items in state
-          setCartItems(prev => prev.filter(cartItem => cartItem.orderId !== item.orderId));
-
-          // Update local storage cart
-          const cart = JSON.parse(localStorage.getItem('cart')) || [];
-          const updatedCart = cart.filter(cartItem => cartItem.orderId !== item.orderId);
-          localStorage.setItem('cart', JSON.stringify(updatedCart));
-        } else {
-          allOrdersSuccessful = false;
-          console.error("Order failed with status", response.status);
         }
         if (!item.productName) {
-          console.error(`Missing productName in item at index ${index}:`, item);
           throw new Error(`Product Name is missing from item at index ${index}`);
         }
       });
-  
-      // Now that validation is complete, proceed with the order
-      const firstItem = itemsToOrder[0];
-  
+
+      // Calculate total amount in rupees first
+      // const totalAmountInRupees = itemsToOrder.reduce((sum, item) => 
+      //   sum + (parseFloat(item.productPrice) * parseFloat(item.orderQuantity)), 0);
+
+      const totalAmountInRupees = itemsToOrder.reduce((sum, item) => {
+        const {
+          productPrice,
+          orderQuantity,
+          discountPercentage = 0,
+          minOrderQuantity = 0
+        } = item;
+
+        console.log("Hello");
+        const price = parseFloat(productPrice);
+        const quantity = parseFloat(orderQuantity);
+
+        const isEligibleForDiscount = quantity >= minOrderQuantity;
+        const finalPrice = isEligibleForDiscount
+          ? price * (1 - discountPercentage / 100)
+          : price;
+
+        return sum + finalPrice * quantity;
+      }, 0).toFixed(2);
+
+
+      // Convert to paise for Razorpay (multiply by 100)
+      const totalAmountInPaise = Math.round(totalAmountInRupees * 100);
+
+      // Create order request
       const orderRequest = {
-        productId: parseInt(firstItem.productId),
+        productId: itemsToOrder[0].productId,
         customerId: parseInt(customerId),
-        orderQuantity: parseFloat(firstItem.orderQuantity),
+        orderQuantity: itemsToOrder.length === 1 ?
+          parseFloat(itemsToOrder[0].orderQuantity) :
+          itemsToOrder.reduce((sum, item) => sum + parseFloat(item.orderQuantity), 0),
         orderStatus: "PENDING",
-        paymentStatus: "INITIATED"
+        paymentStatus: "INITIATED",
+        amount: totalAmountInPaise, // Send amount in paise
+        items: itemsToOrder.map(item => ({
+          productId: item.productId,
+          quantity: parseFloat(item.orderQuantity),
+          price: Math.round(parseFloat(item.productPrice) * 100) // Convert price to paise
+        }))
       };
-  
+
       // Debug logging
+      console.log('Total Amount in Rupees:', totalAmountInRupees);
+      console.log('Total Amount in Paise:', totalAmountInPaise);
       console.log('Order Request:', orderRequest);
-  
+
       const paymentInitRes = await axios.post(
-        "http://localhost:8080/order/payment/create", 
+        "http://localhost:8080/order/payment/create",
         orderRequest
       );
-  
+
       if (!paymentInitRes.data) {
         throw new Error('No response data from payment creation');
       }
-  
+
       const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
-      setOrderId(orderId); // Store the orderId
-  
+      setOrderId(orderId);
+
       const options = {
         key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
-        amount: amount,
+        amount: totalAmountInPaise, // Use our calculated amount
         currency: currency || "INR",
         order_id: orderId,
         name: "Farm To Home",
-        description: `Order for ${firstItem.productName}`,
+        description: itemsToOrder.length === 1
+          ? `Order for ${itemsToOrder[0].productName}`
+          : `Order for ${itemsToOrder.length} items`,
         handler: async function (response) {
           try {
             const verificationRequest = {
@@ -526,18 +857,24 @@ function CartPage() {
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
-              productId: firstItem.productId,
+              productId: itemsToOrder[0].productId,
               customerId: parseInt(customerId),
-              orderQuantity: firstItem.orderQuantity,
+              orderQuantity: orderRequest.orderQuantity,
               orderStatus: "CONFIRMED",
-              paymentStatus: "COMPLETED"
+              paymentStatus: "COMPLETED",
+              amount: totalAmountInPaise, // Include amount in verification
+              items: itemsToOrder.map(item => ({
+                productId: item.productId,
+                quantity: parseFloat(item.orderQuantity),
+                price: Math.round(parseFloat(item.productPrice) * 100)
+              }))
             };
-  
+
             const verificationResponse = await axios.post(
               "http://localhost:8080/order/payment/verify",
               verificationRequest
             );
-  
+
             if (verificationResponse.status === 200) {
               alert("Payment successful! Order confirmed.");
               navigate("/my-orders");
@@ -558,18 +895,11 @@ function CartPage() {
           color: "#F37254"
         }
       };
-      await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
 
+      await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
       const rzp = new window.Razorpay(options);
       rzp.open();
-  
-      if (allOrdersSuccessful) {
-        alert("Order placed successfully!");
-        setShowOrderPopup(false);
-        navigate("/my-orders");
-      } else {
-        alert("Order Quantity Exceeded! \n  Order failed \n try Again");
-      }
+
     } catch (error) {
       console.error("Error details:", error);
       console.error("Response data:", error.response?.data);
@@ -578,296 +908,6 @@ function CartPage() {
       setPlacingOrder(false);
     }
   };
-
-  */
-
-
-// //===================
-//   const placeOrder = async () => {
-//     if (!customerId) {
-//       alert('Please login to place an order.');
-//       return;
-//     }
-//     try {
-//       setPlacingOrder(true);
-//       const itemsToOrder = selectedItem ? [selectedItem] : cartItems;
-  
-//       // Validate the items before proceeding
-//       if (!itemsToOrder || itemsToOrder.length === 0) {
-//         throw new Error('No items to order');
-//       }
-  
-//       // Validate all items
-//       itemsToOrder.forEach((item, index) => {
-//         if (!item.productId) {
-//           console.error(`Missing productId in item at index ${index}:`, item);
-//           throw new Error(`Product ID is missing from item at index ${index}`);
-//         }
-//         if (!item.productName) {
-//           console.error(`Missing productName in item at index ${index}:`, item);
-//           throw new Error(`Product Name is missing from item at index ${index}`);
-//         }
-//       });
-  
-//       /*
-//       // Calculate total amount for all items
-//       const totalAmount = itemsToOrder.reduce((sum, item) => 
-//         sum + (item.productPrice * item.orderQuantity), 0);
-  
-//       // Create order request with total amount
-//       const orderRequest = {
-//         productId: itemsToOrder[0].productId, // Still need one product ID for reference
-//         customerId: parseInt(customerId),
-//         orderQuantity: itemsToOrder.length === 1 ? 
-//           parseFloat(itemsToOrder[0].orderQuantity) : 
-//           itemsToOrder.reduce((sum, item) => sum + item.orderQuantity, 0),
-//         orderStatus: "PENDING",
-//         paymentStatus: "INITIATED",
-//         totalAmount: totalAmount, // Add total amount to request
-//         items: itemsToOrder.map(item => ({
-//           productId: item.productId,
-//           quantity: item.orderQuantity,
-//           price: item.productPrice
-//         }))
-//       };
-
-
-//       */
-
-//       const totalAmount = Math.round(itemsToOrder.reduce((sum, item) => 
-//         sum + (item.productPrice * item.orderQuantity), 0) * 100); // Multiply by 100 to convert to paise
-      
-//       // Create order request with total amount
-//       const orderRequest = {
-//         productId: itemsToOrder[0].productId,
-//         customerId: parseInt(customerId),
-//         orderQuantity: itemsToOrder.length === 1 ? 
-//           parseFloat(itemsToOrder[0].orderQuantity) : 
-//           itemsToOrder.reduce((sum, item) => sum + item.orderQuantity, 0),
-//         orderStatus: "PENDING",
-//         paymentStatus: "INITIATED",
-//         totalAmount: totalAmount, // This will now be in paise
-//         items: itemsToOrder.map(item => ({
-//           productId: item.productId,
-//           quantity: item.orderQuantity,
-//           price: item.productPrice * 100 // Convert price to paise as well
-//         }))
-//       };
-  
-//       console.log('Order Request:', orderRequest);
-  
-//       const paymentInitRes = await axios.post(
-//         "http://localhost:8080/order/payment/create", 
-//         orderRequest
-//       );
-  
-//       if (!paymentInitRes.data) {
-//         throw new Error('No response data from payment creation');
-//       }
-  
-//       const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
-//       setOrderId(orderId);
-  
-//       const options = {
-//         key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
-//         amount: amount, // This should now reflect the total amount
-//         currency: currency || "INR",
-//         order_id: orderId,
-//         name: "Farm To Home",
-//         description: itemsToOrder.length === 1 
-//           ? `Order for ${itemsToOrder[0].productName}`
-//           : `Order for ${itemsToOrder.length} items`,
-//         handler: async function (response) {
-//           try {
-//             const verificationRequest = {
-//               orderId: orderId,
-//               razorpayOrderId: response.razorpay_order_id,
-//               razorpayPaymentId: response.razorpay_payment_id,
-//               razorpaySignature: response.razorpay_signature,
-//               productId: itemsToOrder[0].productId,
-//               customerId: parseInt(customerId),
-//               orderQuantity: orderRequest.orderQuantity,
-//               orderStatus: "CONFIRMED",
-//               paymentStatus: "COMPLETED",
-//               items: itemsToOrder.map(item => ({
-//                 productId: item.productId,
-//                 quantity: item.orderQuantity,
-//                 price: item.productPrice
-//               }))
-//             };
-  
-//             const verificationResponse = await axios.post(
-//               "http://localhost:8080/order/payment/verify",
-//               verificationRequest
-//             );
-  
-//             if (verificationResponse.status === 200) {
-//               alert("Payment successful! Order confirmed.");
-//               navigate("/my-orders");
-//             } else {
-//               alert("Payment verification failed.");
-//             }
-//           } catch (error) {
-//             console.error("Payment verification error:", error);
-//             alert("Error verifying payment: " + (error.response?.data || error.message));
-//           }
-//         },
-//         prefill: {
-//           name: "Customer",
-//           email: "",
-//           contact: ""
-//         },
-//         theme: {
-//           color: "#F37254"
-//         }
-//       };
-  
-//       await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
-//       const rzp = new window.Razorpay(options);
-//       rzp.open();
-  
-//     } catch (error) {
-//       console.error("Error details:", error);
-//       console.error("Response data:", error.response?.data);
-//       alert(error.message || error.response?.data || "An error occurred while placing the order.");
-//     } finally {
-//       setPlacingOrder(false);
-//     }
-//   };
-  
-
-const placeOrder = async () => {
-  if (!customerId) {
-    alert('Please login to place an order.');
-    return;
-  }
-  try {
-    setPlacingOrder(true);
-    const itemsToOrder = selectedItem ? [selectedItem] : cartItems;
-
-    // Validation checks
-    if (!itemsToOrder || itemsToOrder.length === 0) {
-      throw new Error('No items to order');
-    }
-
-    // Validate all items
-    itemsToOrder.forEach((item, index) => {
-      if (!item.productId) {
-        throw new Error(`Product ID is missing from item at index ${index}`);
-      }
-      if (!item.productName) {
-        throw new Error(`Product Name is missing from item at index ${index}`);
-      }
-    });
-
-    // Calculate total amount in rupees first
-    const totalAmountInRupees = itemsToOrder.reduce((sum, item) => 
-      sum + (parseFloat(item.productPrice) * parseFloat(item.orderQuantity)), 0);
-    
-    // Convert to paise for Razorpay (multiply by 100)
-    const totalAmountInPaise = Math.round(totalAmountInRupees * 100);
-
-    // Create order request
-    const orderRequest = {
-      productId: itemsToOrder[0].productId,
-      customerId: parseInt(customerId),
-      orderQuantity: itemsToOrder.length === 1 ? 
-        parseFloat(itemsToOrder[0].orderQuantity) : 
-        itemsToOrder.reduce((sum, item) => sum + parseFloat(item.orderQuantity), 0),
-      orderStatus: "PENDING",
-      paymentStatus: "INITIATED",
-      amount: totalAmountInPaise, // Send amount in paise
-      items: itemsToOrder.map(item => ({
-        productId: item.productId,
-        quantity: parseFloat(item.orderQuantity),
-        price: Math.round(parseFloat(item.productPrice) * 100) // Convert price to paise
-      }))
-    };
-
-    // Debug logging
-    console.log('Total Amount in Rupees:', totalAmountInRupees);
-    console.log('Total Amount in Paise:', totalAmountInPaise);
-    console.log('Order Request:', orderRequest);
-
-    const paymentInitRes = await axios.post(
-      "http://localhost:8080/order/payment/create", 
-      orderRequest
-    );
-
-    if (!paymentInitRes.data) {
-      throw new Error('No response data from payment creation');
-    }
-
-    const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
-    setOrderId(orderId);
-
-    const options = {
-      key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
-      amount: totalAmountInPaise, // Use our calculated amount
-      currency: currency || "INR",
-      order_id: orderId,
-      name: "Farm To Home",
-      description: itemsToOrder.length === 1 
-        ? `Order for ${itemsToOrder[0].productName}`
-        : `Order for ${itemsToOrder.length} items`,
-      handler: async function (response) {
-        try {
-          const verificationRequest = {
-            orderId: orderId,
-            razorpayOrderId: response.razorpay_order_id,
-            razorpayPaymentId: response.razorpay_payment_id,
-            razorpaySignature: response.razorpay_signature,
-            productId: itemsToOrder[0].productId,
-            customerId: parseInt(customerId),
-            orderQuantity: orderRequest.orderQuantity,
-            orderStatus: "CONFIRMED",
-            paymentStatus: "COMPLETED",
-            amount: totalAmountInPaise, // Include amount in verification
-            items: itemsToOrder.map(item => ({
-              productId: item.productId,
-              quantity: parseFloat(item.orderQuantity),
-              price: Math.round(parseFloat(item.productPrice) * 100)
-            }))
-          };
-
-          const verificationResponse = await axios.post(
-            "http://localhost:8080/order/payment/verify",
-            verificationRequest
-          );
-
-          if (verificationResponse.status === 200) {
-            alert("Payment successful! Order confirmed.");
-            navigate("/my-orders");
-          } else {
-            alert("Payment verification failed.");
-          }
-        } catch (error) {
-          console.error("Payment verification error:", error);
-          alert("Error verifying payment: " + (error.response?.data || error.message));
-        }
-      },
-      prefill: {
-        name: "Customer",
-        email: "",
-        contact: ""
-      },
-      theme: {
-        color: "#F37254"
-      }
-    };
-
-    await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-
-  } catch (error) {
-    console.error("Error details:", error);
-    console.error("Response data:", error.response?.data);
-    alert(error.message || error.response?.data || "An error occurred while placing the order.");
-  } finally {
-    setPlacingOrder(false);
-  }
-};
 
 
 
@@ -889,7 +929,7 @@ const placeOrder = async () => {
       <div className="error-message">{error}</div>
     </div>
   );
-  
+
 
   //if (loading) return <div className="cart-page"><Navbar /><div className="loading">Loading your cart...</div></div>;
   //if (error) return <div className="cart-page"><Navbar /><div className="error-message">{error}</div></div>;
@@ -920,7 +960,15 @@ const placeOrder = async () => {
                       <span>{item.orderQuantity.toFixed(1)} kg</span>
                       <button onClick={() => handleQuantityChange(item.orderId, item.orderQuantity + 1)}>+</button>
                     </div>
-                    <p className="item-total">Total: ₹{(item.productPrice * item.orderQuantity).toFixed(2)}</p>
+                    {/* <p className="item-total">Total: ₹{(item.productPrice * item.orderQuantity).toFixed(2)}</p> */}
+                    <p className="item-total">
+                      Total: ₹{(
+                        (item.orderQuantity >= item.minOrderQuantity
+                          ? item.productPrice * (1 - item.discountPercentage / 100)
+                          : item.productPrice) * item.orderQuantity
+                      ).toFixed(2)}
+                    </p>
+                    {/* <p className="item-total">Total: ₹{(item.productPrice * item.orderQuantity).toFixed(2)}</p> */}
                     <div className="item-actions">
                       <button className="buy-now-btn" onClick={() => handleBuyNow(item)}>Buy Now</button>
                       <button className="remove-btn" onClick={() => removeFromCart(item.orderId)}>Remove</button>
@@ -971,13 +1019,22 @@ const placeOrder = async () => {
                 <>
                   <h3>Order Summary ({cartItems.length} items)</h3>
                   <div className="order-items-list">
-                    {cartItems.map(item => (
-                      <div key={item.orderId} className="order-summary-item">
-                        <span>{item.productName} ({item.orderQuantity.toFixed(1)} kg)</span>
-                        <span>₹{(item.productPrice * item.orderQuantity).toFixed(2)}</span>
-                      </div>
-                    ))}
+                    {cartItems.map(item => {
+                      const isEligibleForDiscount = item.orderQuantity >= item.minOrderQuantity;
+                      const finalPrice = isEligibleForDiscount
+                        ? item.productPrice * (1 - item.discountPercentage / 100)
+                        : item.productPrice;
+                      const itemTotal = (finalPrice * item.orderQuantity).toFixed(2);
+
+                      return (
+                        <div key={item.orderId} className="order-summary-item">
+                          <span>{item.productName} ({item.orderQuantity.toFixed(1)} kg)</span>
+                          <span>₹{itemTotal}</span>
+                        </div>
+                      );
+                    })}
                   </div>
+
                   <div className="order-total">
                     <strong>Total: ₹{calculateTotal()}</strong>
                   </div>
