@@ -91,7 +91,7 @@ const Signup = () => {
   // const checkEmailExists = async () => {
   //   try {
   //     // First check customer endpoint
-  //     const customerResponse = await fetch(`http://localhost:8080/customer`);
+  //     const customerResponse = await fetch(`${API_BASE_URL}/customer`);
   //     const customerData = await customerResponse.json();
       
   //     // Check if email exists in customer data
@@ -104,7 +104,7 @@ const Signup = () => {
   //     }
       
   //     // Then check seller endpoint
-  //     const sellerResponse = await fetch(`http://localhost:8080/seller`);
+  //     const sellerResponse = await fetch(`${API_BASE_URL}/seller`);
   //     const sellerData = await sellerResponse.json();
       
   //     // Check if email exists in seller data
@@ -125,14 +125,14 @@ const Signup = () => {
 const checkEmailExists = async () => {
   try {
     // First check customer endpoint
-    const customerResponse = await fetch(`http://localhost:8080/customer`);
+    const customerResponse = await fetch(`${API_BASE_URL}/customer`);
     
     if (customerResponse.status === 409) {
       return true; // Email exists
     }
     
     // Then check seller endpoint
-    const sellerResponse = await fetch(`http://localhost:8080/seller`);
+    const sellerResponse = await fetch(`${API_BASE_URL}/seller`);
     
     if (sellerResponse.status === 409) {
       return true; // Email exists
@@ -186,7 +186,7 @@ const checkEmailExists = async () => {
       let requestBody;
 
       if (formData.userType === "customer") {
-        endpoint = "${API_BASE_URL}/customer";
+        endpoint = API_BASE_URL+"/customer";
         requestBody = {
           customerFirstName: formData.firstName,
           customerLastName: formData.lastName,
@@ -200,7 +200,7 @@ const checkEmailExists = async () => {
           customerRole: "CUSTOMER"
         };
       } else if (formData.userType === "seller") {
-        endpoint = "${API_BASE_URL}/seller";
+        endpoint = API_BASE_URL+"/seller";
         requestBody = {
           sellerFirstName: formData.firstName,
           sellerLastName: formData.lastName,
