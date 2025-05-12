@@ -39,6 +39,8 @@ public class Order {
 	@Column(nullable = false)
 	public Double orderQuantity;
 	
+	public Double orderPrice;
+	
 	String orderReportImageUrl;
 	String reportReason;
 	
