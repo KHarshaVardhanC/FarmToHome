@@ -302,6 +302,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './CustomerNavbar';
 import '../styles/CartPage.css';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function loadRazorpayScript(src) {
   return new Promise((resolve) => {
@@ -427,307 +429,7 @@ function CartPage() {
     setShowOrderPopup(true);
   };
 
- /*
-  const placeOrder = async () => {
-    if (!customerId) {
-      alert('Please login to place an order.');
-      return;
-    }
-    try {
-      setPlacingOrder(true);
-      const itemsToOrder = selectedItem ? [selectedItem] : cartItems;
-  
-      // Validate the items before proceeding
-      if (!itemsToOrder || itemsToOrder.length === 0) {
-        throw new Error('No items to order');
-      }
-  
-      // Check if all items have the necessary fields (e.g., productId)
-      itemsToOrder.forEach((item, index) => {
-        if (!item.productId) {
-          console.error(`Missing productId in item at index ${index}:`, item);
-          throw new Error(`Product ID is missing from item at index ${index}`);
-      let allOrdersSuccessful = true;
-
-      for (const item of itemsToOrder) {
-        // Use PUT request to update order status
-        const response = await axios.put(
-          `http://localhost:8080/order/order/${item.orderId}/ordered`
-        );
-
-        console.log(response.status);
-        console.log(response.status);
-        console.log(response.status);
-        console.log(response.data);
-        // console.log(response.)
-        if ((response.status === 200 || response.status === 201) && response.data !== 'Quantity Exceeded! \n  Order failed \n try Again' ) {
-          // Remove from cart items in state
-          setCartItems(prev => prev.filter(cartItem => cartItem.orderId !== item.orderId));
-
-          // Update local storage cart
-          const cart = JSON.parse(localStorage.getItem('cart')) || [];
-          const updatedCart = cart.filter(cartItem => cartItem.orderId !== item.orderId);
-          localStorage.setItem('cart', JSON.stringify(updatedCart));
-        } else {
-          allOrdersSuccessful = false;
-          console.error("Order failed with status", response.status);
-        }
-        if (!item.productName) {
-          console.error(`Missing productName in item at index ${index}:`, item);
-          throw new Error(`Product Name is missing from item at index ${index}`);
-        }
-      });
-  
-      // Now that validation is complete, proceed with the order
-      const firstItem = itemsToOrder[0];
-  
-      const orderRequest = {
-        productId: parseInt(firstItem.productId),
-        customerId: parseInt(customerId),
-        orderQuantity: parseFloat(firstItem.orderQuantity),
-        orderStatus: "PENDING",
-        paymentStatus: "INITIATED"
-      };
-  
-      // Debug logging
-      console.log('Order Request:', orderRequest);
-  
-      const paymentInitRes = await axios.post(
-        "http://localhost:8080/order/payment/create", 
-        orderRequest
-      );
-  
-      if (!paymentInitRes.data) {
-        throw new Error('No response data from payment creation');
-      }
-  
-      const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
-      setOrderId(orderId); // Store the orderId
-  
-      const options = {
-        key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
-        amount: amount,
-        currency: currency || "INR",
-        order_id: orderId,
-        name: "Farm To Home",
-        description: `Order for ${firstItem.productName}`,
-        handler: async function (response) {
-          try {
-            const verificationRequest = {
-              orderId: orderId,
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-              productId: firstItem.productId,
-              customerId: parseInt(customerId),
-              orderQuantity: firstItem.orderQuantity,
-              orderStatus: "CONFIRMED",
-              paymentStatus: "COMPLETED"
-            };
-  
-            const verificationResponse = await axios.post(
-              "http://localhost:8080/order/payment/verify",
-              verificationRequest
-            );
-  
-            if (verificationResponse.status === 200) {
-              alert("Payment successful! Order confirmed.");
-              navigate("/my-orders");
-            } else {
-              alert("Payment verification failed.");
-            }
-          } catch (error) {
-            console.error("Payment verification error:", error);
-            alert("Error verifying payment: " + (error.response?.data || error.message));
-          }
-        },
-        prefill: {
-          name: "Customer",
-          email: "",
-          contact: ""
-        },
-        theme: {
-          color: "#F37254"
-        }
-      };
-      await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-  
-      if (allOrdersSuccessful) {
-        alert("Order placed successfully!");
-        setShowOrderPopup(false);
-        navigate("/my-orders");
-      } else {
-        alert("Order Quantity Exceeded! \n  Order failed \n try Again");
-      }
-    } catch (error) {
-      console.error("Error details:", error);
-      console.error("Response data:", error.response?.data);
-      alert(error.message || error.response?.data || "An error occurred while placing the order.");
-    } finally {
-      setPlacingOrder(false);
-    }
-  };
-
-  */
-
-
-// //===================
-//   const placeOrder = async () => {
-//     if (!customerId) {
-//       alert('Please login to place an order.');
-//       return;
-//     }
-//     try {
-//       setPlacingOrder(true);
-//       const itemsToOrder = selectedItem ? [selectedItem] : cartItems;
-  
-//       // Validate the items before proceeding
-//       if (!itemsToOrder || itemsToOrder.length === 0) {
-//         throw new Error('No items to order');
-//       }
-  
-//       // Validate all items
-//       itemsToOrder.forEach((item, index) => {
-//         if (!item.productId) {
-//           console.error(`Missing productId in item at index ${index}:`, item);
-//           throw new Error(`Product ID is missing from item at index ${index}`);
-//         }
-//         if (!item.productName) {
-//           console.error(`Missing productName in item at index ${index}:`, item);
-//           throw new Error(`Product Name is missing from item at index ${index}`);
-//         }
-//       });
-  
-//       /*
-//       // Calculate total amount for all items
-//       const totalAmount = itemsToOrder.reduce((sum, item) => 
-//         sum + (item.productPrice * item.orderQuantity), 0);
-  
-//       // Create order request with total amount
-//       const orderRequest = {
-//         productId: itemsToOrder[0].productId, // Still need one product ID for reference
-//         customerId: parseInt(customerId),
-//         orderQuantity: itemsToOrder.length === 1 ? 
-//           parseFloat(itemsToOrder[0].orderQuantity) : 
-//           itemsToOrder.reduce((sum, item) => sum + item.orderQuantity, 0),
-//         orderStatus: "PENDING",
-//         paymentStatus: "INITIATED",
-//         totalAmount: totalAmount, // Add total amount to request
-//         items: itemsToOrder.map(item => ({
-//           productId: item.productId,
-//           quantity: item.orderQuantity,
-//           price: item.productPrice
-//         }))
-//       };
-
-
-//       */
-
-//       const totalAmount = Math.round(itemsToOrder.reduce((sum, item) => 
-//         sum + (item.productPrice * item.orderQuantity), 0) * 100); // Multiply by 100 to convert to paise
-      
-//       // Create order request with total amount
-//       const orderRequest = {
-//         productId: itemsToOrder[0].productId,
-//         customerId: parseInt(customerId),
-//         orderQuantity: itemsToOrder.length === 1 ? 
-//           parseFloat(itemsToOrder[0].orderQuantity) : 
-//           itemsToOrder.reduce((sum, item) => sum + item.orderQuantity, 0),
-//         orderStatus: "PENDING",
-//         paymentStatus: "INITIATED",
-//         totalAmount: totalAmount, // This will now be in paise
-//         items: itemsToOrder.map(item => ({
-//           productId: item.productId,
-//           quantity: item.orderQuantity,
-//           price: item.productPrice * 100 // Convert price to paise as well
-//         }))
-//       };
-  
-//       console.log('Order Request:', orderRequest);
-  
-//       const paymentInitRes = await axios.post(
-//         "http://localhost:8080/order/payment/create", 
-//         orderRequest
-//       );
-  
-//       if (!paymentInitRes.data) {
-//         throw new Error('No response data from payment creation');
-//       }
-  
-//       const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
-//       setOrderId(orderId);
-  
-//       const options = {
-//         key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
-//         amount: amount, // This should now reflect the total amount
-//         currency: currency || "INR",
-//         order_id: orderId,
-//         name: "Farm To Home",
-//         description: itemsToOrder.length === 1 
-//           ? `Order for ${itemsToOrder[0].productName}`
-//           : `Order for ${itemsToOrder.length} items`,
-//         handler: async function (response) {
-//           try {
-//             const verificationRequest = {
-//               orderId: orderId,
-//               razorpayOrderId: response.razorpay_order_id,
-//               razorpayPaymentId: response.razorpay_payment_id,
-//               razorpaySignature: response.razorpay_signature,
-//               productId: itemsToOrder[0].productId,
-//               customerId: parseInt(customerId),
-//               orderQuantity: orderRequest.orderQuantity,
-//               orderStatus: "CONFIRMED",
-//               paymentStatus: "COMPLETED",
-//               items: itemsToOrder.map(item => ({
-//                 productId: item.productId,
-//                 quantity: item.orderQuantity,
-//                 price: item.productPrice
-//               }))
-//             };
-  
-//             const verificationResponse = await axios.post(
-//               "http://localhost:8080/order/payment/verify",
-//               verificationRequest
-//             );
-  
-//             if (verificationResponse.status === 200) {
-//               alert("Payment successful! Order confirmed.");
-//               navigate("/my-orders");
-//             } else {
-//               alert("Payment verification failed.");
-//             }
-//           } catch (error) {
-//             console.error("Payment verification error:", error);
-//             alert("Error verifying payment: " + (error.response?.data || error.message));
-//           }
-//         },
-//         prefill: {
-//           name: "Customer",
-//           email: "",
-//           contact: ""
-//         },
-//         theme: {
-//           color: "#F37254"
-//         }
-//       };
-  
-//       await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
-//       const rzp = new window.Razorpay(options);
-//       rzp.open();
-  
-//     } catch (error) {
-//       console.error("Error details:", error);
-//       console.error("Response data:", error.response?.data);
-//       alert(error.message || error.response?.data || "An error occurred while placing the order.");
-//     } finally {
-//       setPlacingOrder(false);
-//     }
-//   };
-  
-
+ 
 const placeOrder = async () => {
   if (!customerId) {
     alert('Please login to place an order.');
@@ -789,7 +491,7 @@ const placeOrder = async () => {
     if (!paymentInitRes.data) {
       throw new Error('No response data from payment creation');
     }
-
+    //navigate("/my-orders");  
     const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
     setOrderId(orderId);
 
@@ -812,7 +514,7 @@ const placeOrder = async () => {
             productId: itemsToOrder[0].productId,
             customerId: parseInt(customerId),
             orderQuantity: orderRequest.orderQuantity,
-            orderStatus: "CONFIRMED",
+            orderStatus: "ORDERED",
             paymentStatus: "COMPLETED",
             amount: totalAmountInPaise, // Include amount in verification
             items: itemsToOrder.map(item => ({
@@ -828,14 +530,21 @@ const placeOrder = async () => {
           );
 
           if (verificationResponse.status === 200) {
-            alert("Payment successful! Order confirmed.");
+           // alert("Payment successful! Order confirmed.");
+            toast.success("Payment successful! Your order has been confirmed.");
             navigate("/my-orders");
           } else {
             alert("Payment verification failed.");
           }
         } catch (error) {
           console.error("Payment verification error:", error);
-          alert("Error verifying payment: " + (error.response?.data || error.message));
+          // alert("Error verifying payment: " + (error.response?.data || error.message));
+          const errorMsg = error.response?.data
+          ? JSON.stringify(error.response.data)
+          : error.message || "Unknown error occurred";
+
+        //alert("Error verifying payment: " + errorMsg);
+
         }
       },
       prefill: {
@@ -855,11 +564,263 @@ const placeOrder = async () => {
   } catch (error) {
     console.error("Error details:", error);
     console.error("Response data:", error.response?.data);
-    alert(error.message || error.response?.data || "An error occurred while placing the order.");
+    const errorMessage = error.response?.data?.message || error.response?.data || error.message || "Unknown error";
+    alert("Error verifying payment: " + errorMessage);
+
+   // alert(error.message || error.response?.data || "An error occurred while placing the order.");
   } finally {
     setPlacingOrder(false);
   }
 };
+const placeOrderAll = async () => {
+  if (!customerId) {
+    alert('Please login to place an order.');
+    return;
+  }
+
+  try {
+    setPlacingOrder(true);
+
+    const itemsToOrder = cartItems;
+
+    if (!itemsToOrder || itemsToOrder.length === 0) {
+      throw new Error('Your cart is empty.');
+    }
+
+    // Validate item details
+    itemsToOrder.forEach((item, index) => {
+      if (!item.productId) throw new Error(`Missing product ID at index ${index}`);
+      if (!item.productName) throw new Error(`Missing product name at index ${index}`);
+    });
+
+    const totalAmountInRupees = itemsToOrder.reduce(
+      (sum, item) => sum + (parseFloat(item.productPrice) * parseFloat(item.orderQuantity)),
+      0
+    );
+
+    const totalAmountInPaise = Math.round(totalAmountInRupees * 100);
+
+const orderRequestList = itemsToOrder.map(item => ({
+  productId: item.productId,
+  customerId: parseInt(customerId),
+  orderQuantity: parseFloat(item.orderQuantity),
+  orderStatus: "PENDING",
+  paymentStatus: "INITIATED"
+}));
+
+
+    const paymentInitRes = await axios.post(
+  "http://localhost:8080/order/payment/createAll",
+  orderRequestList
+);
+
+    if (!paymentInitRes.data) {
+      throw new Error('Payment initiation failed.');
+    }
+    //navigate('/my-orders') 
+    const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
+    setOrderId(orderId);
+
+     
+    const options = {
+  key: razorpayKey || "rzp_test_KRRNUHKH42XUxO", // Your Razorpay API key
+  amount: totalAmountInPaise, // Amount in paise (1 INR = 100 paise)
+  currency: currency || "INR", // Currency type, default is INR
+  order_id: orderId, // Razorpay order ID
+  name: "Farm To Home", // Your company name
+  description: `Order for ${itemsToOrder.length} items`, // Order description
+  handler: async function (response) {
+    try {
+      const verificationRequest = {
+        orderId: orderId, // Order ID from your database or backend
+        razorpayOrderId: response.razorpay_order_id, // Razorpay order ID
+        razorpayPaymentId: response.razorpay_payment_id, // Razorpay payment ID
+        razorpaySignature: response.razorpay_signature, // Razorpay payment signature
+        productId: itemsToOrder[0].productId, // Product ID of the first item in the order
+        customerId: parseInt(customerId), // Customer ID from your user system
+        orderQuantity: orderRequestList.orderQuantity, // Total order quantity
+        orderStatus: "ORDERED", // Status of the order
+        paymentStatus: "COMPLETED", // Payment status
+        amount: totalAmountInPaise, // Total amount in paise
+        items: itemsToOrder.map(item => ({
+          productId: item.productId, // Product ID
+          quantity: parseFloat(item.orderQuantity), // Quantity of the product
+          price: Math.round(parseFloat(item.productPrice) * 100) // Price in paise (multiplied by 100)
+        }))
+      };
+
+      // Send payment verification request to backend
+      const verificationResponse = await axios.post("http://localhost:8080/order/payment/verifyAll", verificationRequest);
+
+      // Handle backend response
+      if (verificationResponse.status === 200) {
+        alert("Payment successful! Order confirmed.");
+        navigate("/my-orders"); // Navigate to the "My Orders" page
+      } else {
+        alert("Payment verification failed.");
+      }
+    } catch (error) {
+      console.error("Payment verification error:", error);
+      alert("Error verifying payment: " + (error.response?.data || error.message));
+    }
+  },
+  prefill: {
+    name: "Customer", // Prefill customer name
+    email: "farha@gmail.com", // Prefill customer email
+    contact: "7386175772" // Prefill customer contact number
+  },
+  theme: {
+    color: "#F37254" // Razorpay payment form color
+  }
+};
+
+
+    await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+
+  } catch (error) {
+    console.error("Order Error:", error);
+    alert(error.message || "An error occurred while placing the order.");
+  } finally {
+    setPlacingOrder(false);
+  }
+};
+
+// const placeOrderAll = async () => {
+//   if (!customerId) {
+//     alert('Please login to place an order.');
+//     return;
+//   }
+
+//   try {
+//     setPlacingOrder(true);
+    
+//     // Fetch all items from the cart
+//     const itemsToOrder = cartItems;
+
+//     // Validation checks
+//     if (!itemsToOrder || itemsToOrder.length === 0) {
+//       throw new Error('No items to order');
+//     }
+
+//     // Validate all items
+//     itemsToOrder.forEach((item, index) => {
+//       if (!item.productId) {
+//         throw new Error(`Product ID is missing from item at index ${index}`);
+//       }
+//       if (!item.productName) {
+//         throw new Error(`Product Name is missing from item at index ${index}`);
+//       }
+//     });
+
+//     // Calculate total amount in rupees
+//     const totalAmountInRupees = itemsToOrder.reduce((sum, item) => 
+//       sum + (parseFloat(item.productPrice) * parseFloat(item.orderQuantity)), 0);
+
+//     // Convert to paise for Razorpay (multiply by 100)
+//     const totalAmountInPaise = Math.round(totalAmountInRupees * 100);
+
+//     // Create order request
+//     const orderRequest = {
+//       productId: itemsToOrder[0].productId,  // You can keep the first product's ID, or decide based on your requirements
+//       customerId: parseInt(customerId),
+//       orderQuantity: itemsToOrder.reduce((sum, item) => sum + parseFloat(item.orderQuantity), 0),
+//       orderStatus: "PENDING",
+//       paymentStatus: "INITIATED",
+//       amount: totalAmountInPaise,  // Send amount in paise
+//       items: itemsToOrder.map(item => ({
+//         productId: item.productId,
+//         quantity: parseFloat(item.orderQuantity),
+//         price: Math.round(parseFloat(item.productPrice) * 100)  // Convert price to paise
+//       }))
+//     };
+
+//     // Debug logging
+//     console.log('Total Amount in Rupees:', totalAmountInRupees);
+//     console.log('Total Amount in Paise:', totalAmountInPaise);
+//     console.log('Order Request:', orderRequest);
+
+//     const paymentInitRes = await axios.post(
+//       "http://localhost:8080/order/payment/create", 
+//       orderRequest
+//     );
+
+//     if (!paymentInitRes.data) {
+//       throw new Error('No response data from payment creation');
+//     }
+
+//     const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
+//     setOrderId(orderId);
+
+//     const options = {
+//       key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
+//       amount: totalAmountInPaise, // Use our calculated amount
+//       currency: currency || "INR",
+//       order_id: orderId,
+//       name: "Farm To Home",
+//       description: itemsToOrder.length === 1 
+//         ? `Order for ${itemsToOrder[0].productName}` 
+//         : `Order for ${itemsToOrder.length} items`,
+//       handler: async function (response) {
+//         try {
+//           const verificationRequest = {
+//             orderId: orderId,
+//             razorpayOrderId: response.razorpay_order_id,
+//             razorpayPaymentId: response.razorpay_payment_id,
+//             razorpaySignature: response.razorpay_signature,
+//             productId: itemsToOrder[0].productId,
+//             customerId: parseInt(customerId),
+//             orderQuantity: orderRequest.orderQuantity,
+//             orderStatus: "CONFIRMED",
+//             paymentStatus: "COMPLETED",
+//             amount: totalAmountInPaise,  // Include amount in verification
+//             items: itemsToOrder.map(item => ({
+//               productId: item.productId,
+//               quantity: parseFloat(item.orderQuantity),
+//               price: Math.round(parseFloat(item.productPrice) * 100)
+//             }))
+//           };
+
+//           const verificationResponse = await axios.post(
+//             "http://localhost:8080/order/payment/verify",
+//             verificationRequest
+//           );
+
+//           if (verificationResponse.status === 200) {
+//             alert("Payment successful! Order confirmed.");
+//             navigate("/my-orders");
+//           } else {
+//             alert("Payment verification failed.");
+//           }
+//         } catch (error) {
+//           console.error("Payment verification error:", error);
+//           alert("Error verifying payment: " + (error.response?.data || error.message));
+//         }
+//       },
+//       prefill: {
+//         name: "Customer",
+//         email: "",
+//         contact: ""
+//       },
+//       theme: {
+//         color: "#F37254"
+//       }
+//     };
+
+//     await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
+//     const rzp = new window.Razorpay(options);
+//     rzp.open();
+
+//   } catch (error) {
+//     console.error("Error details:", error);
+//     console.error("Response data:", error.response?.data);
+//     alert(error.message || error.response?.data || "An error occurred while placing the order.");
+//   } finally {
+//     setPlacingOrder(false);
+//   }
+// };
+
 
 
 
@@ -937,7 +898,7 @@ const placeOrder = async () => {
                   <span>₹{calculateTotal()}</span>
                 </div>
               </div>
-              <button className="checkout-btn" onClick={handleBuyAll}>Buy All Items</button>
+              <button className="checkout-btn" onClick={placeOrderAll}>Buy All Items</button>
             </div>
           </>
         )}
@@ -976,9 +937,11 @@ const placeOrder = async () => {
                 </>
               )}
             </div>
+
             <button className="place-order-btn" onClick={placeOrder} disabled={placingOrder}>
               {placingOrder ? "Processing..." : "Proceed to Payment"}
             </button>
+
           </div>
         </div>
       )}

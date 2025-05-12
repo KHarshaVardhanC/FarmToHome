@@ -222,6 +222,12 @@ public String addOrder(Order order) throws OrderException, ProductException, Exc
 
         return order;
     }
+    
+    
+    public List<Order> getAllOrdersByRazorpayOrderId(String razorpayOrderId) {
+        return orderRepository.findAllByRazorpayOrderId(razorpayOrderId);
+    }
+
 
 
 	//==========================================================================================

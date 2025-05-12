@@ -37,6 +37,7 @@ public interface OrderService {
 	  
 	  
 	  public Order getOrderByRazorpayOrderId(String razorpayOrderId) throws OrderException;
+	  public List<Order> getAllOrdersByRazorpayOrderId(String razorpayOrderId);
 
 
 }
