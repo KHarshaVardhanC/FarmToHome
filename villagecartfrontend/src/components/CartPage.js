@@ -48,18 +48,18 @@
 
 //   const handleQuantityChange = async (orderId, newQuantity) => {
 //     if (newQuantity < 1) return;
-  
+
 //     try {
 //       // 1. Update backend (assumes you have an endpoint like this)
 //       await axios.put(`http://localhost:8080/order/update/${orderId}/${newQuantity}`);
-  
+
 //       // 2. Update state
 //       setCartItems(prevItems =>
 //         prevItems.map(item =>
 //           item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
 //         )
 //       );
-  
+
 //       // 3. Update localStorage
 //       const cart = JSON.parse(localStorage.getItem('cart')) || [];
 //       const updatedCart = cart.map(item =>
@@ -71,7 +71,7 @@
 //       alert("Failed to update quantity. Please try again.");
 //     }
 //   };
-  
+
 
 //     // const handleQuantityChange = (orderId, newQuantity) => {
 //     //   if (newQuantity < 1) return;
@@ -350,9 +350,9 @@ function CartPage() {
           productPrice: item.product?.price || item.productPrice
         }));
 
-      setCartItems(transformedItems);
+        setCartItems(transformedItems);
 
-      setError(null);
+        setError(null);
       } else {
         setCartItems([]);
         setError(null);
@@ -423,9 +423,28 @@ function CartPage() {
     }
   };
 
+  // const calculateTotal = (items = cartItems) => {
+
+  //   return items.reduce((total, item) => total + item.productPrice * item.orderQuantity, 0).toFixed(2);
+  // };
+
   const calculateTotal = (items = cartItems) => {
-    return items.reduce((total, item) => total + item.productPrice * item.orderQuantity, 0).toFixed(2);
+    return items.reduce((total, item) => {
+      const { productPrice, orderQuantity, discountPercentage = 0, minOrderQuantity = 0 } = item;
+
+      // Check if order quantity meets or exceeds minimum
+      const isEligibleForDiscount = orderQuantity >= minOrderQuantity;
+
+      // Apply discount if eligible
+      const finalPrice = isEligibleForDiscount
+        ? productPrice * (1 - discountPercentage / 100)
+        : productPrice;
+
+      // Add to total
+      return total + finalPrice * orderQuantity;
+    }, 0).toFixed(2);
   };
+
 
   const handleBuyNow = (item) => {
     setSelectedItem(item);
@@ -850,7 +869,7 @@ const orderRequestList = itemsToOrder.map(item => ({
       <div className="error-message">{error}</div>
     </div>
   );
-  
+
 
   //if (loading) return <div className="cart-page"><Navbar /><div className="loading">Loading your cart...</div></div>;
   //if (error) return <div className="cart-page"><Navbar /><div className="error-message">{error}</div></div>;
@@ -881,7 +900,15 @@ const orderRequestList = itemsToOrder.map(item => ({
                       <span>{item.orderQuantity.toFixed(1)} kg</span>
                       <button onClick={() => handleQuantityChange(item.orderId, item.orderQuantity + 1)}>+</button>
                     </div>
-                    <p className="item-total">Total: ₹{(item.productPrice * item.orderQuantity).toFixed(2)}</p>
+                    {/* <p className="item-total">Total: ₹{(item.productPrice * item.orderQuantity).toFixed(2)}</p> */}
+                    <p className="item-total">
+                      Total: ₹{(
+                        (item.orderQuantity >= item.minOrderQuantity
+                          ? item.productPrice * (1 - item.discountPercentage / 100)
+                          : item.productPrice) * item.orderQuantity
+                      ).toFixed(2)}
+                    </p>
+                    {/* <p className="item-total">Total: ₹{(item.productPrice * item.orderQuantity).toFixed(2)}</p> */}
                     <div className="item-actions">
                       <button className="buy-now-btn" onClick={() => handleBuyNow(item)}>Buy Now</button>
                       <button className="remove-btn" onClick={() => removeFromCart(item.orderId)}>Remove</button>
@@ -932,13 +959,22 @@ const orderRequestList = itemsToOrder.map(item => ({
                 <>
                   <h3>Order Summary ({cartItems.length} items)</h3>
                   <div className="order-items-list">
-                    {cartItems.map(item => (
-                      <div key={item.orderId} className="order-summary-item">
-                        <span>{item.productName} ({item.orderQuantity.toFixed(1)} kg)</span>
-                        <span>₹{(item.productPrice * item.orderQuantity).toFixed(2)}</span>
-                      </div>
-                    ))}
+                    {cartItems.map(item => {
+                      const isEligibleForDiscount = item.orderQuantity >= item.minOrderQuantity;
+                      const finalPrice = isEligibleForDiscount
+                        ? item.productPrice * (1 - item.discountPercentage / 100)
+                        : item.productPrice;
+                      const itemTotal = (finalPrice * item.orderQuantity).toFixed(2);
+
+                      return (
+                        <div key={item.orderId} className="order-summary-item">
+                          <span>{item.productName} ({item.orderQuantity.toFixed(1)} kg)</span>
+                          <span>₹{itemTotal}</span>
+                        </div>
+                      );
+                    })}
                   </div>
+
                   <div className="order-total">
                     <strong>Total: ₹{calculateTotal()}</strong>
                   </div>
