@@ -438,7 +438,7 @@ public class OrderControllerImpl implements OrderController {
 				customerorderdto.setProductDescription(product.getProductDescription());
 				customerorderdto.setProductQuantityType(product.getProductQuantityType());
 				customerorderdto.setOrderRatingStatus(ratingService.getRatingByOrderId(customerId) + "");
-
+				
 				Seller seller = product.getSeller();
 				customerorderdto.setSellerName(seller.getSellerFirstName() + " " + seller.getSellerLastName());
 				customerorders.add(customerorderdto);
@@ -469,6 +469,9 @@ public class OrderControllerImpl implements OrderController {
 				customerorderdto.setProductDescription(product.getProductDescription());
 				customerorderdto.setOrderStatus(order.getOrderStatus());
 				customerorderdto.setProductQuantityType(product.getProductQuantityType());
+				
+				
+
 				
 				if(ratingService.getRatingByOrderId(order.getOrderId()))
 				{
@@ -544,6 +547,12 @@ public class OrderControllerImpl implements OrderController {
 				sellerorderdto.setProductDescription(product.getProductDescription());
 				sellerorderdto.setProductQuantityType(product.getProductQuantityType());
 
+				if(order.getReportReason()!=null)
+				{
+					
+					sellerorderdto.setOrderReportStatus("Reported");
+					sellerorderdto.setReportReason(order.getReportReason());
+				}
 				Customer customer = order.getCustomer();
 				sellerorderdto.setCustomerName(customer.getCustomerFirstName() + " " + customer.getCustomerLastName());
 

@@ -308,6 +308,9 @@ export default VerifyEmailPopup;
 import React, { useState } from "react";
 import "../../assets/popup.css";
 
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
+
 const VerifyEmailPopup = ({ isOpen, onClose }) => {
   const [step, setStep] = useState("verifyEmail"); // "verifyEmail", "verifyOtp", or "changePassword"
   const [email, setEmail] = useState("");
@@ -320,52 +323,52 @@ const VerifyEmailPopup = ({ isOpen, onClose }) => {
   const [successMessage, setSuccessMessage] = useState("");
 
   // Handle sending OTP
-// Update the handleSendOtp function
-const handleSendOtp = async (e) => {
-  e.preventDefault();
-  if (!email.trim()) {
-    setError("Email is required");
-    return;
-  }
-  if (!userType) {
-    setError("Please select a role");
-    return;
-  }
-  if (!/\S+@\S+\.\S+/.test(email)) {
-    setError("Invalid email format");
-    return;
-  }
-
-  setError("");
-  setIsLoading(true);
-
-  try {
-    const response = await fetch(`http://localhost:8080/auth/verifyEmail/${userType}/${email}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const data = await response.json(); // Parse the JSON response only once
-    console.log("Backend Response:", data);
-
-    if (!response.ok) {
-      throw new Error(data.error || data.message || "Failed to send OTP");
+  // Update the handleSendOtp function
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setError("Email is required");
+      return;
+    }
+    if (!userType) {
+      setError("Please select a role");
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError("Invalid email format");
+      return;
     }
 
-    setSuccessMessage(data.message || "OTP sent successfully! Check your email.");
-    setTimeout(() => {
-      setStep("verifyOtp"); // Move to the OTP verification step
-      setSuccessMessage("");
-    }, 2000);
-  } catch (error) {
-    console.error("Error in handleSendOtp:", error);
-    setError(error.message || "Failed to send OTP. Please try again.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/verifyEmail/${userType}/${email}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json(); // Parse the JSON response only once
+      console.log("Backend Response:", data);
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || "Failed to send OTP");
+      }
+
+      setSuccessMessage(data.message || "OTP sent successfully! Check your email.");
+      setTimeout(() => {
+        setStep("verifyOtp"); // Move to the OTP verification step
+        setSuccessMessage("");
+      }, 2000);
+    } catch (error) {
+      console.error("Error in handleSendOtp:", error);
+      setError(error.message || "Failed to send OTP. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Handle verifying OTP
   const handleVerifyOtp = async (e) => {
@@ -379,7 +382,7 @@ const handleSendOtp = async (e) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:8080/auth/verifyOtp/${email}/${otp}`, {
+      const response = await fetch(`${API_BASE_URL}/auth/verifyOtp/${email}/${otp}`, {
         method: "POST",
       });
 
@@ -411,7 +414,7 @@ const handleSendOtp = async (e) => {
     } finally {
       setIsLoading(false);
     }
-};
+  };
   // Handle changing password
   const handleChangePassword = async (e) => {
     e.preventDefault();
@@ -428,7 +431,7 @@ const handleSendOtp = async (e) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/auth/resetPassword", {
+      const response = await fetch("${API_BASE_URL}/auth/resetPassword", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -467,14 +470,14 @@ const handleSendOtp = async (e) => {
     } finally {
       setIsLoading(false);
     }
-};
+  };
 
   if (!isOpen) return null;
 
   return (
     <div className="popup-overlay">
       <div className="popup-content">
-      <button className="close-button" onClick={onClose}>
+        <button className="close-button" onClick={onClose}>
           <span className="close-icon">×</span>
         </button>
         {step === "verifyEmail" && (

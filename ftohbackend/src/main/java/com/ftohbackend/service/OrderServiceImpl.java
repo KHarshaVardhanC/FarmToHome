@@ -274,6 +274,21 @@ public String addOrder(Order order) throws OrderException, ProductException, Exc
 	    if (!isValidOrderStatus(newStatus)) {
 	        throw new OrderException("Invalid order status: " + newStatus);
 	    }
+	    
+	    // Check if order is already refunded or exchanged - prevent any further status changes
+	    if (order.getOrderStatus() != null && 
+	        (order.getOrderStatus().equalsIgnoreCase("Refunded") || 
+	         order.getOrderStatus().equalsIgnoreCase("Exchanged"))) {
+	        throw new OrderException("Order is already " + order.getOrderStatus() + ". Status cannot be changed.");
+	    }
+
+	    // Check if order is already delivered - only allow special status changes
+	    if (order.getOrderStatus() != null && 
+	        order.getOrderStatus().equalsIgnoreCase("Delivered") && 
+	        !newStatus.equalsIgnoreCase("Refunded") && 
+	        !newStatus.equalsIgnoreCase("Exchanged")) {
+	        throw new OrderException("Order is already delivered. Status can only be changed to Refunded or Exchanged.");
+	    }
 
 	    Product product = order.getProduct();
 
@@ -346,6 +361,55 @@ public String addOrder(Order order) throws OrderException, ProductException, Exc
 	            return "Order delivered successfully, but customer info is missing.";
 	        }
 
+	    } else if (newStatus.equalsIgnoreCase("refunded")) {
+	        // Handle refund logic
+	        order.setOrderStatus(newStatus);
+	        orderRepository.save(order);
+	        
+	        // Send email to customer about refund if needed
+	        if (order.getCustomer() != null) {
+	            String customerEmail = order.getCustomer().getCustomerEmail();
+	            String subject = "Your Order Refund Processed";
+	            String body = "Your refund for product: " + product.getProductName()
+	                    + "\nhas been processed.\nOrder ID: " + order.getOrderId()
+	                    + "\nQuantity: " + order.getOrderQuantity();
+
+	            try {
+	                emailService.sendMail(new MailBody(customerEmail, subject, body));
+	                System.out.println("Refund email sent to customer: " + customerEmail);
+	            } catch (Exception e) {
+	                System.out.println("Failed to send refund email to customer: " + e.getMessage());
+	                e.printStackTrace();
+	            }
+	        }
+	        
+	        return "Order refunded successfully";
+	        
+	    } else if (newStatus.equalsIgnoreCase("exchanged")) {
+	        // Handle exchange logic
+	        order.setOrderStatus(newStatus);
+	        orderRepository.save(order);
+	        
+	        // Send email to customer about exchange if needed
+	        if (order.getCustomer() != null) {
+	            String customerEmail = order.getCustomer().getCustomerEmail();
+	            String subject = "Your Order Exchange Processed";
+	            String body = "Your exchange for product: " + product.getProductName()
+	                    + "\nhas been processed.\nOrder ID: " + order.getOrderId()
+	                    + "\nQuantity: " + order.getOrderQuantity()
+	                    + "\nPlease contact the seller for further instructions.";
+
+	            try {
+	                emailService.sendMail(new MailBody(customerEmail, subject, body));
+	                System.out.println("Exchange email sent to customer: " + customerEmail);
+	            } catch (Exception e) {
+	                System.out.println("Failed to send exchange email to customer: " + e.getMessage());
+	                e.printStackTrace();
+	            }
+	        }
+	        
+	        return "Order exchange processed successfully";
+	        
 	    } else {
 	        order.setOrderStatus(newStatus);
 	        orderRepository.save(order);
@@ -354,9 +418,15 @@ public String addOrder(Order order) throws OrderException, ProductException, Exc
 	}
 
 	private boolean isValidOrderStatus(String status) {
-		return status != null && (status.equalsIgnoreCase("Incart") || status.equalsIgnoreCase("Ordered")
-				|| status.equalsIgnoreCase("Delivered") || status.equalsIgnoreCase("Deleted")
-				|| status.equalsIgnoreCase("Failed"));
+	    return status != null && (
+	        status.equalsIgnoreCase("Incart") || 
+	        status.equalsIgnoreCase("Ordered") ||
+	        status.equalsIgnoreCase("Delivered") || 
+	        status.equalsIgnoreCase("Deleted") ||
+	        status.equalsIgnoreCase("Failed") ||
+	        status.equalsIgnoreCase("Refunded") ||
+	        status.equalsIgnoreCase("Exchanged")
+	    );
 	}
 
 	@Override

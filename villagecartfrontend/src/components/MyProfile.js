@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "../styles/MyProfile.css";
 
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
 const MyProfile = () => {
   const [customerDetails, setCustomerDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +22,7 @@ const MyProfile = () => {
       }
 
       try {
-        const response = await fetch(`http://localhost:8080/customer/${customerId}`);
+        const response = await fetch(`${API_BASE_URL}/customer/${customerId}`);
         console.log("API Response Status:", response.status);
 
         if (!response.ok) {
@@ -60,7 +62,7 @@ const MyProfile = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/customer/${customerId}`, {
+      const response = await fetch(`${API_BASE_URL}/customer/${customerId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

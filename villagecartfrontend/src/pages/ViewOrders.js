@@ -12,6 +12,8 @@ const ViewOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedReportOrder, setSelectedReportOrder] = useState(null);
 
   const sellerId = localStorage.getItem('sellerId');
 
@@ -19,6 +21,8 @@ const ViewOrders = () => {
     // { label: 'In Cart', value: 'Incart' },
     { label: 'Ordered', value: 'Ordered' },
     { label: 'Delivered', value: 'Delivered' },
+    { label: 'Refunded', value: 'Refunded' },
+    { label: 'Exchanged', value: 'Exchanged' },
     // { label: 'Deleted', value: 'Deleted' },
     { label: 'Failed', value: 'Failed' }
   ];
@@ -43,15 +47,32 @@ const ViewOrders = () => {
     setShowModal(true);
   };
 
+  const handleViewReport = (order) => {
+    setSelectedReportOrder(order);
+    setShowReportModal(true);
+  };
+  // Updates for handleStatusUpdate function
   const handleStatusUpdate = async (orderId, newStatus) => {
-    // Check if current order is delivered before making API call
+    // Check if current order is already refunded or exchanged before making API call
     const currentOrder = orders.find(o => o.orderId === orderId);
-    
-    if (currentOrder && currentOrder.orderStatus?.toLowerCase() === 'delivered') {
-      window.alert('❌ Order is already delivered. Status cannot be changed.');
+
+    // Block status change if already refunded or exchanged
+    if (currentOrder &&
+      ['refunded', 'exchanged'].includes(currentOrder.orderStatus?.toLowerCase())) {
+      window.alert(`❌ Order is already ${currentOrder.orderStatus}. Status cannot be changed.`);
       return;
     }
-    
+
+    // Allow status changes to Refunded or Exchanged even if delivered
+    const isSpecialStatusChange = ['Refunded', 'Exchanged'].includes(newStatus);
+
+    if (currentOrder &&
+      currentOrder.orderStatus?.toLowerCase() === 'delivered' &&
+      !isSpecialStatusChange) {
+      window.alert('❌ Order is already delivered. Status can only be changed to Refunded or Exchanged.');
+      return;
+    }
+
     try {
       setUpdatingStatus(true);
       await ordersApi.updateOrderStatus(orderId, newStatus);
@@ -61,6 +82,14 @@ const ViewOrders = () => {
 
       if (selectedOrder?.orderId === orderId) {
         setSelectedOrder(prev => ({ ...prev, orderStatus: newStatus }));
+      }
+
+      if (selectedReportOrder?.orderId === orderId) {
+        setSelectedReportOrder(prev => ({ ...prev, orderStatus: newStatus }));
+        // Close the report modal after handling the report
+        if (isSpecialStatusChange) {
+          setShowReportModal(false);
+        }
       }
     } catch (err) {
       let errorMessage = 'Failed to update order status. Try again.';
@@ -74,7 +103,9 @@ const ViewOrders = () => {
       }
 
       if (errorMessage.includes('already delivered')) {
-        window.alert('❌ Order is already delivered. Status cannot be changed.');
+        window.alert('❌ Order is already delivered. Status can only be changed to Refunded or Exchanged.');
+      } else if (errorMessage.includes('already Refunded') || errorMessage.includes('already Exchanged')) {
+        window.alert(`❌ ${errorMessage}`);
       } else if (errorMessage.includes('Quantity Exceeded')) {
         window.alert('❌ Quantity exceeds stock! Please update the quantity or restock.');
       } else {
@@ -85,14 +116,28 @@ const ViewOrders = () => {
     }
   };
 
+  const handleRefund = (orderId) => {
+    handleStatusUpdate(orderId, 'Refunded');
+  };
+
+  const handleExchange = (orderId) => {
+    handleStatusUpdate(orderId, 'Exchanged');
+  };
+
   const getStatusBadgeClass = (status) => {
     switch ((status || '').toLowerCase()) {
       case 'ordered': return 'bg-info';
       case 'delivered': return 'bg-success';
+      case 'refunded': return 'bg-warning';
+      case 'exchanged': return 'bg-primary';
       case 'failed': return 'bg-danger';
       // case 'deleted': return 'bg-secondary';
       default: return 'bg-warning'; // incart
     }
+  };
+
+  const hasReport = (order) => {
+    return order.reportReason && order.reportReason.trim() !== '';
   };
 
   useEffect(() => {
@@ -102,22 +147,7 @@ const ViewOrders = () => {
       return;
     }
 
-    const getOrders = async () => {
-      try {
-        setLoading(true);
-        const response = await ordersApi.getSellerOrders(sellerId);
-        const ordersData = response.data || [];
-        setOrders(ordersData);
-        // setOrders(ordersData.sort((a, b) => b.orderId - a.orderId));
-      } catch (err) {
-        console.log('Orders fetch error:', err);
-        setOrders([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getOrders();
+    fetchOrders();
   }, [sellerId]);
 
   if (loading) {
@@ -165,6 +195,7 @@ const ViewOrders = () => {
                     <th>Customer</th>
                     <th>Quantity</th>
                     <th>Status</th>
+                    <th>Reports</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -188,7 +219,7 @@ const ViewOrders = () => {
                             data-bs-toggle="dropdown"
                             data-bs-auto-close="true"
                             aria-expanded="false"
-                            disabled={updatingStatus || order.orderStatus?.toLowerCase() === 'delivered'}
+                            disabled={updatingStatus || ['refunded', 'exchanged'].includes(order.orderStatus?.toLowerCase())}
                           >
                             {statusOptions.find(s => s.value.toLowerCase() === (order.orderStatus || '').toLowerCase())?.label || 'In Cart'}
                           </button>
@@ -198,10 +229,10 @@ const ViewOrders = () => {
                                 <button
                                   className="dropdown-item"
                                   onClick={() => handleStatusUpdate(order.orderId, status.value)}
-                                  disabled={order.orderStatus?.toLowerCase() === 'delivered'}
+                                  disabled={['refunded', 'exchanged'].includes(order.orderStatus?.toLowerCase())}
                                 >
                                   {status.label}
-                                  {order.orderStatus?.toLowerCase() === 'delivered' && status.value === 'Delivered' && (
+                                  {order.orderStatus?.toLowerCase() === status.value.toLowerCase() && (
                                     <i className="fas fa-check ms-2 text-success"></i>
                                   )}
                                 </button>
@@ -209,6 +240,18 @@ const ViewOrders = () => {
                             ))}
                           </ul>
                         </div>
+                      </td>
+                      <td>
+                        {hasReport(order) ? (
+                          <button
+                            className="btn btn-sm btn-warning"
+                            onClick={() => handleViewReport(order)}
+                          >
+                            <i className="fas fa-exclamation-triangle" /> View Report
+                          </button>
+                        ) : (
+                          <span className="text-muted">No reports</span>
+                        )}
                       </td>
                       <td>
                         <button
@@ -227,7 +270,7 @@ const ViewOrders = () => {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Order Details Modal */}
       {showModal && selectedOrder && (
         <>
           <div className="modal show d-block" tabIndex="-1">
@@ -251,9 +294,109 @@ const ViewOrders = () => {
                       {selectedOrder.orderStatus}
                     </span>
                   </p>
+                  {hasReport(selectedOrder) && (
+                    <div className="alert alert-warning mt-3">
+                      <p className="mb-1"><strong>Report Issue:</strong> {selectedOrder.reportReason}</p>
+                      <button
+                        className="btn btn-sm btn-warning mt-2"
+                        onClick={() => {
+                          setShowModal(false);
+                          handleViewReport(selectedOrder);
+                        }}
+                      >
+                        <i className="fas fa-exclamation-triangle me-1"></i> View Full Report
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="modal-footer">
                   <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-backdrop fade show" />
+        </>
+      )}
+
+      {/* Order Report Modal */}
+      {showReportModal && selectedReportOrder && (
+        <>
+          <div className="modal show d-block" tabIndex="-1">
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header bg-warning text-dark">
+                  <h5 className="modal-title">
+                    <i className="fas fa-exclamation-triangle me-2"></i>
+                    Report for Order #{selectedReportOrder.orderId}
+                  </h5>
+                  <button className="btn-close" onClick={() => setShowReportModal(false)} />
+                </div>
+                <div className="modal-body">
+                  <div className="alert alert-light border">
+                    <h6>Order Details</h6>
+                    <p><strong>Product:</strong> {selectedReportOrder.productName}</p>
+                    <p><strong>Customer:</strong> {selectedReportOrder.customerName}</p>
+                    <p><strong>Order Status:</strong>
+                      <span className={`badge ${getStatusBadgeClass(selectedReportOrder.orderStatus)} ms-2`}>
+                        {selectedReportOrder.orderStatus}
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="mt-4">
+                    <h6>Issue Reported</h6>
+                    <div className="p-3 border rounded bg-light">
+                      <p className="mb-3">{selectedReportOrder.reportReason}</p>
+                    </div>
+                  </div>
+
+                  {selectedReportOrder.orderReportImageUrl && (
+                    <div className="mt-4">
+                      <h6>Report Image</h6>
+                      <div className="text-center">
+                        <img
+                          src={selectedReportOrder.orderReportImageUrl}
+                          alt="Report Image"
+                          className="img-fluid border rounded"
+                          style={{ maxHeight: '200px' }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {!['refunded', 'exchanged'].includes(selectedReportOrder.orderStatus?.toLowerCase()) && (
+                    <div className="alert alert-info mt-4">
+                      <p className="mb-0">Please select an action to resolve this customer issue.</p>
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer">
+                  {['refunded', 'exchanged'].includes(selectedReportOrder.orderStatus?.toLowerCase()) ? (
+                    <div className="w-100 text-center">
+                      <div className={`alert alert-${selectedReportOrder.orderStatus?.toLowerCase() === 'refunded' ? 'warning' : 'primary'} mb-0`}>
+                        This order has been {selectedReportOrder.orderStatus?.toLowerCase()}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <button className="btn btn-secondary" onClick={() => setShowReportModal(false)}>Close</button>
+                      <button
+                        className="btn btn-warning"
+                        onClick={() => handleRefund(selectedReportOrder.orderId)}
+                        disabled={updatingStatus}
+                      >
+                        {updatingStatus ? 'Processing...' : 'Issue Refund'}
+                      </button>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => handleExchange(selectedReportOrder.orderId)}
+                        disabled={updatingStatus}
+                      >
+                        {updatingStatus ? 'Processing...' : 'Offer Exchange'}
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

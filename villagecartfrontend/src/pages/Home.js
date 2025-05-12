@@ -16,7 +16,7 @@ const Home = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [productRatings, setProductRatings] = useState({});
   const [totalRevenue, setTotalRevenue] = useState(0);
-
+  const API_BASE_URL = process.env.BACKEND_URL;
 
   // const navigate = useNavigate();
   

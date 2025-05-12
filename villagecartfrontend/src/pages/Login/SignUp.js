@@ -5,6 +5,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import '../../assets/signupp.css';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -178,13 +180,13 @@ const checkEmailExists = async () => {
         setIsLoading(false);
         return; // Stop execution here
       }
-      
+
       // If email doesn't exist, proceed with registration
       let endpoint;
       let requestBody;
 
       if (formData.userType === "customer") {
-        endpoint = "http://localhost:8080/customer";
+        endpoint = "${API_BASE_URL}/customer";
         requestBody = {
           customerFirstName: formData.firstName,
           customerLastName: formData.lastName,
@@ -198,7 +200,7 @@ const checkEmailExists = async () => {
           customerRole: "CUSTOMER"
         };
       } else if (formData.userType === "seller") {
-        endpoint = "http://localhost:8080/seller";
+        endpoint = "${API_BASE_URL}/seller";
         requestBody = {
           sellerFirstName: formData.firstName,
           sellerLastName: formData.lastName,
@@ -230,19 +232,19 @@ const checkEmailExists = async () => {
       console.log('Response text:', responseText);
 
       // Fallback check for already exists message in response
-      if (responseText.toLowerCase().includes('already exists') || 
-          responseText.toLowerCase().includes('already registered')) {
-          
-          // Show alert with user type and stay on the same page
-          alert(`This email is already registered. Please use a different email or login with your existing account.`);
-          
-          // Set a specific email error
-          setErrors({
-            email: `Email already registered`
-          });
-          
-          setIsLoading(false);
-          return; // Important: stop execution here to prevent navigation
+      if (responseText.toLowerCase().includes('already exists') ||
+        responseText.toLowerCase().includes('already registered')) {
+
+        // Show alert with user type and stay on the same page
+        alert(`This email is already registered. Please use a different email or login with your existing account.`);
+
+        // Set a specific email error
+        setErrors({
+          email: `Email already registered`
+        });
+
+        setIsLoading(false);
+        return; // Important: stop execution here to prevent navigation
       }
 
       let data;
@@ -276,7 +278,7 @@ const checkEmailExists = async () => {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <motion.div
       className="signup-page"
@@ -460,7 +462,7 @@ const checkEmailExists = async () => {
           </p>
         </div>
       </div>
-      <motion.div 
+      <motion.div
         className="right-content"
         initial={{ opacity: 0, x: 100 }}
         animate={{ opacity: 1, x: 0 }}
