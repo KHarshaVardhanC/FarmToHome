@@ -172,7 +172,20 @@ function CustomerHomePage() {
     }
   };
 
+  // Function to check if a product has a special offer
+  const hasSpecialOffer = (product) => {
+    return product.minOrderQuantity > 0 && product.discountPercentage > 0;
+  };
+
+  // Function to calculate the discounted price
+  const calculateDiscountedPrice = (price, discountPercentage) => {
+    return (price - (price * discountPercentage / 100)).toFixed(2);
+  };
+
   const addToCart = async (product, quantity = 1) => {
+    // Always use exactly 1.0 as the default quantity
+    const initialQuantity = 1.0;
+    
     // Check if product is in stock
     if (product.productQuantity <= 0) {
       alert("Sorry, this product is out of stock");
@@ -190,12 +203,18 @@ function CustomerHomePage() {
           parseInt(item.productId) === parseInt(product.productId))
     );
 
+    // Calculate the price to use (apply discount if applicable)
+    const priceToUse = hasSpecialOffer(product) && quantity >= product.minOrderQuantity 
+      ? parseFloat(calculateDiscountedPrice(product.productPrice, product.discountPercentage))
+      : product.productPrice;
+
     if (existingItemIndex >= 0) {
       // Product exists in cart - update quantity instead of adding new item
       try {
         // Get the existing order ID
         const orderId = existingCartItems[existingItemIndex].orderId;
         const currentQuantity = existingCartItems[existingItemIndex].orderQuantity;
+        // For existing items, use the passed quantity parameter
         const newQuantity = currentQuantity + quantity;
 
         // Check if requested quantity is available
@@ -208,6 +227,19 @@ function CustomerHomePage() {
         const response = await axios.put(`http://localhost:8080/order/updateQuantity/${orderId}`, {
           orderQuantity: newQuantity
         });
+
+        // If this update qualifies for a discount that wasn't applied before, update the price too
+        if (hasSpecialOffer(product) && 
+            newQuantity >= product.minOrderQuantity && 
+            currentQuantity < product.minOrderQuantity) {
+          // Also update the price to apply the discount
+          await axios.put(`http://localhost:8080/order/updatePrice/${orderId}`, {
+            productPrice: priceToUse
+          });
+          
+          // Update local cart item with new price
+          existingCartItems[existingItemIndex].productPrice = priceToUse;
+        }
 
         if (response.status === 200) {
           // Update local state
@@ -228,12 +260,13 @@ function CustomerHomePage() {
         console.error("Error updating cart item quantity:", error);
       }
     } else {
-      // Product doesn't exist in cart - add new item
+      // Product doesn't exist in cart - add new item with quantity exactly 1.0
       const orderData = {
         productId: product.productId,
-        orderQuantity: quantity, // Use the passed quantity parameter
+        orderQuantity: initialQuantity, // Always use 1.0 for new items
         customerId: customerId ? parseInt(customerId) : null,
-        orderStatus: "IN_CART"
+        orderStatus: "IN_CART",
+        productPrice: priceToUse // Use potentially discounted price
       };
 
       try {
@@ -248,11 +281,15 @@ function CustomerHomePage() {
             orderId,
             productId: product.productId,
             productName: product.productName,
-            productPrice: product.productPrice,
+            productPrice: priceToUse, // Store the potentially discounted price
             productQuantityType: product.productQuantityType,
             imageUrl: product.imageUrl,
-            orderQuantity: quantity,
-            orderStatus: "Incart" // Match the case from API response
+            orderQuantity: initialQuantity, // Always use 1.0 for new items
+            orderStatus: "Incart", // Match the case from API response
+            // Store original and discount information for reference
+            originalPrice: product.productPrice,
+            discountPercentage: hasSpecialOffer(product) ? product.discountPercentage : 0,
+            minOrderQuantity: hasSpecialOffer(product) ? product.minOrderQuantity : 0
           };
 
           // Update the state with the new item
@@ -358,16 +395,6 @@ function CustomerHomePage() {
   // Helper function to check if description needs "See more" button
   const needsSeeMore = (description) => {
     return description && description.length > 30; // Adjust character count as needed
-  };
-
-  // Function to check if a product has a special offer
-  const hasSpecialOffer = (product) => {
-    return product.minOrderQuantity > 0 && product.discountPercentage > 0;
-  };
-
-  // Function to calculate the discounted price
-  const calculateDiscountedPrice = (price, discountPercentage) => {
-    return (price - (price * discountPercentage / 100)).toFixed(2);
   };
 
   return (
