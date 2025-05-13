@@ -1,0 +1,49 @@
+/* Store Dashboard Styles */
+.store-dashboard-page {
+    background-color: #f4f6f9;
+    min-height: 100vh;
+}
+
+.store-dashboard-page .navbar {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.store-dashboard-page .table-responsive {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.store-dashboard-page .table thead {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 10;
+}
+
+.store-dashboard-page .table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.store-dashboard-page .dropdown-toggle {
+    text-transform: capitalize;
+}
+
+.store-dashboard-page .modal-dialog {
+    max-width: 500px;
+}
+
+.store-dashboard-page .modal-body p {
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .store-dashboard-page .table-responsive {
+        font-size: 0.9rem;
+    }
+
+    .store-dashboard-page .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}

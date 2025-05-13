@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -25,7 +26,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ftohbackend.dto.CustomerOrderDTO;
 import com.ftohbackend.exception.OrderException;
-import com.ftohbackend.exception.ProductException;
 import com.ftohbackend.model.Customer;
 import com.ftohbackend.model.Order;
 import com.ftohbackend.model.Product;
@@ -35,6 +35,7 @@ import com.ftohbackend.repository.OrderRepository;
 import com.ftohbackend.repository.SellerRepository;
 import com.ftohbackend.service.OrderServiceImpl;
 import com.ftohbackend.service.ProductService;
+import com.ftohbackend.service.RazorpayService;
 
 @ExtendWith(MockitoExtension.class)
 public class OrderServiceTest {
@@ -50,6 +51,9 @@ public class OrderServiceTest {
 
     @Mock
     private ProductService productService;
+    
+    @Mock
+    private RazorpayService razorpayService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -231,13 +235,15 @@ public class OrderServiceTest {
     void testAddOrder_Success() throws Exception {
         when(productService.getProduct(anyInt())).thenReturn(testProduct);
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+        when(razorpayService.createOrder(anyInt(), anyString(), anyString())).thenReturn("order_123456");
 
         String result = orderService.addOrder(testOrder);
 
-        assertEquals("Order Successful", result);
+        assertEquals("Order placed successfully. Razorpay Order ID: order_123456", result);
         verify(productService, times(1)).getProduct(testProduct.getProductId());
         verify(productService, times(1)).updateProduct(eq(testProduct.getProductId()), any(Product.class));
         verify(orderRepository, times(1)).save(testOrder);
+        verify(razorpayService, times(1)).createOrder(anyInt(), anyString(), anyString());
     }
 
     @Test
@@ -249,14 +255,15 @@ public class OrderServiceTest {
 
         String result = orderService.addOrder(testOrder);
 
-        assertEquals("Order Unsuccessful and Not had Sufficient Quantity", result);
+        assertEquals("Order Unsuccessful. Not enough stock available.", result);
         verify(productService, times(1)).getProduct(testProduct.getProductId());
         verify(productService, never()).updateProduct(anyInt(), any(Product.class));
         verify(orderRepository, never()).save(any(Order.class));
+        verify(razorpayService, never()).createOrder(anyInt(), anyString(), anyString());
     }
 
     @Test
-    void testAddOrder_NullOrder() throws ProductException {
+    void testAddOrder_NullOrder() throws Exception {
         Exception exception = assertThrows(OrderException.class, () -> {
             orderService.addOrder(null);
         });
@@ -264,10 +271,11 @@ public class OrderServiceTest {
         assertEquals("Order, customer, or product details cannot be null", exception.getMessage());
         verify(productService, never()).getProduct(anyInt());
         verify(orderRepository, never()).save(any(Order.class));
+        verify(razorpayService, never()).createOrder(anyInt(), anyString(), anyString());
     }
 
     @Test
-    void testAddOrder_NullCustomer() throws ProductException {
+    void testAddOrder_NullCustomer() throws Exception {
         testOrder.setCustomer(null);
         
         Exception exception = assertThrows(OrderException.class, () -> {
@@ -277,10 +285,11 @@ public class OrderServiceTest {
         assertEquals("Order, customer, or product details cannot be null", exception.getMessage());
         verify(productService, never()).getProduct(anyInt());
         verify(orderRepository, never()).save(any(Order.class));
+        verify(razorpayService, never()).createOrder(anyInt(), anyString(), anyString());
     }
 
     @Test
-    void testAddOrder_NullProduct() throws ProductException {
+    void testAddOrder_NullProduct() throws Exception {
         testOrder.setProduct(null);
         
         Exception exception = assertThrows(OrderException.class, () -> {
@@ -290,6 +299,7 @@ public class OrderServiceTest {
         assertEquals("Order, customer, or product details cannot be null", exception.getMessage());
         verify(productService, never()).getProduct(anyInt());
         verify(orderRepository, never()).save(any(Order.class));
+        verify(razorpayService, never()).createOrder(anyInt(), anyString(), anyString());
     }
 
     @Test
@@ -358,7 +368,7 @@ public class OrderServiceTest {
 
         String result = orderService.updateOrderStatus(1, "Ordered");
 
-        assertEquals("Order Status updated Succesfully Ordered", result);
+        assertEquals("Order placed, but failed to notify seller via email.", result);
         assertEquals("Ordered", testOrder.getOrderStatus());
         verify(orderRepository, times(1)).findById(1);
         verify(productService, times(1)).updateProduct(eq(testProduct.getProductId()), any(Product.class));
@@ -375,7 +385,7 @@ public class OrderServiceTest {
 
         String result = orderService.updateOrderStatus(1, "Ordered");
 
-        assertEquals("Quantity Exceeded! \n  Order failed \n try Again", result);
+        assertEquals("Order failed: Insufficient product quantity.", result);
         assertEquals("failed", testOrder.getOrderStatus());
         verify(orderRepository, times(1)).findById(1);
         verify(productService, never()).updateProduct(anyInt(), any(Product.class));
@@ -389,7 +399,7 @@ public class OrderServiceTest {
 
         String result = orderService.updateOrderStatus(1, "Delivered");
 
-        assertEquals("Ordered Delivered Successfully", result);
+        assertEquals("Order marked as delivered, but failed to notify customer via email.", result);
         assertEquals("Delivered", testOrder.getOrderStatus());
         verify(orderRepository, times(1)).findById(1);
         verify(productService, never()).updateProduct(anyInt(), any(Product.class));
@@ -482,13 +492,14 @@ public class OrderServiceTest {
                 testProduct.getProductId(), testCustomer.getCustomerId()))
                 .thenReturn(existingOrders);
         when(orderRepository.save(any(Order.class))).thenReturn(existingOrder);
+        when(razorpayService.createOrder(anyInt(), anyString(), anyString())).thenReturn("order_123456");
         
         // Set test order quantity that when added to existing won't exceed product quantity
         testOrder.setOrderQuantity(10.0);
         
         String result = orderService.addOrder(testOrder);
         
-        assertEquals("Order added Successfully", result);
+        assertEquals("Order updated successfully. Razorpay Order ID: order_123456", result);
         // Check that quantities were combined
         assertEquals(15.0, existingOrder.getOrderQuantity());
         verify(productService, times(1)).getProduct(testProduct.getProductId());
@@ -497,6 +508,7 @@ public class OrderServiceTest {
         verify(orderRepository, times(1)).save(existingOrder);
         // Verify updateProduct was not called as that happens only for non-existing orders
         verify(productService, never()).updateProduct(anyInt(), any(Product.class));
+        verify(razorpayService, never()).createOrder(anyInt(), anyString(), anyString());
     }
 
     @Test
@@ -522,7 +534,7 @@ public class OrderServiceTest {
         
         String result = orderService.addOrder(testOrder);
         
-        assertEquals("Order Quantity Exceeded", result);
+        assertEquals("Order quantity exceeded available stock.", result);
         // Verify order quantity wasn't changed
         assertEquals(40.0, existingOrder.getOrderQuantity());
         verify(productService, times(1)).getProduct(testProduct.getProductId());
@@ -531,6 +543,7 @@ public class OrderServiceTest {
         // Verify save was not called
         verify(orderRepository, never()).save(any(Order.class));
         verify(productService, never()).updateProduct(anyInt(), any(Product.class));
+        verify(razorpayService, never()).createOrder(anyInt(), anyString(), anyString());
     }
 
     @Test
@@ -540,17 +553,19 @@ public class OrderServiceTest {
                 testProduct.getProductId(), testCustomer.getCustomerId()))
                 .thenReturn(new ArrayList<>());
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+        when(razorpayService.createOrder(anyInt(), anyString(), anyString())).thenReturn("order_123456");
         
         testOrder.setOrderQuantity(10.0);
         
         String result = orderService.addOrder(testOrder);
         
-        assertEquals("Order Successful", result);
+        assertEquals("Order placed successfully. Razorpay Order ID: order_123456", result);
         verify(productService, times(1)).getProduct(testProduct.getProductId());
         verify(orderRepository, times(1)).findByProductProductIdAndCustomerCustomerId(
                 testProduct.getProductId(), testCustomer.getCustomerId());
         verify(productService, times(1)).updateProduct(eq(testProduct.getProductId()), any(Product.class));
         verify(orderRepository, times(1)).save(testOrder);
+        verify(razorpayService, times(1)).createOrder(anyInt(), anyString(), anyString());
     }
 
     @Test
@@ -571,17 +586,19 @@ public class OrderServiceTest {
                 testProduct.getProductId(), testCustomer.getCustomerId()))
                 .thenReturn(existingOrders);
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
+        when(razorpayService.createOrder(anyInt(), anyString(), anyString())).thenReturn("order_123456");
         
         testOrder.setOrderQuantity(10.0);
         
         String result = orderService.addOrder(testOrder);
         
         // Should proceed with normal order flow since existing order is not "incart"
-        assertEquals("Order Successful", result);
+        assertEquals("Order updated successfully. Razorpay Order ID: order_123456", result);
         verify(productService, times(1)).getProduct(testProduct.getProductId());
         verify(orderRepository, times(1)).findByProductProductIdAndCustomerCustomerId(
                 testProduct.getProductId(), testCustomer.getCustomerId());
         verify(productService, times(1)).updateProduct(eq(testProduct.getProductId()), any(Product.class));
         verify(orderRepository, times(1)).save(testOrder);
+        verify(razorpayService, times(1)).createOrder(anyInt(), anyString(), anyString());
     }
 }
