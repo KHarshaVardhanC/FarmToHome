@@ -153,16 +153,16 @@ class CustomerControllerTest {
     public void givenCustomerDTOWithExistingEmail_whenAddCustomer_thenReturnErrorMessage() throws Exception {
         // given - precondition or setup
         when(mailServiceImpl.isMailExists(anyString())).thenReturn(true);
-        
+
         // when - action or behavior
         ResultActions response = mockMvc.perform(post("/customer")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(customerDTO)));
-                
+
         // then - verify the output
         response.andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(content().string("Provided Email All ready Exists"));
+                .andExpect(status().isConflict())  // Changed from isCreated() to isConflict()
+                .andExpect(content().string("Provided Email Already Exists"));
     }
     
     @Test
