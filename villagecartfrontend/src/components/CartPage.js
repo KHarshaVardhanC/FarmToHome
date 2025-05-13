@@ -154,8 +154,16 @@ function CartPage() {
 
 
 const calculateTotal = (items) => {
-  const subtotal = items.reduce((sum, item) => sum + parseFloat(item.orderPrice), 0);
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return {
+      subtotal: "0.00",
+      processingFee: "0.00",
+      total: "0.00",
+      totalAmountInRupees: 0
+    };
+  }
 
+  const subtotal = items.reduce((sum, item) => sum + parseFloat(item.orderPrice || 0), 0);
   const processingFee = parseFloat((subtotal * 0.03).toFixed(2));
   const total = parseFloat((subtotal + processingFee).toFixed(2));
 
@@ -190,7 +198,7 @@ const calculateTotal = (items) => {
 
   const handleBuyAll = () => {
     setSelectedItem(null);
-    //setShowOrderPopup(true);
+    setShowOrderPopup(true);
   };
 
 
@@ -344,7 +352,6 @@ try {
 
 
 
-
 const placeOrderAll = async () => {
   if (!customerId) {
     alert('Please login to place an order.');
@@ -366,89 +373,37 @@ const placeOrderAll = async () => {
       if (!item.productName) throw new Error(`Missing product name at index ${index}`);
     });
 
-    // const totalAmountInRupees = itemsToOrder.reduce(
-    //   (sum, item) => sum + (parseFloat(item.productPrice) * parseFloat(item.orderQuantity)),
-    //   0
-    // );
-
-    const { totalAmountInRupees } = calculateTotal(itemsToOrder);
-
-    const totalAmountInPaise = Math.round(totalAmountInRupees * 100);
-
-const orderRequestList = itemsToOrder.map(item => ({
-  productId: item.productId,
-  customerId: parseInt(customerId),
-  orderQuantity: parseFloat(item.orderQuantity),
-  orderStatus: "PENDING",
-  paymentStatus: "INITIATED"
-}));
-
-
+    // Call the backend to create Razorpay order
     const paymentInitRes = await axios.post(
-  `${API_BASE_URL}/order/payment/createAll`,
-  orderRequestList
-);
+      `${API_BASE_URL}/order/payment/createAll/${customerId}`
+    );
 
     if (!paymentInitRes.data) {
       throw new Error('Payment initiation failed.');
     }
-    //navigate('/my-orders') 
+
     const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
-    setOrderId(orderId);
 
-     
     const options = {
-  key: razorpayKey || "rzp_test_KRRNUHKH42XUxO", // Your Razorpay API key
-  amount: totalAmountInPaise, // Amount in paise (1 INR = 100 paise)
-  currency: currency || "INR", // Currency type, default is INR
-  order_id: orderId, // Razorpay order ID
-  name: "Farm To Home", // Your company name
-  description: `Order for ${itemsToOrder.length} items`, // Order description
-  handler: async function (response) {
-    try {
-      const verificationRequest = {
-        orderId: orderId, // Order ID from your database or backend
-        razorpayOrderId: response.razorpay_order_id, // Razorpay order ID
-        razorpayPaymentId: response.razorpay_payment_id, // Razorpay payment ID
-        razorpaySignature: response.razorpay_signature, // Razorpay payment signature
-        productId: itemsToOrder[0].productId, // Product ID of the first item in the order
-        customerId: parseInt(customerId), // Customer ID from your user system
-        orderQuantity: orderRequestList.orderQuantity, // Total order quantity
-        orderStatus: "ORDERED", // Status of the order
-        paymentStatus: "COMPLETED", // Payment status
-        amount: totalAmountInPaise, // Total amount in paise
-        items: itemsToOrder.map(item => ({
-          productId: item.productId, // Product ID
-          quantity: parseFloat(item.orderQuantity), // Quantity of the product
-          price: Math.round(parseFloat(item.productPrice) * 100) // Price in paise (multiplied by 100)
-        }))
-      };
-
-      // Send payment verification request to backend
-      // const verificationResponse = await axios.post(`${API_BASE_URL}/order/payment/verifyAll`, verificationRequest);
-
-      // Handle backend response
-      // if (verificationResponse.status === 200) {
-         toast.success("Payment successful! Your order has been confirmed.");
-          navigate("/my-orders");
-      // } else {
-      //   alert("Payment verification failed.");
-      // }
-    } catch (error) {
-      console.error("Payment verification error:", error);
-      alert("Error verifying payment: " + (error.response?.data || error.message));
-    }
-  },
-  prefill: {
-    name: "Customer", // Prefill customer name
-    email: "farha@gmail.com", // Prefill customer email
-    contact: "7386175772" // Prefill customer contact number
-  },
-  theme: {
-    color: "#F37254" // Razorpay payment form color
-  }
-};
-
+      key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
+      amount: amount, // already in paise from backend
+      currency: currency || "INR",
+      order_id: orderId,
+      name: "Farm To Home",
+      description: `Order for ${itemsToOrder.length} items`,
+      handler: function (response) {
+        toast.success("Payment successful! Your order has been confirmed.");
+        navigate("/my-orders");
+      },
+      prefill: {
+        name: "Customer",
+        email: "farha@gmail.com",
+        contact: "7386175772"
+      },
+      theme: {
+        color: "#F37254"
+      }
+    };
 
     await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
     const rzp = new window.Razorpay(options);
@@ -461,80 +416,7 @@ const orderRequestList = itemsToOrder.map(item => ({
     setPlacingOrder(false);
   }
 };
- 
 
-// const placeOrderAll = async () => {
-//   if (!customerId) {
-//     alert('Please login to place an order.');
-//     return;
-//   }
-
-//   try {
-//     setPlacingOrder(true);
-
-//     const itemsToOrder = cartItems;
-//     if (!itemsToOrder.length) {
-//       throw new Error('Your cart is empty.');
-//     }
-
-//     // Validate item details
-//     itemsToOrder.forEach((item, index) => {
-//       if (!item.productId)   throw new Error(`Missing product ID at index ${index}`);
-//       if (!item.productName) throw new Error(`Missing product name at index ${index}`);
-//     });
-
-//     const { totalAmountInRupees } = calculateTotal(itemsToOrder);
-//     const totalAmountInPaise = Math.round(totalAmountInRupees * 100);
-
-//     // Build List<OrderDTO> payload
-//     const orderRequestList = itemsToOrder.map(item => ({
-//       orderId:    item.orderId,
-//       customerId: customerId
-//     }));
-
-//     // Create the combined Razorpay order
-//     const paymentInitRes = await axios.post(
-//       `${API_BASE_URL}/order/payment/createAll`,
-//       orderRequestList
-//     );
-//     if (!paymentInitRes.data) {
-//       throw new Error('Payment initiation failed.');
-//     }
-
-//     const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
-//     setOrderId(orderId);
-
-//     // Razorpay options
-//     const options = {
-//       key:       razorpayKey,             // your key
-//       amount:    amount,                  // paise
-//       currency:  currency,                // INR
-//       order_id:  orderId,                 // Razorpay orderId
-//       name:      "Farm To Home",
-//       description: `Order for ${itemsToOrder.length} items`,
-//       handler: function (response) {
-//         // No verify step here—just acknowledge success
-//         toast.success("Payment successful! Your order has been confirmed.");
-//         navigate("/my-orders");
-//       },
-//       prefill: {
-//         name:    "Customer",
-//         email:   "farha@gmail.com",
-//         contact: "7386175772"
-//       },
-//       theme: { color: "#F37254" }
-//     };
-
-//     await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
-//     new window.Razorpay(options).open();
-
-//   } catch (error) {
-//     console.error("Order Error:", error);
-//     alert(error.message || "An error occurred while placing the order.");
-//   } finally {
-//     setPlacingOrder(false);
-//   }
-// };
 
 
 
@@ -560,135 +442,135 @@ const orderRequestList = itemsToOrder.map(item => ({
 
 
 
+
+
   return (
-    <div className="cart-page">
-      <Navbar cartCount={cartItems.length} />
-      <div className="cart-container">
-        <h1 className="cart-title">Your Shopping Cart</h1>
-        {cartItems.length === 0 ? (
-          <div className="empty-cart">
-            <p>Your cart is empty</p>
-            <button className="continue-shopping-btn" onClick={() => navigate('/customer-home')}>Continue Shopping</button>
-          </div>
-        ) : (
-          <>
-            <div className="cart-items">
-              {cartItems.map(item => (
-                <div key={item.orderId} className="cart-item">
-                  <div className="cart-item-image">
-                    <img src={item.imageUrl} alt={item.productName} />
+  <div className="cart-page">
+    <Navbar cartCount={cartItems.length} />
+    <div className="cart-container">
+      <h1 className="cart-title">Your Shopping Cart</h1>
+      {cartItems.length === 0 ? (
+        <div className="empty-cart">
+          <p>Your cart is empty</p>
+          <button className="continue-shopping-btn" onClick={() => navigate('/customer-home')}>Continue Shopping</button>
+        </div>
+      ) : (
+        <>
+          <div className="cart-items">
+            {cartItems.map(item => (
+              <div key={item.orderId} className="cart-item">
+                <div className="cart-item-image">
+                  <img src={item.imageUrl} alt={item.productName} />
+                </div>
+                <div className="cart-item-details">
+                  <h3>{item.productName}</h3>
+                  <p className="item-price">₹{item.productPrice}/{item.productQuantityType || 'kg'}</p>
+                  <div className="quantity-controls">
+                    <button onClick={() => handleQuantityChange(item.orderId, item.orderQuantity - 1)}>-</button>
+                    <span>{item.orderQuantity.toFixed(1)} {item.productQuantityType || 'kg'}</span>
+                    <button onClick={() => handleQuantityChange(item.orderId, item.orderQuantity + 1)}>+</button>
                   </div>
-                  <div className="cart-item-details">
-                    <h3>{item.productName}</h3>
-                    {/* Use the product's quantity type instead of hardcoding 'kg' */}
-                    <p className="item-price">₹{item.productPrice}/{item.productQuantityType || 'kg'}</p>
-                    <div className="quantity-controls">
-                      <button onClick={() => handleQuantityChange(item.orderId, item.orderQuantity - 1)}>-</button>
-                      {/* Show the correct quantity type */}
-                      <span>{item.orderQuantity.toFixed(1)} {item.productQuantityType || 'kg'}</span>
-                      <button onClick={() => handleQuantityChange(item.orderId, item.orderQuantity + 1)}>+</button>
-                    </div>
-                    {/* <p className="item-total">Total: ₹{(item.productPrice * item.orderQuantity).toFixed(2)}</p> */}
-                    <p className="item-total">
-                      Total: ₹{(
-                        (item.orderQuantity >= item.minOrderQuantity
-                          ? item.productPrice * (1 - item.discountPercentage / 100)
-                          : item.productPrice) * item.orderQuantity
-                      ).toFixed(2)}
-                    </p>
-                    <div className="item-actions">
-                      <button className="buy-now-btn" onClick={() => handleBuyNow(item)}>Buy Now</button>
-                      <button className="remove-btn" onClick={() => removeFromCart(item.orderId)}>Remove</button>
-                    </div>
+                  <p className="item-total">
+                    Total: ₹{(
+                      (item.orderQuantity >= item.minOrderQuantity
+                        ? item.productPrice * (1 - item.discountPercentage / 100)
+                        : item.productPrice) * item.orderQuantity
+                    ).toFixed(2)}
+                  </p>
+                  <div className="item-actions">
+                    <button className="buy-now-btn" onClick={() => handleBuyNow(item)}>Buy Now</button>
+                    <button className="remove-btn" onClick={() => removeFromCart(item.orderId)}>Remove</button>
                   </div>
-                </div>
-              ))}
-            </div>
-            <div className="cart-summary">
-              <h2>Order Summary</h2>
-              <div className="summary-details">
-                <div className="summary-row">
-                  <span>Subtotal:</span>
-                  <span>₹{subtotal}</span>
-                </div>
-                <div className="summary-row">
-                  <span>Processing Fee (3%):</span>
-                  <span>₹{processingFee}</span>
-                </div>
-                <div className="summary-row total">
-                  <span>Total:</span>
-                  <span>₹{total}</span>
                 </div>
               </div>
-
-              <button className="checkout-btn" onClick={handleBuyAll}>Buy All Items</button>
-            </div>
-          </>
-        )}
-      </div>
-
-      {showOrderPopup && (
-        <div className="order-popup-overlay">
-          <div className="order-popup">
-            <button className="close-popup" onClick={() => setShowOrderPopup(false)}>×</button>
-            <h2>Complete Your Order</h2>
-            <div className="order-items-summary">
-              {selectedItem ? (
-                <div className="order-item">
-                  <img src={selectedItem.imageUrl} alt={selectedItem.productName} />
-                  <div className="order-item-details">
-                    <h3>{selectedItem.productName}</h3>
-                    {/* Show the correct quantity type in the order popup */}
-                    <p>Quantity: {selectedItem.orderQuantity.toFixed(1)} {selectedItem.productQuantityType || 'kg'}</p>
-                    <p>Price: ₹{selectedItem.productPrice}/{selectedItem.productQuantityType || 'kg'}</p>
-                  
-                     <p className="order-item-total">Item Total: ₹{selectedItem.orderPrice.toFixed(2)}</p>
-                    {/* <p>Processing Fee (3% share): ₹{itemProcessingFee.toFixed(2)}</p>
-        <p>
-          <strong>Total (Incl. Fee): ₹{itemFinalTotal.toFixed(2)}</strong>
-        </p> 
-       */}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <h3>Order Summary ({cartItems.length} items)</h3>
-                  <div className="order-items-list">
-                    {cartItems.map(item => {
-                      const isEligibleForDiscount = item.orderQuantity >= item.minOrderQuantity;
-                      const finalPrice = isEligibleForDiscount
-                        ? item.productPrice * (1 - item.discountPercentage / 100)
-                        : item.productPrice;
-                      const itemTotal = (finalPrice * item.orderQuantity).toFixed(2);
-
-                      return (
-                        <div key={item.orderId} className="order-summary-item">
-                          <span>{item.productName} ({item.orderQuantity.toFixed(1)} kg)</span>
-                          <span>₹{itemTotal}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="order-total">
-                    <strong>Total: ₹{calculateTotal()}</strong>
-                  </div>
-                </>
-              )}
-            </div>
-
-           <button
-              className="place-order-btn"
-              onClick={selectedItem ? placeOrder : placeOrderAll}
-              disabled={placingOrder}>
-              {placingOrder ? "Processing..." : "Proceed to Payment"}
-            </button>
-
+            ))}
           </div>
-        </div>
+          <div className="cart-summary">
+            <h2>Order Summary</h2>
+            <div className="summary-details">
+              <div className="summary-row">
+                <span>Subtotal:</span>
+                <span>₹{subtotal}</span>
+              </div>
+              <div className="summary-row">
+                <span>Processing Fee (3%):</span>
+                <span>₹{processingFee}</span>
+              </div>
+              <div className="summary-row total">
+                <span>Total:</span>
+                <span>₹{total}</span>
+              </div>
+            </div>
+            <button className="checkout-btn" onClick={handleBuyAll}>Buy All Items</button>
+          </div>
+        </>
       )}
     </div>
-  );
+
+    {showOrderPopup && (
+      <div className="order-popup-overlay">
+        <div className="order-popup">
+          <button className="close-popup" onClick={() => setShowOrderPopup(false)}>×</button>
+          <h2>Complete Your Order</h2>
+          <div className="order-items-summary">
+            {selectedItem ? (
+              <div className="order-item">
+                <img src={selectedItem.imageUrl} alt={selectedItem.productName} />
+                <div className="order-item-details">
+                  <h3>{selectedItem.productName}</h3>
+                  <p>Quantity: {selectedItem.orderQuantity.toFixed(1)} {selectedItem.productQuantityType || 'kg'}</p>
+                  <p>Price: ₹{selectedItem.productPrice}/{selectedItem.productQuantityType || 'kg'}</p>
+                  <p>Processing Fee(3%) : ₹{calculateTotal(cartItems).processingFee}</p>
+                  <p className="order-item-total">Item Total (Incl. Fee): ₹{(selectedItem.orderPrice * 1.03).toFixed(2)}
+</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <h3>Order Summary ({cartItems.length} items)</h3>
+                <div className="order-items-list">
+                  {cartItems.map(item => {
+                    const isEligibleForDiscount = item.orderQuantity >= item.minOrderQuantity;
+                    const finalPrice = isEligibleForDiscount
+                      ? item.productPrice * (1 - item.discountPercentage / 100)
+                      : item.productPrice;
+                    const itemTotal = (finalPrice * item.orderQuantity).toFixed(2);
+
+                    return (
+                      <div key={item.orderId} className="order-summary-item">
+                        <span>{item.productName} ({item.orderQuantity.toFixed(1)} kg)</span>
+                        <span>₹{itemTotal}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* ✅ Use calculateTotal(cartItems) properly */}
+                {cartItems.length > 0 && (
+                  <div className="order-total">
+                     <p>Subtotal: ₹{calculateTotal(cartItems).subtotal}</p>
+                     <p>Processing Fee: ₹{calculateTotal(cartItems).processingFee}</p>
+                    <strong>Total: ₹{calculateTotal(cartItems).total}</strong>
+                    
+                   
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <button
+            className="place-order-btn"
+            onClick={selectedItem ? placeOrder : placeOrderAll}
+            disabled={placingOrder}>
+            {placingOrder ? "Processing..." : "Proceed to Payment"}
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
 }
 
 export default CartPage;
