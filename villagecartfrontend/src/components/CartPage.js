@@ -28,6 +28,9 @@ function CartPage() {
   const [orderId, setOrderId] = useState(null);
   const navigate = useNavigate();
   const customerId = localStorage.getItem('customerId');
+ 
+
+
 
   useEffect(() => {
     fetchCartItems();
@@ -118,7 +121,7 @@ function CartPage() {
       alert("Failed to update quantity. Please try again.");
     }
   };
-  
+
   const removeFromCart = async (orderId) => {
     try {
       await axios.delete(`${API_BASE_URL}/order/delete/${orderId}`);
@@ -133,32 +136,26 @@ function CartPage() {
     }
   };
 
-  // const calculateTotal = (items = cartItems) => {
-
-  //   return items.reduce((total, item) => total + item.productPrice * item.orderQuantity, 0).toFixed(2);
-  // };
 
   const calculateTotal = (items = cartItems) => {
-    return items.reduce((total, item) => {
-      const { productPrice, orderQuantity, discountPercentage = 0, minOrderQuantity = 0 } = item;
+  const subtotal = items.reduce((total, item) => total + item.orderPrice, 0);
+  const processingFee = subtotal * 0.03;
+  const total = subtotal + processingFee;
 
-      // Check if order quantity meets or exceeds minimum
-      const isEligibleForDiscount = orderQuantity >= minOrderQuantity;
-
-      // Apply discount if eligible
-      const finalPrice = isEligibleForDiscount
-        ? productPrice * (1 - discountPercentage / 100)
-        : productPrice;
-
-      // Add to total
-      return total + finalPrice * orderQuantity;
-    }, 0).toFixed(2);
+  return {
+    subtotal: subtotal.toFixed(2),
+    processingFee: processingFee.toFixed(2),
+    total: total.toFixed(2)
   };
+};
 
+ const { subtotal, processingFee, total } = calculateTotal(cartItems);
 
   const handleBuyNow = (item) => {
     setSelectedItem(item);
     setShowOrderPopup(true);
+    // ✅ Store original cart item orderId for later use (e.g., in payment step)
+     localStorage.setItem("selectedOrderId", item.orderId);
   };
 
   const handleBuyAll = () => {
@@ -167,11 +164,163 @@ function CartPage() {
   };
 
  
+// const placeOrder = async () => {
+//   if (!customerId) {
+//     alert('Please login to place an order.');
+//     return;
+//   }
+//   try {
+//     setPlacingOrder(true);
+//     const itemsToOrder = selectedItem ? [selectedItem] : cartItems;
+
+//     // Validation checks
+//     if (!itemsToOrder || itemsToOrder.length === 0) {
+//       throw new Error('No items to order');
+//     }
+
+//     // Validate all items
+//     itemsToOrder.forEach((item, index) => {
+//       if (!item.productId) {
+//         throw new Error(`Product ID is missing from item at index ${index}`);
+//       }
+//       if (!item.productName) {
+//         throw new Error(`Product Name is missing from item at index ${index}`);
+//       }
+//     });
+
+//     // Calculate total amount in rupees first
+//     // const totalAmountInRupees = itemsToOrder.reduce((sum, item) => 
+//     //   sum + (parseFloat(item.productPrice) * parseFloat(item.orderQuantity)), 0);
+
+//     // const total1 = itemsToOrder.reduce((sum, item) => sum + item.orderPrice, 0);
+//     // const processingFee = total1 * 0.03;
+//     // const total = total1 + processingFee;
+//     const { totalAmountInRupees } = calculateTotal(itemsToOrder);
+
+    
+//     // Convert to paise for Razorpay (multiply by 100)
+//     const totalAmountInPaise = Math.round(totalAmountInRupees * 100);
+
+//     // Create order request
+//     const orderRequest = {
+//       productId: itemsToOrder[0].productId,
+//       customerId: parseInt(customerId),
+//       orderQuantity: itemsToOrder.length === 1 ? 
+//         parseFloat(itemsToOrder[0].orderQuantity) : 
+//         itemsToOrder.reduce((sum, item) => sum + parseFloat(item.orderQuantity), 0),
+//       orderStatus: "PENDING",
+//       paymentStatus: "INITIATED",
+//       amount: totalAmountInPaise, // Send amount in paise
+//       items: itemsToOrder.map(item => ({
+//         productId: item.productId,
+//         quantity: parseFloat(item.orderQuantity),
+//         price: Math.round(parseFloat(item.productPrice) * 100) // Convert price to paise
+//       }))
+//     };
+
+//     // Debug logging
+//     console.log('Total Amount in Rupees:', totalAmountInRupees);
+//     console.log('Total Amount in Paise:', totalAmountInPaise);
+//     console.log('Order Request:', orderRequest);
+
+//     const paymentInitRes = await axios.post(
+//       `${API_BASE_URL}/order/payment/create`, 
+//       orderRequest
+//     );
+
+//     if (!paymentInitRes.data) {
+//       throw new Error('No response data from payment creation');
+//     }
+//     //navigate("/my-orders");  
+//     const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
+//     setOrderId(orderId);
+
+//     const options = {
+//       key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
+//       amount: totalAmountInPaise, // Use our calculated amount
+//       currency: currency || "INR",
+//       order_id: orderId,
+//       name: "Farm To Home",
+//       description: itemsToOrder.length === 1 
+//         ? `Order for ${itemsToOrder[0].productName}`
+//         : `Order for ${itemsToOrder.length} items`,
+//       handler: async function (response) {
+//         try {
+//           const verificationRequest = {
+//             orderId: orderId,
+//             razorpayOrderId: response.razorpay_order_id,
+//             razorpayPaymentId: response.razorpay_payment_id,
+//             razorpaySignature: response.razorpay_signature,
+//             productId: itemsToOrder[0].productId,
+//             customerId: parseInt(customerId),
+//             orderQuantity: orderRequest.orderQuantity,
+//             orderStatus: "ORDERED",
+//             paymentStatus: "COMPLETED",
+//             amount: totalAmountInPaise, // Include amount in verification
+//             items: itemsToOrder.map(item => ({
+//               productId: item.productId,
+//               quantity: parseFloat(item.orderQuantity),
+//               price: Math.round(parseFloat(item.productPrice) * 100)
+//             }))
+//           };
+
+//           const verificationResponse = await axios.post(
+//             `${API_BASE_URL}/order/payment/verify`,
+//             verificationRequest
+//           );
+
+//           if (verificationResponse.status === 200) {
+//            // alert("Payment successful! Order confirmed.");
+//             toast.success("Payment successful! Your order has been confirmed.");
+//             navigate("/my-orders");
+//           } else {
+//             alert("Payment verification failed.");
+//           }
+//         } catch (error) {
+//           console.error("Payment verification error:", error);
+//           // alert("Error verifying payment: " + (error.response?.data || error.message));
+//           const errorMsg = error.response?.data
+//           ? JSON.stringify(error.response.data)
+//           : error.message || "Unknown error occurred";
+
+//         //alert("Error verifying payment: " + errorMsg);
+
+//         }
+//       },
+//       prefill: {
+//         name: "Customer",
+//         email: "",
+//         contact: ""
+//       },
+//       theme: {
+//         color: "#F37254"
+//       }
+//     };
+
+//     await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
+//     const rzp = new window.Razorpay(options);
+//     rzp.open();
+
+//   } catch (error) {
+//     console.error("Error details:", error);
+//     console.error("Response data:", error.response?.data);
+//     const errorMessage = error.response?.data?.message || error.response?.data || error.message || "Unknown error";
+//     alert("Error verifying payment: " + errorMessage);
+
+//    // alert(error.message || error.response?.data || "An error occurred while placing the order.");
+//   } finally {
+//     setPlacingOrder(false);
+//   }
+// };
+
+
+
 const placeOrder = async () => {
   if (!customerId) {
     alert('Please login to place an order.');
     return;
   }
+
   try {
     setPlacingOrder(true);
     const itemsToOrder = selectedItem ? [selectedItem] : cartItems;
@@ -191,21 +340,27 @@ const placeOrder = async () => {
       }
     });
 
-    // Calculate total amount in rupees first
-    const totalAmountInRupees = itemsToOrder.reduce((sum, item) => 
-      sum + (parseFloat(item.productPrice) * parseFloat(item.orderQuantity)), 0);
-    
+    const { totalAmountInRupees } = calculateTotal(itemsToOrder);
+
     // Convert to paise for Razorpay (multiply by 100)
     const totalAmountInPaise = Math.round(totalAmountInRupees * 100);
 
-    // Create order request
+    // Get the existing orderId stored earlier (from cart or previous session)
+    let orderId = localStorage.getItem('orderId');
+
+    if (!orderId) {
+      throw new Error('Order ID is missing');
+    }
+
+    // Prepare the order request (no new orderId is created, using the same orderId)
     const orderRequest = {
+      existingOrderId: orderId,
       productId: itemsToOrder[0].productId,
       customerId: parseInt(customerId),
       orderQuantity: itemsToOrder.length === 1 ? 
         parseFloat(itemsToOrder[0].orderQuantity) : 
         itemsToOrder.reduce((sum, item) => sum + parseFloat(item.orderQuantity), 0),
-      orderStatus: "PENDING",
+      orderStatus: "PENDING", // Initial status before payment
       paymentStatus: "INITIATED",
       amount: totalAmountInPaise, // Send amount in paise
       items: itemsToOrder.map(item => ({
@@ -215,11 +370,6 @@ const placeOrder = async () => {
       }))
     };
 
-    // Debug logging
-    console.log('Total Amount in Rupees:', totalAmountInRupees);
-    console.log('Total Amount in Paise:', totalAmountInPaise);
-    console.log('Order Request:', orderRequest);
-
     const paymentInitRes = await axios.post(
       `${API_BASE_URL}/order/payment/create`, 
       orderRequest
@@ -228,32 +378,32 @@ const placeOrder = async () => {
     if (!paymentInitRes.data) {
       throw new Error('No response data from payment creation');
     }
-    //navigate("/my-orders");  
-    const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
-    setOrderId(orderId);
 
+    const { amount, currency, razorpayKey } = paymentInitRes.data;
+
+    // Razorpay payment options
     const options = {
       key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
       amount: totalAmountInPaise, // Use our calculated amount
       currency: currency || "INR",
-      order_id: orderId,
+      order_id: orderId, // Use the existing orderId here
       name: "Farm To Home",
       description: itemsToOrder.length === 1 
-        ? `Order for ${itemsToOrder[0].productName}`
+        ? `Order for ${itemsToOrder[0].productName}` 
         : `Order for ${itemsToOrder.length} items`,
       handler: async function (response) {
         try {
           const verificationRequest = {
-            orderId: orderId,
+            orderId: orderId, // Same orderId from cart
             razorpayOrderId: response.razorpay_order_id,
             razorpayPaymentId: response.razorpay_payment_id,
             razorpaySignature: response.razorpay_signature,
             productId: itemsToOrder[0].productId,
             customerId: parseInt(customerId),
-            orderQuantity: orderRequest.orderQuantity,
-            orderStatus: "ORDERED",
+            orderQuantity: itemsToOrder.length === 1 ? parseFloat(itemsToOrder[0].orderQuantity) : 0,
+            orderStatus: "ORDERED", // Change the status to ORDERED after payment
             paymentStatus: "COMPLETED",
-            amount: totalAmountInPaise, // Include amount in verification
+            amount: totalAmountInPaise,
             items: itemsToOrder.map(item => ({
               productId: item.productId,
               quantity: parseFloat(item.orderQuantity),
@@ -261,13 +411,13 @@ const placeOrder = async () => {
             }))
           };
 
+          // Verify the payment and update the order status
           const verificationResponse = await axios.post(
             `${API_BASE_URL}/order/payment/verify`,
             verificationRequest
           );
 
           if (verificationResponse.status === 200) {
-           // alert("Payment successful! Order confirmed.");
             toast.success("Payment successful! Your order has been confirmed.");
             navigate("/my-orders");
           } else {
@@ -275,13 +425,10 @@ const placeOrder = async () => {
           }
         } catch (error) {
           console.error("Payment verification error:", error);
-          // alert("Error verifying payment: " + (error.response?.data || error.message));
           const errorMsg = error.response?.data
-          ? JSON.stringify(error.response.data)
-          : error.message || "Unknown error occurred";
-
-        //alert("Error verifying payment: " + errorMsg);
-
+            ? JSON.stringify(error.response.data)
+            : error.message || "Unknown error occurred";
+          alert("Error verifying payment: " + errorMsg);
         }
       },
       prefill: {
@@ -300,15 +447,16 @@ const placeOrder = async () => {
 
   } catch (error) {
     console.error("Error details:", error);
-    console.error("Response data:", error.response?.data);
     const errorMessage = error.response?.data?.message || error.response?.data || error.message || "Unknown error";
     alert("Error verifying payment: " + errorMessage);
-
-   // alert(error.message || error.response?.data || "An error occurred while placing the order.");
   } finally {
     setPlacingOrder(false);
   }
 };
+
+
+
+
 const placeOrderAll = async () => {
   if (!customerId) {
     alert('Please login to place an order.');
@@ -330,10 +478,12 @@ const placeOrderAll = async () => {
       if (!item.productName) throw new Error(`Missing product name at index ${index}`);
     });
 
-    const totalAmountInRupees = itemsToOrder.reduce(
-      (sum, item) => sum + (parseFloat(item.productPrice) * parseFloat(item.orderQuantity)),
-      0
-    );
+    // const totalAmountInRupees = itemsToOrder.reduce(
+    //   (sum, item) => sum + (parseFloat(item.productPrice) * parseFloat(item.orderQuantity)),
+    //   0
+    // );
+
+    const { totalAmountInRupees } = calculateTotal(itemsToOrder);
 
     const totalAmountInPaise = Math.round(totalAmountInRupees * 100);
 
@@ -446,8 +596,7 @@ const orderRequestList = itemsToOrder.map(item => ({
   );
 
 
-  //if (loading) return <div className="cart-page"><Navbar /><div className="loading">Loading your cart...</div></div>;
-  //if (error) return <div className="cart-page"><Navbar /><div className="error-message">{error}</div></div>;
+
 
   return (
     <div className="cart-page">
@@ -485,7 +634,6 @@ const orderRequestList = itemsToOrder.map(item => ({
                           : item.productPrice) * item.orderQuantity
                       ).toFixed(2)}
                     </p>
-                    {/* <p className="item-total">Total: ₹{(item.productPrice * item.orderQuantity).toFixed(2)}</p> */}
                     <div className="item-actions">
                       <button className="buy-now-btn" onClick={() => handleBuyNow(item)}>Buy Now</button>
                       <button className="remove-btn" onClick={() => removeFromCart(item.orderId)}>Remove</button>
@@ -498,18 +646,19 @@ const orderRequestList = itemsToOrder.map(item => ({
               <h2>Order Summary</h2>
               <div className="summary-details">
                 <div className="summary-row">
-                  <span>Items ({cartItems.length}):</span>
-                  <span>₹{calculateTotal()}</span>
+                  <span>Subtotal:</span>
+                  <span>₹{subtotal}</span>
                 </div>
                 <div className="summary-row">
-                  <span>Delivery:</span>
-                  <span>Free</span>
+                  <span>Processing Fee (3%):</span>
+                  <span>₹{processingFee}</span>
                 </div>
                 <div className="summary-row total">
                   <span>Total:</span>
-                  <span>₹{calculateTotal()}</span>
+                  <span>₹{total}</span>
                 </div>
               </div>
+
               <button className="checkout-btn" onClick={handleBuyAll}>Buy All Items</button>
             </div>
           </>
@@ -530,7 +679,13 @@ const orderRequestList = itemsToOrder.map(item => ({
                     {/* Show the correct quantity type in the order popup */}
                     <p>Quantity: {selectedItem.orderQuantity.toFixed(1)} {selectedItem.productQuantityType || 'kg'}</p>
                     <p>Price: ₹{selectedItem.productPrice}/{selectedItem.productQuantityType || 'kg'}</p>
-                    <p className="order-item-total">Item Total: ₹{(selectedItem.productPrice * selectedItem.orderQuantity).toFixed(2)}</p>
+                  
+                     <p className="order-item-total">Item Total: ₹{selectedItem.orderPrice.toFixed(2)}</p>
+                    {/* <p>Processing Fee (3% share): ₹{itemProcessingFee.toFixed(2)}</p>
+        <p>
+          <strong>Total (Incl. Fee): ₹{itemFinalTotal.toFixed(2)}</strong>
+        </p> 
+       */}
                   </div>
                 </div>
               ) : (
@@ -561,11 +716,9 @@ const orderRequestList = itemsToOrder.map(item => ({
             </div>
 
            <button
-  className="place-order-btn"
-  onClick={selectedItem ? placeOrder : placeOrderAll}
-  disabled={placingOrder}
->
-
+              className="place-order-btn"
+              onClick={selectedItem ? placeOrder : placeOrderAll}
+              disabled={placingOrder}>
               {placingOrder ? "Processing..." : "Proceed to Payment"}
             </button>
 
