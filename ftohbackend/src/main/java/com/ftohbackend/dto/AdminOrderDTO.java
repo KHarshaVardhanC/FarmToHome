@@ -7,13 +7,12 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerOrderDTO {
+public class AdminOrderDTO {
 
 	Integer orderId;
 	Integer productId;
 	String productName;
-	String ImageUrl;
-	String ProductDescription;
+	
 	Double orderQuantity;
 	Double productPrice;
 	String orderStatus;
@@ -32,7 +31,5 @@ public class CustomerOrderDTO {
 	Double discountPercentage;
 	Double minOrderQuantity;
 	Double orderPrice;
-	
-	String orderReportStatus;
-	
+
 }

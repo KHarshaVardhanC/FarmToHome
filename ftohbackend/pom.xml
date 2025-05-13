@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.4</version>
+		<version>3.4.5</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com</groupId>
@@ -27,7 +27,7 @@
 		<tag />
 		<url />
 	</scm>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -43,28 +43,27 @@
 			<version>3.1.0</version>
 		</dependency>
 		<dependency>
-    <groupId>com.h2database</groupId>
-    <artifactId>h2</artifactId>
-    <scope>test</scope>
-</dependency>
-	<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
 
-		       <!-- https://mvnrepository.com/artifact/com.razorpay/razorpay-java -->
-        <dependency>
-            <groupId>com.razorpay</groupId>
-            <artifactId>razorpay-java</artifactId>
-           <version>1.4.8</version>
-       </dependency>
-       <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20230227</version> <!-- or latest available -->
-       </dependency>
-
+		<!-- https://mvnrepository.com/artifact/com.razorpay/razorpay-java -->
+		<dependency>
+			<groupId>com.razorpay</groupId>
+			<artifactId>razorpay-java</artifactId>
+			<version>1.4.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20230227</version> <!-- or latest available -->
+		</dependency>
 
 
 		<dependency>
@@ -103,7 +102,7 @@
 			<artifactId>spring-restdocs-mockmvc</artifactId>
 			<scope>test</scope>
 		</dependency>
-	
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
@@ -131,7 +130,7 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 		</dependency>
-		
+
 		<!-->
 		<dependency>
 			<groupId>javax.mail</groupId>
@@ -139,20 +138,20 @@
 			<version>1.4</version>
 		</dependency>
 		-->
-		
+
 		<!-- For connection pooling -->
 		<dependency>
 			<groupId>com.zaxxer</groupId>
 			<artifactId>HikariCP</artifactId>
 		</dependency>
 		<dependency>
-		    <groupId>org.springframework</groupId>
-		    <artifactId>spring-context-support</artifactId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
 		</dependency>
 		<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-mail</artifactId>
-</dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
 
 	</dependencies>
 
@@ -188,34 +187,34 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-			
+
 			<plugin>
-			  <groupId>org.sonarsource.scanner.maven</groupId>
-			  <artifactId>sonar-maven-plugin</artifactId>
-			  <version>3.10.0.2594</version>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.10.0.2594</version>
 			</plugin>
-			
+
 			<plugin>
-			   <groupId>org.jacoco</groupId>
-			   <artifactId>jacoco-maven-plugin</artifactId>
-			   <version>0.8.8</version>
-			   <executions>
-			      <execution>
-			          <id>prepare-agent</id>
-			          <goals>
-			             <goal>prepare-agent</goal>
-			          </goals>
-			      </execution>
-			      <execution>
-			          <id>report</id>
-			          <phase>test</phase>
-			          <goals>
-			             <goal>report</goal>
-			          </goals>
-			      </execution>
-			    </executions>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.8</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
-			
+
 		</plugins>
 	</build>
 

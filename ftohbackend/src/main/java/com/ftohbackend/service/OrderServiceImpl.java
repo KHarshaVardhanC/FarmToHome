@@ -171,6 +171,22 @@ public class OrderServiceImpl implements OrderService {
 
 			String razorpayOrderId = razorpayService.createOrder(totalAmountPaise, "INR",
 					"rcpt_" + order.getCustomer().getCustomerId() + "_" + System.currentTimeMillis());
+			
+			if(order.getProduct().getDiscountPercentage() == null)
+			{
+				order.setOrderPrice(order.getOrderQuantity()*order.getProduct().getProductPrice());
+			}
+			else {
+				if(order.getOrderQuantity() >= order.getProduct().getMinOrderQuantity())
+				{
+					order.setOrderPrice(((100-order.getProduct().getDiscountPercentage())));
+				}
+				else
+				{
+					order.setOrderPrice(null);
+				}
+			}
+//			order.setOrderPrice();
 
 			order.setRazorpayOrderId(razorpayOrderId);
 			order.setPaymentStatus("Pending");
