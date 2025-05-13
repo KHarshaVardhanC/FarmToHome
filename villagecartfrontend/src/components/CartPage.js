@@ -383,13 +383,33 @@ const placeOrderAll = async () => {
     }
 
     const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
+    //       // Calculate 3% processing fee
+       //const processingFee = (amount * 0.03);
+
+    //   // Add the processing fee to the original amount
+      // const totalAmount = amount + processingFee;
+
+
+
+      
+    // const { totalAmountInRupees } = calculateTotal(itemsToOrder);
+
+    // // Convert to paise for Razorpay (multiply by 100)
+    // const totalAmountInPaise1 = Math.round(totalAmountInRupees * 100);
+
+
+    const totalAmountInRupees=calculateTotal(cartItems).total;
+     // Convert to paise for Razorpay (multiply by 100)
+    const totalAmountInPaise = Math.round(totalAmountInRupees * 100);
+    console.log(totalAmountInRupees);
+
 
     const options = {
       key: razorpayKey || "rzp_test_KRRNUHKH42XUxO",
-      amount: amount, // already in paise from backend
+      amount: totalAmountInPaise, 
       currency: currency || "INR",
       order_id: orderId,
-      name: "Farm To Home",
+      name: "Village Cart",
       description: `Order for ${itemsToOrder.length} items`,
       handler: function (response) {
         toast.success("Payment successful! Your order has been confirmed.");
@@ -404,6 +424,8 @@ const placeOrderAll = async () => {
         color: "#F37254"
       }
     };
+
+    console.log(totalAmountInRupees);
 
     await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
     const rzp = new window.Razorpay(options);
