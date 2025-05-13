@@ -94,6 +94,7 @@ public class OrderControllerImpl implements OrderController {
 			{
 				customerorderdto.setOrderReportStatus("Not Reported");
 			}
+			customerorderdto.setSellerName(order.getProduct().getSeller().getSellerFirstName()+" "+order.getProduct().getSeller().getSellerLastName());
 			customerorderdtos.add(customerorderdto);
 			
 		}
