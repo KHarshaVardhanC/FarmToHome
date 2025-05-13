@@ -66,49 +66,56 @@ function CartPage() {
       setLoading(false);
     }
   };
-
+  
+  // Fixed handleQuantityChange function to properly handle quantity changes
   const handleQuantityChange = async (orderId, newQuantity) => {
     if (newQuantity < 1) return;
+
     try {
-      // 1. Update backend (assumes you have an endpoint like this)
-      await axios.put(`${API_BASE_URL}/order/update/${orderId}/${newQuantity}`);
-
-      // 2. Update state
-      setCartItems(prevItems =>
-        prevItems.map(item =>
-          item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
-        )
-      );
-
-      // 3. Update localStorage
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const updatedCart = cart.map(item =>
-        item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
-      );
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
+      // Find the item in the cart
+      const item = cartItems.find(item => item.orderId === orderId);
+      if (!item) return;
+      
+      // 1. Update backend quantity
+      await axios.put(`http://localhost:8080/order/update/${orderId}/${newQuantity}`);
+      
+      // 2. Check if this item has a special offer and if the new quantity qualifies
+      const hasOffer = item.minOrderQuantity > 0 && item.discountPercentage > 0;
+      const oldQualified = item.orderQuantity >= item.minOrderQuantity;
+      const newQualifies = newQuantity >= item.minOrderQuantity;
+      
+      // 3. If qualification status changed, update the price
+      if (hasOffer && (oldQualified !== newQualifies)) {
+        const newPrice = newQualifies 
+          ? parseFloat((item.originalPrice || item.productPrice) - ((item.originalPrice || item.productPrice) * item.discountPercentage / 100))
+          : parseFloat(item.originalPrice || item.productPrice);
+          
+        // Update price in backend
+        await axios.put(`http://localhost:8080/order/updatePrice/${orderId}`, {
+          productPrice: newPrice
+        });
+        
+        // Update state with new price
+        setCartItems(prevItems =>
+          prevItems.map(cartItem =>
+            cartItem.orderId === orderId 
+              ? { ...cartItem, productPrice: newPrice, orderQuantity: newQuantity } 
+              : cartItem
+          )
+        );
+      } else {
+        // Just update quantity in state
+        setCartItems(prevItems =>
+          prevItems.map(cartItem =>
+            cartItem.orderId === orderId ? { ...cartItem, orderQuantity: newQuantity } : cartItem
+          )
+        );
+      }
     } catch (error) {
       console.error("Failed to update quantity:", error);
       alert("Failed to update quantity. Please try again.");
     }
   };
-
-
-  // const handleQuantityChange = (orderId, newQuantity) => {
-  //   if (newQuantity < 1) return;
-
-  //   setCartItems(prevItems =>
-  //     prevItems.map(item =>
-  //       item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
-  //     )
-  //   );
-  //   // console.log(prevItems);
-
-  //   const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  //   const updatedCart = cart.map(item =>
-  //     item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
-  //   );
-  //   localStorage.setItem('cart', JSON.stringify(updatedCart));
-  // };
 
   const removeFromCart = async (orderId) => {
     try {
@@ -460,10 +467,12 @@ const orderRequestList = itemsToOrder.map(item => ({
                   </div>
                   <div className="cart-item-details">
                     <h3>{item.productName}</h3>
-                    <p className="item-price">₹{item.productPrice}/kg</p>
+                    {/* Use the product's quantity type instead of hardcoding 'kg' */}
+                    <p className="item-price">₹{item.productPrice}/{item.productQuantityType || 'kg'}</p>
                     <div className="quantity-controls">
                       <button onClick={() => handleQuantityChange(item.orderId, item.orderQuantity - 1)}>-</button>
-                      <span>{item.orderQuantity.toFixed(1)} kg</span>
+                      {/* Show the correct quantity type */}
+                      <span>{item.orderQuantity.toFixed(1)} {item.productQuantityType || 'kg'}</span>
                       <button onClick={() => handleQuantityChange(item.orderId, item.orderQuantity + 1)}>+</button>
                     </div>
                     {/* <p className="item-total">Total: ₹{(item.productPrice * item.orderQuantity).toFixed(2)}</p> */}
@@ -516,8 +525,9 @@ const orderRequestList = itemsToOrder.map(item => ({
                   <img src={selectedItem.imageUrl} alt={selectedItem.productName} />
                   <div className="order-item-details">
                     <h3>{selectedItem.productName}</h3>
-                    <p>Quantity: {selectedItem.orderQuantity.toFixed(1)} kg</p>
-                    <p>Price: ₹{selectedItem.productPrice}/kg</p>
+                    {/* Show the correct quantity type in the order popup */}
+                    <p>Quantity: {selectedItem.orderQuantity.toFixed(1)} {selectedItem.productQuantityType || 'kg'}</p>
+                    <p>Price: ₹{selectedItem.productPrice}/{selectedItem.productQuantityType || 'kg'}</p>
                     <p className="order-item-total">Item Total: ₹{(selectedItem.productPrice * selectedItem.orderQuantity).toFixed(2)}</p>
                   </div>
                 </div>
