@@ -1,212 +1,20 @@
-/*
-.signin-container {
-  background-image: url("https://contentwww.azureedge.net/ffty/vegetables-on-table-looking-down.jpg");
-  background-size: cover;
-  background-position: center;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-  */
-
-/*
-  .signin-container {
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .signin-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url("https://contentwww.azureedge.net/ffty/vegetables-on-table-looking-down.jpg");
-    background-size: cover;
-    background-position: center;
-    opacity: 0.7;
-    z-index: -1;
-  }
-
-.signin-box {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(1px);
-  padding: 30px;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-}
-
-.signin-title {
-  text-align: center;
-  font-size: 28px;
-  font-weight: bold;
-  color: #2d3748;
-  margin-bottom: 10px;
-}
-
-.signin-subtitle {
-  text-align: center;
-  color: #ff4f0f;
-  margin-bottom: 20px;
-  font-weight: 500;
-}
-
-.toggle-buttons {
-  display: flex;
-  justify-content: space-between;
-  border-radius: 12px;
-  padding: 5px;
-  margin-bottom: 20px;
-}
-
-.toggle-buttons button {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.toggle-buttons button.active {
-  border: 2px solid #ff4f0f;
-  border-radius: 8px;
-}
-
-.toggle-buttons button:not(.active):hover {
-  background-color: #bee3f8;
-}
-
-.input-group {
-  display: flex;
-  align-items: center;
-  background-color: #edf2f7;
-  border-radius: 12px;
-  padding: 10px;
-  margin-bottom: 15px;
-}
-
-.input-icon {
-  color: white;
-  margin-right: 10px;
-  font-size: 18px;
-}
-
-.input-group input {
-  border: none;
-  background: transparent;
-  width: 100%;
-  font-size: 16px;
-  outline: none;
-  color: white;
-}
-
-.forgot-password {
-  text-align: right;
-  margin-bottom: 15px;
-}
-
-.forgot-password a {
-  color: #3182ce;
-  font-size: 14px;
-  text-decoration: none;
-}
-
-.submit-btn {
-  width: 100%;
-  padding: 12px;
-  background-color: #3182ce;
-  color: white;
-  font-weight: 600;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.submit-btn:hover {
-  background-color: #2b6cb0;
-}
-
-.signup-link {
-  text-align: center;
-  margin-top: 20px;
-  color: #2d3748;
-}
-
-.signup-link a {
-  color: red;
-  text-decoration: underline;
-}
-
-.error-message {
-  color: red;
-  font-size: 13px;
-  margin-top: -10px;
-  margin-bottom: 10px;
-}
-
-.success-message {
-  color: green;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.toggle-buttons {
-  display: flex;
-  justify-content: space-between;
-  border-radius: 12px;
-  padding: 5px;
-  margin-bottom: 20px;
-}
-
-.toggle-buttons button {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.toggle-buttons button.active {
-  border: 2px solid #ff4f0f;
-  border-radius: 8px;
-}
-
-.toggle-buttons button:not(.active):hover {
-  background-color: #bee3f8;
-}
-
-*/
-
 
 
 .signin-container {
   position: relative;
   min-height: 100vh;
-  min-width: 200vh;
+  min-width: 200vw;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background: linear-gradient(135deg, #e9a3a3 0%, #fc3b3b 100%);
+  /* background: linear-gradient(135deg, #e9a3a3 0%, #fc3b3b 100%); */
+  background: linear-gradient(135deg, rgb(16, 2, 42) 0%, #acd7e3 100%);
   overflow: hidden;
-  padding-top: 40px;
-
+  padding-top: 20px;
 }
 
+/*
 .header-title {
   width: 70%;
   text-align: center;
@@ -222,6 +30,7 @@
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   animation: fadeInDown 0.5s ease-out;
 }
+  */
 
 /* Add new right image container */
 .signin-container::after {
@@ -231,7 +40,8 @@
   right: 0;
   width: 40%;
   height: 100%;
-  background-image: url('https://img.freepik.com/premium-photo/lychee-fruits-pink-background_1151178-3843.jpg');
+  /* background-image: url('https://img.freepik.com/premium-photo/lychee-fruits-pink-background_1151178-3843.jpg');  */
+  background-image: url('https://ogden_images.s3.amazonaws.com/www.grit.com/images/2017/04/05204041/AdobeStock_283505441.jpeg');
   background-size: cover;
   background-position: center;
   z-index: 1;
@@ -256,7 +66,7 @@
   position: relative;
   width: 100%;
   max-width: 420px;
-  padding: 40px 30px;
+  padding: 40px 10px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 20px;
@@ -267,9 +77,9 @@
   margin-right: auto;
   z-index: 2;
   animation: floatIn 0.6s ease-out;
-  margin-left: 270px;
+  margin-left: 200px;
   /* Remove left margin */
-  margin-top: 20px;
+  margin-top: 30px;
 }
 
 .signin-title {
@@ -280,6 +90,7 @@
   font-weight: 600;
   letter-spacing: 1px;
   animation: fadeInDown 0.5s ease-out;
+  padding: 40px 40px;;
 }
 
 .signin-subtitle {
@@ -396,7 +207,7 @@
   width: 100%;
   margin-top: 15px;
   padding: 15px;
-  background: linear-gradient(45deg, #4ecdc4, #96e6a1);
+  background: linear-gradient(45deg, #04092c, #96e6a1);
   /* same green gradient */
   border: none;
   border-radius: 12px;
@@ -431,7 +242,7 @@
 }
 
 .signup-link p {
-  color: #fb3b3b;
+  color: #c8d0e8;
 }
 
 .signup-link a {
@@ -573,4 +384,85 @@
 
 .close-button:hover .close-icon {
   color: #ff0000;
+}
+
+
+@media (max-width: 768px) {
+  .signin-container {
+    flex-direction: column;
+    min-width: 100vw; /* Fix responsiveness */
+    padding: 20px 10px;
+  }
+
+  .signin-box {
+    margin: 20px auto;
+    padding: 30px 20px;
+    max-width: 90%;
+  }
+
+  .signin-title {
+    font-size: 1.8em;
+    padding: 20px 10px;
+  }
+
+  .toggle-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .popup-content {
+    width: 90%;
+    max-width: 90%;
+    padding: 20px;
+    margin: 20px auto;
+    font-size: 0.95em;
+  }
+
+  .close-button {
+    top: -8px;
+    right: -8px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .close-icon {
+    font-size: 18px;
+  }
+}
+@media (max-width: 480px) {
+  .signin-container::after {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+  }
+
+
+  .signin-box {
+    padding: 25px 15px;
+    max-width: 95%;
+  }
+
+  .signin-title {
+    font-size: 1.5em;
+  }
+
+  .popup-content {
+    width: 95%;
+    padding: 15px;
+    font-size: 0.9em;
+  }
+
+  .close-button {
+    top: -6px;
+    right: -6px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .close-icon {
+    font-size: 16px;
+  }
 }
