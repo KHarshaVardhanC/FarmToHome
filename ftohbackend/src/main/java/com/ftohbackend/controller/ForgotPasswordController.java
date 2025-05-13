@@ -42,39 +42,12 @@ public class ForgotPasswordController {
     private PasswordResetService passwordResetService;
 
     private final Random random = new Random();
-    private final int otpValidityInMillis = 1 * 60 * 1000; // 1 minutes
+    private final int otpValidityInMillis = 1 * 60 * 1000; // 1 minute
 
     // In-memory OTP store
     private final Map<String, Integer> otpStore = new HashMap<>();
     private final Map<String, Long> otpExpiry = new HashMap<>();
 
-//    @PostMapping("/verifyEmail/{userType}/{email}")
-//    public ResponseEntity<String> sendOtp(@PathVariable String userType, @PathVariable String email) throws SellerException {
-//        boolean userExists = false;
-//
-//        if (userType.equalsIgnoreCase("customer")) {
-//            userExists = customerRepo.findByCustomerEmail(email) != null;
-//        } else if (userType.equalsIgnoreCase("seller")) {
-//            userExists = sellerRepo.findBySellerEmail(email) != null;
-//        } else {
-//            return new ResponseEntity<>("Invalid user type.", HttpStatus.BAD_REQUEST);
-//        }
-//
-//        if (!userExists) {
-//            return new ResponseEntity<>("User not found.", HttpStatus.NOT_FOUND);
-//        }
-//
-//        int otp = generateOtp();
-//        otpStore.put(email, otp);
-//        otpExpiry.put(email, System.currentTimeMillis() + otpValidityInMillis);
-//
-//        MailBody mail = new MailBody(email, "OTP for Password Reset", "Your OTP is: " + otp + ". It is valid for 5 minutes.");
-//        emailService.sendMail(mail);
-//
-//        return new ResponseEntity<>("OTP sent to email.", HttpStatus.OK);
-//    }
-
-    
     
     @PostMapping("/verifyEmail/{userType}/{email}")
     public ResponseEntity<Map<String, String>> sendOtp(@PathVariable String userType, @PathVariable String email) throws SellerException {
@@ -96,7 +69,7 @@ public class ForgotPasswordController {
         otpStore.put(email, otp);
         otpExpiry.put(email, System.currentTimeMillis() + otpValidityInMillis);
 
-        MailBody mail = new MailBody(email, "OTP for Password Reset", "Your OTP is: " + otp + ". It is valid for 5 minutes.");
+        MailBody mail = new MailBody(email, "OTP for Password Reset", "Your OTP is: " + otp + ". It is valid for 60 Seconds.");
         emailService.sendMail(mail);
 
         return ResponseEntity.ok(Map.of("message", "OTP sent to email."));
@@ -123,43 +96,6 @@ public class ForgotPasswordController {
         return new ResponseEntity<>("OTP verified successfully.", HttpStatus.OK);
     }
 
-//    @PostMapping("/resetPassword")
-//    public ResponseEntity<String> resetPassword(@RequestBody PasswordResetRequest request) throws SellerException {
-//        String userType = request.getUserType().toLowerCase();
-//        String email = request.getEmail();
-//
-//        if (!otpStore.containsKey(email)) {
-//            return new ResponseEntity<>("OTP not verified for this email.", HttpStatus.FORBIDDEN);
-//        }
-//
-//        if (userType.equals("customer")) {
-//            Customer customer = customerRepo.findByCustomerEmail(email);
-//            if (customer == null) {
-//                return new ResponseEntity<>("Customer not found.", HttpStatus.NOT_FOUND);
-//            }
-//            passwordResetService.updatePassword(customer, request.getNewPassword());
-//            customerRepo.save(customer);
-//
-//        } else if (userType.equals("seller")) {
-//            Seller seller = sellerRepo.findBySellerEmail(email);
-//            if (seller == null) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                                     .body("Seller with email " + email + " not found.");
-//            }
-//
-//            passwordResetService.updatePassword(seller, request.getNewPassword());
-//            sellerRepo.save(seller);
-//
-//        } 
-//        else {
-//            return new ResponseEntity<>("Invalid user type.", HttpStatus.BAD_REQUEST);
-//        }
-//
-//        otpStore.remove(email);
-//        otpExpiry.remove(email);
-//
-//        return new ResponseEntity<>("Password reset successful.", HttpStatus.OK);
-//    }
 
     
     @PostMapping("/resetPassword")

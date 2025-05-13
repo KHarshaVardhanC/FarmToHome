@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ToastContainer, toast } from 'react-toastify';
+
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import '../../assets/signupp.css';
@@ -25,6 +26,10 @@ const Signup = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showPopup, setShowPopup] = useState(false);
+const [popupMessage, setPopupMessage] = useState('');
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -186,7 +191,13 @@ const checkEmailExists = async () => {
 
         if (emailExists) {
     // Show toast notification
-    toast.error('This email is already registered. Please use a different email or log in with your existing account.');
+          toast.error('This email is already registered. Please use a different email or log in with your existing account.');
+//    setPopupMessage('This email is already registered. Please use a different email or login with your existing account.');
+// setShowPopup(true);
+// setErrors({
+//   email: 'Email already registered'
+// });
+
 
 
         
@@ -249,7 +260,12 @@ const checkEmailExists = async () => {
         responseText.toLowerCase().includes('already registered')) {
 
         // Show alert with user type and stay on the same page
-        alert(`This email is already registered. Please use a different email or login with your existing account.`);
+        //alert(`This email is already registered. Please use a different email or login with your existing account.`);
+        toast.error("This email is already registered. Please use a different email or login with your existing account.", {
+  position: "top-center",
+  autoClose: 3000,
+});
+
 
         // Set a specific email error
         setErrors({
@@ -488,7 +504,18 @@ const checkEmailExists = async () => {
           transition={{ duration: 0.5, delay: 0.8 }}>
         </motion.p>
       </motion.div>
+      {/* {showPopup && (
+  <div className="popup-overlay">
+    <div className="popup-box">
+      <p>{popupMessage}</p>
+      <button onClick={() => setShowPopup(false)} className="popup-close-btn">Close</button>
+    </div>
+  </div>
+)} */}
+
     </motion.div>
+
+
   );
 };
 
