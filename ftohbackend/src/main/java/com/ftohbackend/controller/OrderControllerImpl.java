@@ -542,7 +542,7 @@ public class OrderControllerImpl implements OrderController {
 		} else {
 			order.setOrderPrice(product.getProductPrice());
 		}
-//        order.setOrderPrice(product.getProductPrice());
+        order.setOrderPrice(product.getProductPrice());
 		order.setOrderStatus("Incart");
 
 		return orderService.addOrder(order);

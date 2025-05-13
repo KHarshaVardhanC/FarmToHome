@@ -85,7 +85,7 @@ function CartPage() {
       if (!item) return;
       
       // 1. Update backend quantity
-      await axios.put(`http://localhost:8080/order/update/${orderId}/${newQuantity}`);
+      await axios.put(`${API_BASE_URL}/order/update/${orderId}/${newQuantity}`);
       
       // 2. Check if this item has a special offer and if the new quantity qualifies
       const hasOffer = item.minOrderQuantity > 0 && item.discountPercentage > 0;
@@ -99,7 +99,7 @@ function CartPage() {
           : parseFloat(item.originalPrice || item.productPrice);
           
         // Update price in backend
-        await axios.put(`http://localhost:8080/order/updatePrice/${orderId}`, {
+        await axios.put(`${API_BASE_URL}/order/updatePrice/${orderId}`, {
           productPrice: newPrice
         });
         
@@ -568,7 +568,7 @@ const orderRequestList = itemsToOrder.map(item => ({
                     <p>Quantity: {selectedItem.orderQuantity.toFixed(1)} {selectedItem.productQuantityType || 'kg'}</p>
                     <p>Price: ₹{selectedItem.productPrice}/{selectedItem.productQuantityType || 'kg'}</p>
                   
-                     <p className="order-item-total">Item Total: ₹{selectedItem.orderPrice.toFixed(2)}</p>
+                     <p className="order-item-total">Item Total: ₹{selectedItem.orderPrice}</p>
                     {/* <p>Processing Fee (3% share): ₹{itemProcessingFee.toFixed(2)}</p>
         <p>
           <strong>Total (Incl. Fee): ₹{itemFinalTotal.toFixed(2)}</strong>
