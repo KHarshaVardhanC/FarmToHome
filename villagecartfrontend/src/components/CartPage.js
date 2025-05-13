@@ -461,6 +461,80 @@ const orderRequestList = itemsToOrder.map(item => ({
     setPlacingOrder(false);
   }
 };
+ 
+
+// const placeOrderAll = async () => {
+//   if (!customerId) {
+//     alert('Please login to place an order.');
+//     return;
+//   }
+
+//   try {
+//     setPlacingOrder(true);
+
+//     const itemsToOrder = cartItems;
+//     if (!itemsToOrder.length) {
+//       throw new Error('Your cart is empty.');
+//     }
+
+//     // Validate item details
+//     itemsToOrder.forEach((item, index) => {
+//       if (!item.productId)   throw new Error(`Missing product ID at index ${index}`);
+//       if (!item.productName) throw new Error(`Missing product name at index ${index}`);
+//     });
+
+//     const { totalAmountInRupees } = calculateTotal(itemsToOrder);
+//     const totalAmountInPaise = Math.round(totalAmountInRupees * 100);
+
+//     // Build List<OrderDTO> payload
+//     const orderRequestList = itemsToOrder.map(item => ({
+//       orderId:    item.orderId,
+//       customerId: customerId
+//     }));
+
+//     // Create the combined Razorpay order
+//     const paymentInitRes = await axios.post(
+//       `${API_BASE_URL}/order/payment/createAll`,
+//       orderRequestList
+//     );
+//     if (!paymentInitRes.data) {
+//       throw new Error('Payment initiation failed.');
+//     }
+
+//     const { orderId, amount, currency, razorpayKey } = paymentInitRes.data;
+//     setOrderId(orderId);
+
+//     // Razorpay options
+//     const options = {
+//       key:       razorpayKey,             // your key
+//       amount:    amount,                  // paise
+//       currency:  currency,                // INR
+//       order_id:  orderId,                 // Razorpay orderId
+//       name:      "Farm To Home",
+//       description: `Order for ${itemsToOrder.length} items`,
+//       handler: function (response) {
+//         // No verify step here—just acknowledge success
+//         toast.success("Payment successful! Your order has been confirmed.");
+//         navigate("/my-orders");
+//       },
+//       prefill: {
+//         name:    "Customer",
+//         email:   "farha@gmail.com",
+//         contact: "7386175772"
+//       },
+//       theme: { color: "#F37254" }
+//     };
+
+//     await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
+//     new window.Razorpay(options).open();
+
+//   } catch (error) {
+//     console.error("Order Error:", error);
+//     alert(error.message || "An error occurred while placing the order.");
+//   } finally {
+//     setPlacingOrder(false);
+//   }
+// };
 
 
 
