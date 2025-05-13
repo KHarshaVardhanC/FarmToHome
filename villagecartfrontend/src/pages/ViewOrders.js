@@ -342,6 +342,7 @@ const ViewOrders = () => {
                     <div className="w-100 text-center">
                       <div className={`alert alert-${selectedReportOrder.orderStatus?.toLowerCase() === 'refunded' ? 'warning' : 'primary'} mb-0`}>
                         This order has been {selectedReportOrder.orderStatus?.toLowerCase()}
+
                       </div>
                     </div>
                   ) : (

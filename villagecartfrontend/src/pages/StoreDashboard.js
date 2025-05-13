@@ -1,110 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { orderApi } from '../utils/api';
+import axios from 'axios';
 import ProfileDropdown from '../components/ProfileDropdown';
 import '../styles/store.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-const StoreDashboard = () => {
+const Store = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showModal, setShowModal] = useState(false);
-    const [updatingStatus, setUpdatingStatus] = useState(false);
-    const [filter, setFilter] = useState('all');
-    const [error, setError] = useState(null);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [selectedReportOrder, setSelectedReportOrder] = useState(null);
 
+    // API base URL from environment variables
+    const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
+    // Status options for orders delivered to store
     const statusOptions = [
-        { label: 'Delivered to Customer', value: 'DeliveredToCustomer' }
+        { label: 'Delivered', value: 'Delivered' }
     ];
 
     const fetchOrders = async () => {
         try {
             setLoading(true);
-            setError(null);
-
-            const response = await orderApi.getStoreOrders();
-
-            console.log('Orders API Response:', response);
-
-            let ordersData = [];
-
-            if (response.data) {
-                if (Array.isArray(response.data)) {
-                    ordersData = response.data;
-                } else if (typeof response.data === 'object' && response.data !== null) {
-                    try {
-                        const extractProducts = () => {
-                            const allProducts = [];
-
-                            const findProducts = (obj, currentSeller = null) => {
-                                if (!obj) return;
-
-                                if (obj.products && Array.isArray(obj.products)) {
-                                    const sellerName = obj.sellerFirstName && obj.sellerLastName ?
-                                        `${obj.sellerFirstName} ${obj.sellerLastName}` : 'Unknown Seller';
-
-                                    obj.products.forEach(product => {
-                                        if (product && product.productId) {
-                                            allProducts.push({
-                                                orderId: product.productId,
-                                                productName: product.productName || `Product ${product.productId}`,
-                                                customerName: product.customerName || sellerName,
-                                                orderQuantity: product.productQuantity || 1,
-                                                productPrice: product.productPrice || 0,
-                                                orderStatus: product.orderStatus || 'Ordered',
-                                                paymentStatus: product.paymentStatus || 'Pending',
-                                                orderDate: product.orderDate || new Date().toISOString().split('T')[0]
-                                            });
-                                        }
-                                    });
-                                }
-
-                                if (Array.isArray(obj)) {
-                                    obj.forEach(item => findProducts(item));
-                                    return;
-                                }
-
-                                if (typeof obj === 'object' && obj !== null) {
-                                    Object.keys(obj).forEach(key => {
-                                        const isSeller = key === 'seller' ||
-                                            (obj.sellerId && obj.sellerEmail && (obj.sellerFirstName || obj.sellerLastName));
-
-                                        if (isSeller) {
-                                            findProducts(obj[key], obj);
-                                        } else {
-                                            findProducts(obj[key], currentSeller);
-                                        }
-                                    });
-                                }
-                            };
-
-                            findProducts(response.data);
-                            return allProducts;
-                        };
-
-                        ordersData = extractProducts();
-                        console.log('Extracted Orders:', ordersData);
-                    } catch (parseError) {
-                        console.error('Error while parsing orders:', parseError);
-                        ordersData = [];
-                    }
-                }
-            }
-
+            // Fetch all orders that need to be processed by the store
+            const response = await axios.get(`${API_BASE_URL}/order`);
+            const ordersData = response.data || [];
             setOrders(ordersData);
-
-            if (ordersData.length === 0) {
-                setError('No orders found. Either there are no orders in the system or the data structure has changed.');
-            }
         } catch (err) {
-            console.error('Orders Fetch Error:', {
-                message: err.message,
-                response: err.response?.data,
-                status: err.response?.status
-            });
-            setError('Failed to load orders. Please try again.');
+            console.log('Orders fetch error:', err);
             setOrders([]);
         } finally {
             setLoading(false);
@@ -116,62 +42,70 @@ const StoreDashboard = () => {
         setShowModal(true);
     };
 
-    const handleStatusUpdate = async (orderId, newStatus) => {
+    const handleViewReport = (order) => {
+        setSelectedReportOrder(order);
+        setShowReportModal(true);
+    };
+
+    const updateOrderStatus = async (orderId, newStatus) => {
         const currentOrder = orders.find(o => o.orderId === orderId);
 
-        // Check if order status is already in a final state
+        // Existing validation checks
         if (currentOrder &&
-            ['refunded', 'exchanged', 'deliveredtocustomer'].includes(currentOrder.orderStatus?.toLowerCase())) {
+            ['refunded', 'exchanged'].includes(currentOrder.orderStatus?.toLowerCase())) {
             window.alert(`❌ Order is already ${currentOrder.orderStatus}. Status cannot be changed.`);
-            return;
+            return false;
+        }
+
+        if (currentOrder &&
+            currentOrder.orderStatus?.toLowerCase() !== 'deliveredtostore') {
+            window.alert('❌ Status can only be changed after order is delivered to store.');
+            return false;
         }
 
         try {
-            setUpdatingStatus(true);
-            await orderApi.updateOrderStatus(orderId, newStatus);
-            await fetchOrders();
-
-            if (selectedOrder?.orderId === orderId) {
-                setSelectedOrder(prev => ({ ...prev, orderStatus: newStatus }));
-            }
-
-            window.alert(`✅ Order status updated to ${newStatus}`);
-        } catch (err) {
-            let errorMessage = 'Failed to update order status. Try again.';
-
-            if (err?.response?.data) {
-                if (typeof err.response.data === 'string') {
-                    errorMessage = err.response.data;
-                } else if (err.response.data.message) {
-                    errorMessage = err.response.data.message;
+            // Update the API endpoint to match the backend specification
+            const response = await axios.put(
+                `${API_BASE_URL}/order/order/${orderId}/${newStatus}`,
+                {},  // Empty body since status is in URL
+                {
+                    headers: { 'Content-Type': 'application/json' }
                 }
-            }
+            );
 
-            window.alert('⚠️ ' + errorMessage);
-        } finally {
-            setUpdatingStatus(false);
+            if (response.status === 200) {
+                await fetchOrders();
+
+                // Update UI states
+                if (selectedOrder?.orderId === orderId) {
+                    setSelectedOrder(prev => ({ ...prev, orderStatus: newStatus }));
+                }
+                if (selectedReportOrder?.orderId === orderId) {
+                    setSelectedReportOrder(prev => ({ ...prev, orderStatus: newStatus }));
+                }
+                return true;
+            }
+        } catch (err) {
+            console.error('Error updating order status:', err);
+            window.alert('⚠️ Failed to update order status. Please try again.');
+            return false;
         }
     };
 
     const getStatusBadgeClass = (status) => {
         switch ((status || '').toLowerCase()) {
             case 'ordered': return 'bg-info';
-            case 'deliveredtostore': return 'bg-warning';
-            case 'deliveredtocustomer': return 'bg-success';
-            case 'refunded': return 'bg-danger';
-            case 'exchanged': return 'bg-primary';
+            case 'deliveredtostore': return 'bg-primary';
+            case 'delivered': return 'bg-success';
+            case 'refunded': return 'bg-warning';
+            case 'exchanged': return 'bg-secondary';
+            case 'failed': return 'bg-danger';
             default: return 'bg-secondary';
         }
     };
 
-    const getPaymentStatusBadgeClass = (status) => {
-        switch ((status || '').toLowerCase()) {
-            case 'paid': return 'bg-success';
-            case 'pending': return 'bg-warning';
-            case 'failed': return 'bg-danger';
-            case 'refunded': return 'bg-info';
-            default: return 'bg-secondary';
-        }
+    const hasReport = (order) => {
+        return order.reportReason && order.reportReason.trim() !== '';
     };
 
     useEffect(() => {
@@ -189,12 +123,13 @@ const StoreDashboard = () => {
     }
 
     return (
-        <div className="store-dashboard-page">
+        <div className="store-page">
+            {/* Navigation */}
             <nav className="navbar navbar-light bg-white shadow-sm">
                 <div className="container-fluid px-4 py-2 d-flex justify-content-between align-items-center">
                     <Link to="/StoreHome" className="text-decoration-none d-flex align-items-center">
-                        <i className="fas fa-store text-success me-2 fs-4"></i>
-                        <span className="fw-bold fs-4 text-success">Store Orders Dashboard</span>
+                        <i className="fas fa-store text-primary me-2 fs-4"></i>
+                        <span className="fw-bold fs-4 text-primary">Village Cart Store</span>
                     </Link>
                     <div className="d-flex gap-3">
                         <Link to="/StoreHome" className="btn btn-outline-primary">
@@ -206,43 +141,11 @@ const StoreDashboard = () => {
                 </div>
             </nav>
 
+            {/* Orders Table */}
             <div className="container-fluid px-4 py-4">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h4>All Orders</h4>
-                    <div className="d-flex align-items-center">
-                        <label className="me-2">Filter by Status:</label>
-                        <select
-                            className="form-select form-select-sm"
-                            style={{ width: 'auto' }}
-                            value={filter}
-                            onChange={(e) => setFilter(e.target.value)}
-                        >
-                            <option value="all">All Orders</option>
-                            <option value="ordered">Ordered</option>
-                            <option value="deliveredtostore">Delivered to Store</option>
-                            <option value="deliveredtocustomer">Delivered to Customer</option>
-                            <option value="refunded">Refunded</option>
-                            <option value="exchanged">Exchanged</option>
-                        </select>
-                        <button
-                            className="btn btn-sm btn-outline-secondary ms-2"
-                            onClick={fetchOrders}
-                        >
-                            <i className="fas fa-sync-alt"></i>
-                        </button>
-                    </div>
-                </div>
-
-                {error ? (
-                    <div className="alert alert-danger">
-                        <i className="fas fa-exclamation-triangle me-2"></i>
-                        {error}
-                    </div>
-                ) : orders.length === 0 ? (
-                    <div className="alert alert-info">
-                        <i className="fas fa-info-circle me-2"></i>
-                        No orders found in the system.
-                    </div>
+                <h4 className="mb-4">Store Orders</h4>
+                {orders.length === 0 ? (
+                    <div className="alert alert-info">No orders found.</div>
                 ) : (
                     <div className="card position-relative">
                         <div className="table-responsive">
@@ -251,73 +154,80 @@ const StoreDashboard = () => {
                                     <tr>
                                         <th>Order ID</th>
                                         <th>Product</th>
+                                        <th>Seller</th>
                                         <th>Customer</th>
                                         <th>Quantity</th>
-                                        <th>Order Status</th>
-                                        <th>Payment Status</th>
-                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Reports</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {orders
-                                        .filter(order => {
-                                            if (filter === 'all') return true;
-                                            return order.orderStatus?.toLowerCase() === filter.toLowerCase();
-                                        })
-                                        .map(order => (
-                                            <tr key={order.orderId}>
-                                                <td>{order.orderId}</td>
-                                                <td>{order.productName}</td>
-                                                <td>{order.customerName}</td>
-                                                <td>{order.orderQuantity}</td>
-                                                <td>
-                                                    <div className="dropdown">
-                                                        <button
-                                                            className={`btn btn-sm badge ${getStatusBadgeClass(order.orderStatus)} dropdown-toggle`}
-                                                            type="button"
-                                                            data-bs-toggle="dropdown"
-                                                            data-bs-auto-close="true"
-                                                            aria-expanded="false"
-                                                            disabled={
-                                                                updatingStatus ||
-                                                                !['deliveredtostore'].includes(order.orderStatus?.toLowerCase())
-                                                            }
-                                                        >
-                                                            {order.orderStatus || 'Ordered'}
-                                                        </button>
-                                                        {order.orderStatus?.toLowerCase() === 'deliveredtostore' && (
-                                                            <ul className="dropdown-menu" data-bs-popper="static">
-                                                                {statusOptions.map((status) => (
-                                                                    <li key={status.value}>
-                                                                        <button
-                                                                            className="dropdown-item"
-                                                                            onClick={() => handleStatusUpdate(order.orderId, status.value)}
-                                                                        >
-                                                                            {status.label}
-                                                                        </button>
-                                                                    </li>
-                                                                ))}
-                                                            </ul>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <span className={`badge ${getPaymentStatusBadgeClass(order.paymentStatus)}`}>
-                                                        {order.paymentStatus || 'Pending'}
-                                                    </span>
-                                                </td>
-                                                <td>{new Date(order.orderDate).toLocaleDateString()}</td>
-                                                <td>
+                                    {orders.map(order => (
+                                        <tr key={order.orderId}>
+                                            <td>{order.orderId}</td>
+                                            <td>{order.productName}</td>
+                                            <td>{order.sellerName}</td>
+                                            <td>{order.customerName}</td>
+                                            <td>
+                                                {order.orderQuantity}
+                                                {order.availableStock === 0 && (
+                                                    <span className="badge bg-danger ms-2">Out of Stock</span>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <div className="dropdown">
                                                     <button
-                                                        className="btn btn-sm btn-outline-primary"
-                                                        onClick={() => handleViewDetails(order)}
+                                                        className={`btn btn-sm badge ${getStatusBadgeClass(order.orderStatus)} dropdown-toggle`}
+                                                        type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="true"
+                                                        aria-expanded="false"
+                                                        disabled={
+                                                            ['refunded', 'exchanged', 'delivered'].includes(order.orderStatus?.toLowerCase()) ||
+                                                            order.orderStatus?.toLowerCase() !== 'deliveredtostore'
+                                                        }
                                                     >
-                                                        <i className="fas fa-eye" />
+                                                        {order.orderStatus || 'Ordered'}
                                                     </button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                    {order.orderStatus?.toLowerCase() === 'deliveredtostore' && (
+                                                        <ul className="dropdown-menu" data-bs-popper="static">
+                                                            {statusOptions.map((status) => (
+                                                                <li key={status.value}>
+                                                                    <button
+                                                                        className="dropdown-item"
+                                                                        onClick={() => updateOrderStatus(order.orderId, status.value)}
+                                                                    >
+                                                                        {status.label}
+                                                                    </button>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {hasReport(order) ? (
+                                                    <button
+                                                        className="btn btn-sm btn-warning"
+                                                        onClick={() => handleViewReport(order)}
+                                                    >
+                                                        <i className="fas fa-exclamation-triangle" /> View Report
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-muted">No reports</span>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <button
+                                                    className="btn btn-sm btn-outline-primary"
+                                                    onClick={() => handleViewDetails(order)}
+                                                >
+                                                    <i className="fas fa-eye" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
@@ -325,6 +235,7 @@ const StoreDashboard = () => {
                 )}
             </div>
 
+            {/* Order Details Modal */}
             {showModal && selectedOrder && (
                 <>
                     <div className="modal show d-block" tabIndex="-1">
@@ -335,46 +246,31 @@ const StoreDashboard = () => {
                                     <button className="btn-close" onClick={() => setShowModal(false)} />
                                 </div>
                                 <div className="modal-body">
-                                    <div className="alert alert-light border">
-                                        <h6>Order Details</h6>
-                                        <p><strong>Product:</strong> {selectedOrder.productName}</p>
-                                        <p><strong>Customer:</strong> {selectedOrder.customerName}</p>
-                                        <p><strong>Quantity:</strong> {selectedOrder.orderQuantity}</p>
-                                        <p><strong>Price:</strong> ₹{selectedOrder.productPrice}</p>
-                                        <p><strong>Total:</strong> ₹{selectedOrder.productPrice * selectedOrder.orderQuantity}</p>
-                                        <p><strong>Order Date:</strong> {new Date(selectedOrder.orderDate).toLocaleDateString()}</p>
-                                    </div>
-
-                                    <div className="mt-3">
-                                        <h6>Status Information</h6>
-                                        <div className="d-flex justify-content-between mb-2">
-                                            <div>
-                                                <strong>Order Status:</strong>
-                                                <span className={`badge ${getStatusBadgeClass(selectedOrder.orderStatus)} ms-2`}>
-                                                    {selectedOrder.orderStatus}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <strong>Payment Status:</strong>
-                                                <span className={`badge ${getPaymentStatusBadgeClass(selectedOrder.paymentStatus)} ms-2`}>
-                                                    {selectedOrder.paymentStatus || 'Pending'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {selectedOrder.orderStatus?.toLowerCase() === 'deliveredtostore' && (
+                                    <p><strong>Product:</strong> {selectedOrder.productName}</p>
+                                    <p><strong>Seller:</strong> {selectedOrder.sellerName || 'N/A'}</p>
+                                    <p><strong>Customer:</strong> {selectedOrder.customerName}</p>
+                                    <p><strong>Quantity:</strong> {selectedOrder.orderQuantity}</p>
+                                    {selectedOrder.availableStock === 0 && (
+                                        <p><span className="badge bg-danger">Out of Stock</span></p>
+                                    )}
+                                    <p><strong>Price:</strong> ₹{selectedOrder.productPrice}</p>
+                                    <p><strong>Total:</strong> ₹{selectedOrder.productPrice * selectedOrder.orderQuantity}</p>
+                                    <p><strong>Status:</strong>
+                                        <span className={`badge ${getStatusBadgeClass(selectedOrder.orderStatus)} ms-2`}>
+                                            {selectedOrder.orderStatus}
+                                        </span>
+                                    </p>
+                                    {hasReport(selectedOrder) && (
                                         <div className="alert alert-warning mt-3">
-                                            <p className="mb-0">This order is ready to be delivered to the customer.</p>
+                                            <p className="mb-1"><strong>Report Issue:</strong> {selectedOrder.reportReason}</p>
                                             <button
-                                                className="btn btn-success mt-2"
+                                                className="btn btn-sm btn-warning mt-2"
                                                 onClick={() => {
-                                                    handleStatusUpdate(selectedOrder.orderId, 'DeliveredToCustomer');
                                                     setShowModal(false);
+                                                    handleViewReport(selectedOrder);
                                                 }}
-                                                disabled={updatingStatus}
                                             >
-                                                {updatingStatus ? 'Processing...' : 'Mark as Delivered to Customer'}
+                                                <i className="fas fa-exclamation-triangle me-1"></i> View Full Report
                                             </button>
                                         </div>
                                     )}
@@ -388,8 +284,79 @@ const StoreDashboard = () => {
                     <div className="modal-backdrop fade show" />
                 </>
             )}
+
+            {/* Order Report Modal */}
+            {showReportModal && selectedReportOrder && (
+                <>
+                    <div className="modal show d-block" tabIndex="-1">
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header bg-warning text-dark">
+                                    <h5 className="modal-title">
+                                        <i className="fas fa-exclamation-triangle me-2"></i>
+                                        Report for Order #{selectedReportOrder.orderId}
+                                    </h5>
+                                    <button className="btn-close" onClick={() => setShowReportModal(false)} />
+                                </div>
+                                <div className="modal-body">
+                                    <div className="alert alert-light border">
+                                        <h6>Order Details</h6>
+                                        <p><strong>Product:</strong> {selectedReportOrder.productName}</p>
+                                        <p><strong>Seller:</strong> {selectedReportOrder.sellerName || 'N/A'}</p>
+                                        <p><strong>Customer:</strong> {selectedReportOrder.customerName}</p>
+                                        <p><strong>Order Status:</strong>
+                                            <span className={`badge ${getStatusBadgeClass(selectedReportOrder.orderStatus)} ms-2`}>
+                                                {selectedReportOrder.orderStatus}
+                                            </span>
+                                        </p>
+                                    </div>
+
+                                    <div className="mt-4">
+                                        <h6>Issue Reported</h6>
+                                        <div className="p-3 border rounded bg-light">
+                                            <p className="mb-3">{selectedReportOrder.reportReason}</p>
+                                        </div>
+                                    </div>
+
+                                    {selectedReportOrder.orderReportImageUrl && (
+                                        <div className="mt-4">
+                                            <h6>Report Image</h6>
+                                            <div className="text-center">
+                                                <img
+                                                    src={selectedReportOrder.orderReportImageUrl}
+                                                    alt="Report Image"
+                                                    className="img-fluid border rounded"
+                                                    style={{ maxHeight: '200px' }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {hasReport(selectedReportOrder) && !['refunded', 'exchanged'].includes(selectedReportOrder.orderStatus?.toLowerCase()) && (
+                                        <div className="alert alert-info mt-4">
+                                            <p className="mb-0">This order has a reported issue. Only the seller can take refund or exchange actions.</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="modal-footer">
+                                    {['refunded', 'exchanged'].includes(selectedReportOrder.orderStatus?.toLowerCase()) ? (
+                                        <div className="w-100 text-center">
+                                            <div className={`alert alert-${selectedReportOrder.orderStatus?.toLowerCase() === 'refunded' ? 'warning' : 'primary'} mb-0`}>
+                                                This order has been {selectedReportOrder.orderStatus?.toLowerCase()}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <button className="btn btn-secondary" onClick={() => setShowReportModal(false)}>Close</button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="modal-backdrop fade show" />
+                </>
+            )}
         </div>
     );
 };
 
-export default StoreDashboard;
+export default Store;
