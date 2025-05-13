@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getOrderInvoice } from '../utils/api';
 import '../styles/OrderInvoice.css';
-import { FaBoxOpen, FaTruck, FaCheckCircle } from 'react-icons/fa';
-
-
-
+import { FaBoxOpen, FaTruck, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
 
 const OrderInvoice = () => {
     const [invoice, setInvoice] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
+    const navigate = useNavigate();
     const { orderId } = useParams();
 
     useEffect(() => {
@@ -30,9 +27,9 @@ const OrderInvoice = () => {
         fetchInvoice();
     }, [orderId]);
 
-
-
-
+    const handleBackClick = () => {
+        navigate('/my-orders');
+    };
 
     if (loading) {
         return (
@@ -74,7 +71,9 @@ const OrderInvoice = () => {
 
     return (
         <div className="invoice-container">
-
+            <button className="back-button" onClick={handleBackClick}>
+                <FaArrowLeft /> Back to My Orders
+            </button>
 
             <div className="invoice-card">
                 <div className="invoice-header">
@@ -181,7 +180,6 @@ const OrderInvoice = () => {
                         <h4>Thank you for your purchase!</h4>
                         <p>If you have any questions about this invoice, please contact us at support@villagecart.com</p>
                     </div>
-
                 </div>
             </div>
         </div>

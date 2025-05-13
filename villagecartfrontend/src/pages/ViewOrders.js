@@ -18,13 +18,7 @@ const ViewOrders = () => {
   const sellerId = localStorage.getItem('sellerId');
 
   const statusOptions = [
-    // { label: 'In Cart', value: 'Incart' },
-    { label: 'Ordered', value: 'Ordered' },
-    { label: 'Delivered', value: 'Delivered' },
-    { label: 'Refunded', value: 'Refunded' },
-    { label: 'Exchanged', value: 'Exchanged' },
-    // { label: 'Deleted', value: 'Deleted' },
-    { label: 'Failed', value: 'Failed' }
+    { label: 'Delivered to Store', value: 'DeliveredToStore' }
   ];
 
   const fetchOrders = async () => {
@@ -33,7 +27,6 @@ const ViewOrders = () => {
       const response = await ordersApi.getSellerOrders(sellerId);
       const ordersData = response.data || [];
       setOrders(ordersData);
-      // setOrders(ordersData.sort((a, b) => b.orderId - a.orderId));
     } catch (err) {
       console.log('Orders fetch error:', err);
       setOrders([]);
@@ -51,33 +44,19 @@ const ViewOrders = () => {
     setSelectedReportOrder(order);
     setShowReportModal(true);
   };
-  // Updates for handleStatusUpdate function
+
   const handleStatusUpdate = async (orderId, newStatus) => {
-    // Check if current order is already refunded or exchanged before making API call
     const currentOrder = orders.find(o => o.orderId === orderId);
 
-    // Block status change if already refunded or exchanged
     if (currentOrder &&
       ['refunded', 'exchanged'].includes(currentOrder.orderStatus?.toLowerCase())) {
       window.alert(`❌ Order is already ${currentOrder.orderStatus}. Status cannot be changed.`);
       return;
     }
 
-    // Allow status changes to Refunded or Exchanged even if delivered
-    const isSpecialStatusChange = ['Refunded', 'Exchanged'].includes(newStatus);
-
-    if (currentOrder &&
-      currentOrder.orderStatus?.toLowerCase() === 'delivered' &&
-      !isSpecialStatusChange) {
-      window.alert('❌ Order is already delivered. Status can only be changed to Refunded or Exchanged.');
-      return;
-    }
-
     try {
       setUpdatingStatus(true);
       await ordersApi.updateOrderStatus(orderId, newStatus);
-
-      // Refresh orders after status update
       await fetchOrders();
 
       if (selectedOrder?.orderId === orderId) {
@@ -86,10 +65,6 @@ const ViewOrders = () => {
 
       if (selectedReportOrder?.orderId === orderId) {
         setSelectedReportOrder(prev => ({ ...prev, orderStatus: newStatus }));
-        // Close the report modal after handling the report
-        if (isSpecialStatusChange) {
-          setShowReportModal(false);
-        }
       }
     } catch (err) {
       let errorMessage = 'Failed to update order status. Try again.';
@@ -102,15 +77,7 @@ const ViewOrders = () => {
         }
       }
 
-      if (errorMessage.includes('already delivered')) {
-        window.alert('❌ Order is already delivered. Status can only be changed to Refunded or Exchanged.');
-      } else if (errorMessage.includes('already Refunded') || errorMessage.includes('already Exchanged')) {
-        window.alert(`❌ ${errorMessage}`);
-      } else if (errorMessage.includes('Quantity Exceeded')) {
-        window.alert('❌ Quantity exceeds stock! Please update the quantity or restock.');
-      } else {
-        window.alert('⚠️ ' + errorMessage);
-      }
+      window.alert('⚠️ ' + errorMessage);
     } finally {
       setUpdatingStatus(false);
     }
@@ -127,12 +94,11 @@ const ViewOrders = () => {
   const getStatusBadgeClass = (status) => {
     switch ((status || '').toLowerCase()) {
       case 'ordered': return 'bg-info';
-      case 'delivered': return 'bg-success';
+      case 'deliveredtostore': return 'bg-success';
       case 'refunded': return 'bg-warning';
       case 'exchanged': return 'bg-primary';
       case 'failed': return 'bg-danger';
-      // case 'deleted': return 'bg-secondary';
-      default: return 'bg-warning'; // incart
+      default: return 'bg-secondary';
     }
   };
 
@@ -146,7 +112,6 @@ const ViewOrders = () => {
       setOrders([]);
       return;
     }
-
     fetchOrders();
   }, [sellerId]);
 
@@ -219,26 +184,27 @@ const ViewOrders = () => {
                             data-bs-toggle="dropdown"
                             data-bs-auto-close="true"
                             aria-expanded="false"
-                            disabled={updatingStatus || ['refunded', 'exchanged'].includes(order.orderStatus?.toLowerCase())}
+                            disabled={
+                              updatingStatus ||
+                              ['refunded', 'exchanged', 'deliveredtostore'].includes(order.orderStatus?.toLowerCase())
+                            }
                           >
-                            {statusOptions.find(s => s.value.toLowerCase() === (order.orderStatus || '').toLowerCase())?.label || 'In Cart'}
+                            {order.orderStatus || 'Ordered'}
                           </button>
-                          <ul className="dropdown-menu" data-bs-popper="static">
-                            {statusOptions.map((status) => (
-                              <li key={status.value}>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() => handleStatusUpdate(order.orderId, status.value)}
-                                  disabled={['refunded', 'exchanged'].includes(order.orderStatus?.toLowerCase())}
-                                >
-                                  {status.label}
-                                  {order.orderStatus?.toLowerCase() === status.value.toLowerCase() && (
-                                    <i className="fas fa-check ms-2 text-success"></i>
-                                  )}
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
+                          {order.orderStatus?.toLowerCase() === 'ordered' && (
+                            <ul className="dropdown-menu" data-bs-popper="static">
+                              {statusOptions.map((status) => (
+                                <li key={status.value}>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={() => handleStatusUpdate(order.orderId, status.value)}
+                                  >
+                                    {status.label}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </div>
                       </td>
                       <td>

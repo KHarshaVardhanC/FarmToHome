@@ -393,18 +393,45 @@ public class OrderServiceImpl implements OrderService {
 
 			return "Order exchange processed successfully";
 
-		} else {
+		} else if (newStatus.equalsIgnoreCase("deliveredToStore")) {
+		    order.setOrderStatus(newStatus);
+		    orderRepository.save(order);
+
+		    // Optional: Notify customer or store manager
+		    if (order.getCustomer() != null) {
+		        String customerEmail = order.getCustomer().getCustomerEmail();
+		        String subject = "Your Order has been Delivered to Store";
+		        String body = "Your order for product: " + product.getProductName()
+		                + "\nhas been delivered to the store.\nOrder ID: " + order.getOrderId()
+		                + "\nQuantity: " + order.getOrderQuantity()
+		                + "\nPlease visit the store to collect your order.";
+
+		        try {
+		            emailService.sendMail(new MailBody(customerEmail, subject, body));
+		            System.out.println("Delivered-to-store email sent to customer: " + customerEmail);
+		        } catch (Exception e) {
+		            System.out.println("Failed to send delivered-to-store email to customer: " + e.getMessage());
+		            e.printStackTrace();
+		            return "Order marked as delivered to store, but failed to notify customer via email.";
+		        }
+
+		        return "Order delivered to store successfully and customer notified.";
+		    } 
+		    return "Order delivered to store successfully, but customer info is missing.";
+		}
+		else {
 			order.setOrderStatus(newStatus);
 			orderRepository.save(order);
 			return "Order status updated to " + newStatus;
 		}
+		
 	}
 
 	private boolean isValidOrderStatus(String status) {
 		return status != null && (status.equalsIgnoreCase("Incart") || status.equalsIgnoreCase("Ordered")
 				|| status.equalsIgnoreCase("Delivered") || status.equalsIgnoreCase("Deleted")
 				|| status.equalsIgnoreCase("Failed") || status.equalsIgnoreCase("Refunded")
-				|| status.equalsIgnoreCase("Exchanged"));
+				|| status.equalsIgnoreCase("Exchanged")||status.equalsIgnoreCase("deliveredToStore"));
 	}
 
 	@Override
