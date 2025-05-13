@@ -118,6 +118,9 @@ public class OrderControllerImpl implements OrderController {
     
     @PostMapping("/payment/create")
     public ResponseEntity<?> createPaymentOrder(@RequestBody OrderDTO orderDTO) {
+    	
+    	System.out.println("Hello Harsha1");
+
         try {
             if (orderDTO.getProductId() == null) {
                 return ResponseEntity.badRequest().body("Product ID is required");
@@ -137,11 +140,15 @@ public class OrderControllerImpl implements OrderController {
                 return ResponseEntity.badRequest().body("Invalid customer ID");
             }
 
-            Order order = modelMapper.map(orderDTO, Order.class);
+//            Order order = modelMapper.map(orderDTO, Order.class);
+            Order order=orderService.getOrderById(orderDTO.getOrderId());
             order.setProduct(product);
             order.setCustomer(customer);
             order.setOrderStatus("PENDING");
             order.setPaymentStatus("CREATED");
+            
+            System.out.println("1xxxxxxxxx");
+            
 
             RazorpayClient razorpay = new RazorpayClient(razorpayKey, razorpaySecret);
 
@@ -164,9 +171,13 @@ public class OrderControllerImpl implements OrderController {
 
             order.setRazorpayOrderId(razorpayOrder.get("id"));
             order.setReceiptId(receiptId);
+            orderService.updateOrderStatus(orderDTO.getOrderId(), "ordered");
+            order.setOrderStatus("Ordered");
             order.setPaymentStatus("CREATED");
 
             Order savedOrder = orderService.saveOrder(order);
+            System.out.println("2xxxxxxxxxxxx");
+//            System.out.println(savedOrder);
 
             return ResponseEntity.ok(Map.of(
                     "orderId", razorpayOrder.get("id"),
@@ -186,6 +197,8 @@ public class OrderControllerImpl implements OrderController {
     
     @PostMapping("/payment/createAll")
     public ResponseEntity<?> createAllPaymentOrder(@RequestBody List<OrderDTO> orderDTOList) {
+    	
+    	System.out.println("Hello Harsha all");
         try {
             // Step 1: Validate that the order list is not empty
             if (orderDTOList == null || orderDTOList.isEmpty()) {
@@ -272,8 +285,10 @@ public class OrderControllerImpl implements OrderController {
             for (Order order : orders) {
                 order.setRazorpayOrderId(razorpayOrder.get("id"));
                 order.setReceiptId(receiptId);
+                order.setOrderStatus("Ordered");
                 order.setPaymentStatus("CREATED");
                 orderService.saveOrder(order);
+                
             }
 
             // Step 7: Return the response with Razorpay order details
@@ -293,36 +308,6 @@ public class OrderControllerImpl implements OrderController {
     }
 
 
-//    @PostMapping("/payment/verify")
-//    public ResponseEntity<?> verifyPayment(@RequestBody Map<String, String> payload) {
-//        try {
-//            String orderId = payload.get("razorpayOrderId");
-//            String paymentId = payload.get("razorpayPaymentId");
-//            String signature = payload.get("razorpaySignature");
-//
-//            String generatedSignature = generateSignature(orderId, paymentId);
-//
-//            if (generatedSignature.equals(signature)) {
-//                Order order = orderService.getOrderByRazorpayOrderId(orderId);
-//
-//                if (order != null) {
-//                    order.setPaymentStatus("SUCCESS");
-//                    order.setRazorpayPaymentId(paymentId);
-//                    orderService.saveOrder(order);
-//                    return ResponseEntity.ok("Payment verified successfully.");
-//                } else {
-//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order not found.");
-//                }
-//            } else {
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payment signature.");
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Payment verification failed.");
-//        }
-//    }
-    
-    
     @PostMapping("/payment/verify")
     public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerificationRequest payload) {
         try {
@@ -338,6 +323,8 @@ public class OrderControllerImpl implements OrderController {
                 if (order != null) {
                     order.setPaymentStatus("SUCCESS");
                     order.setRazorpayPaymentId(paymentId);
+                    System.out.println("Ordered");
+
                     order.setOrderStatus("ORDERED");
                     orderService.saveOrder(order);
 
@@ -384,6 +371,7 @@ public class OrderControllerImpl implements OrderController {
             for (Order order : orders) {
                 order.setPaymentStatus("SUCCESS");
                 order.setRazorpayPaymentId(paymentId);
+                System.out.println("Ordered");
                 order.setOrderStatus("ORDERED");
                 orderService.saveOrder(order);
             }
@@ -551,6 +539,7 @@ public class OrderControllerImpl implements OrderController {
 	public String updateOrderStatus(@PathVariable Integer orderId, @PathVariable String orderStatus)
 			throws Exception, OrderException {
 
+		
 		return orderService.updateOrderStatus(orderId, orderStatus);
 
 	}
