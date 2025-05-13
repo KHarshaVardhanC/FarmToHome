@@ -121,6 +121,7 @@ public class OrderControllerImpl implements OrderController {
     	
     	System.out.println("Hello Harsha1");
 
+    	System.out.println(orderDTO);
         try {
             if (orderDTO.getProductId() == null) {
                 return ResponseEntity.badRequest().body("Product ID is required");
@@ -308,82 +309,91 @@ public class OrderControllerImpl implements OrderController {
     }
 
 
-    @PostMapping("/payment/verify")
-    public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerificationRequest payload) {
-        try {
-            String orderId = payload.getRazorpayOrderId();
-            String paymentId = payload.getRazorpayPaymentId();
-            String signature = payload.getRazorpaySignature();
-
-            String generatedSignature = generateSignature(orderId, paymentId);
-
-            if (generatedSignature.equals(signature)) {
-                Order order = orderService.getOrderByRazorpayOrderId(orderId);
-
-                if (order != null) {
-                    order.setPaymentStatus("SUCCESS");
-                    order.setRazorpayPaymentId(paymentId);
-                    System.out.println("Ordered");
-
-                    order.setOrderStatus("ORDERED");
-                    orderService.saveOrder(order);
-
-                    // You may store other fields like amount, items, etc., if needed
-
-                    return ResponseEntity.ok("Payment verified successfully.");
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order not found.");
-                }
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payment signature.");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Payment verification failed.");
-        }
-    }
+//    @PostMapping("/payment/verify")
+//    public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerificationRequest payload) {
+//        try {
+//        	
+//        	Integer orderId=payload.getOrderId();
+////            String orderId = payload.getRazorpayOrderId();
+//            String paymentId = payload.getRazorpayPaymentId();
+//            String signature = payload.getRazorpaySignature();
+//
+//            String generatedSignature ="";
+////            = generateSignature(orderId, paymentId);
+//            System.out.println(generatedSignature);
+//            
+//            System.out.println(signature);
+//
+//            if (generatedSignature.equals(generatedSignature)) {
+//                Order order = orderService.getOrderById(orderId);
+//
+//                if (order != null) {
+//                    order.setPaymentStatus("SUCCESS");
+//                    order.setRazorpayPaymentId(paymentId);
+//                    System.out.println("Ordered");
+//
+//                    order.setOrderStatus("ORDERED");
+//                    orderService.saveOrder(order);
+//
+//                    // You may store other fields like amount, items, etc., if needed
+//
+//                    System.out.println("ordered ss");
+//                    return ResponseEntity.ok("Payment verified successfully.");
+//                } else {
+//                	System.out.println("ordered ss1");
+//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order not found.");
+//                }
+//            } 
+//            else {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payment signature.");
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Payment verification failed.");
+//        }
+//    }
+//    
     
     
-    
-    @PostMapping("/payment/verifyAll")
-    public ResponseEntity<?> verifyPaymentForAll(@RequestBody PaymentVerificationRequest payload) {
-        try {
-            String orderId = payload.getRazorpayOrderId();
-            String paymentId = payload.getRazorpayPaymentId();
-            String signature = payload.getRazorpaySignature();
-
-            // Generate expected signature
-            String generatedSignature = generateSignature(orderId, paymentId);
-
-            // Check if the signature is valid
-            if (!generatedSignature.equals(signature)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payment signature.");
-            }
-
-            // Fetch all orders with the given Razorpay Order ID
-            List<Order> orders = orderService.getAllOrdersByRazorpayOrderId(orderId);
-
-            if (orders == null || orders.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Orders not found.");
-            }
-
-            // Update each order
-            for (Order order : orders) {
-                order.setPaymentStatus("SUCCESS");
-                order.setRazorpayPaymentId(paymentId);
-                System.out.println("Ordered");
-                order.setOrderStatus("ORDERED");
-                orderService.saveOrder(order);
-            }
-
-            // Optional: handle items from payload.getItems() if needed
-
-            return ResponseEntity.ok("Bulk payment verified successfully.");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Bulk payment verification failed.");
-        }
-    }
+//    @PostMapping("/payment/verifyAll")
+//    public ResponseEntity<?> verifyPaymentForAll(@RequestBody PaymentVerificationRequest payload) {
+//        try {
+//            String orderId = payload.getRazorpayOrderId();
+//            String paymentId = payload.getRazorpayPaymentId();
+//            String signature = payload.getRazorpaySignature();
+//
+//            // Generate expected signature
+//            String generatedSignature = generateSignature(orderId, paymentId);
+//
+//            // Check if the signature is valid
+//            if (!generatedSignature.equals(signature)) {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payment signature.");
+//            }
+//
+//            // Fetch all orders with the given Razorpay Order ID
+//            List<Order> orders = orderService.getAllOrdersByRazorpayOrderId(orderId);
+//
+//            if (orders == null || orders.isEmpty()) {
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Orders not found.");
+//            }
+//
+//            // Update each order
+//            for (Order order : orders) {
+//                order.setPaymentStatus("SUCCESS");
+//                order.setRazorpayPaymentId(paymentId);
+//                System.out.println("Ordered");
+//                order.setOrderStatus("ORDERED");
+//                orderService.saveOrder(order);
+//            }
+//
+//            // Optional: handle items from payload.getItems() if needed
+//
+//            return ResponseEntity.ok("Bulk payment verified successfully.");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Bulk payment verification failed.");
+//        }
+//    }
 
 
 

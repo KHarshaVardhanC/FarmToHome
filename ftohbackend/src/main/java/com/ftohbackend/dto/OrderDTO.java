@@ -17,7 +17,7 @@ public class OrderDTO {
 	private Integer productId;
 	@NotNull(message = "Invalid Product Quantity")
 	private Double orderQuantity;
-	@NotNull(message = "Customer Id is required ")
+	@NotNull(message = "Customer Id is required1 ")
 	private Integer customerId;
 	public String orderStatus;
 
