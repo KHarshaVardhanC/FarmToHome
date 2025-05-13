@@ -92,7 +92,7 @@ const Rating = () => {
         try {
             setIsSubmitting(true);
             // Submit the rating to your API endpoint
-            await axios.post('${API_BASE_URL}/rating', ratingData);
+            await axios.post(`${API_BASE_URL}/rating`, ratingData);
             
             setMessage('Thank you for your feedback!');
             // Reset form
