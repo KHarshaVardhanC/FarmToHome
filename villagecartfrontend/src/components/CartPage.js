@@ -44,12 +44,14 @@ function CartPage() {
 
       if (Array.isArray(response.data)) {
         // Transform the data to ensure product information is properly structured
-        const transformedItems = response.data.map(item => ({
-          ...item,
-          productId: item.product?.id || item.productId, // Ensure productId is available
-          productName: item.product?.name || item.productName,
-          productPrice: item.product?.price || item.productPrice
-        }));
+              const transformedItems = response.data.map(item => ({
+        ...item,
+        productId: item.product?.id || item.productId,
+        productName: item.product?.name || item.productName,
+        productPrice: item.product?.price || item.productPrice,
+        orderPrice: item.orderPrice // no fallback
+      }));
+
 
         setCartItems(transformedItems);
 
@@ -92,23 +94,6 @@ function CartPage() {
     }
   };
 
-
-  // const handleQuantityChange = (orderId, newQuantity) => {
-  //   if (newQuantity < 1) return;
-
-  //   setCartItems(prevItems =>
-  //     prevItems.map(item =>
-  //       item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
-  //     )
-  //   );
-  //   // console.log(prevItems);
-
-  //   const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  //   const updatedCart = cart.map(item =>
-  //     item.orderId === orderId ? { ...item, orderQuantity: newQuantity } : item
-  //   );
-  //   localStorage.setItem('cart', JSON.stringify(updatedCart));
-  // };
 
   const removeFromCart = async (orderId) => {
     try {
