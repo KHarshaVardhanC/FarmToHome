@@ -27,7 +27,10 @@ function CartPage() {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const navigate = useNavigate();
-  const customerId = localStorage.getItem('customerId');
+  
+  const customerId = parseInt(localStorage.getItem('customerId'), 10);
+
+  // const customerId = localStorage.getItem('customerId');
  
 
 
@@ -271,7 +274,7 @@ try {
       amount: totalAmountInPaise, // Use our calculated amount
       currency: currency || "INR",
       order_id: orderId, // Use the existing orderId here
-      name: "Farm To Home",
+      name: "Village Cart",
       description: itemsToOrder.length === 1 
         ? `Order for ${itemsToOrder[0].productName}` 
         : `Order for ${itemsToOrder.length} items`,

@@ -31,8 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ftohbackend.dto.CustomerOrderDTO;
 import com.ftohbackend.dto.OrderDTO;
 import com.ftohbackend.dto.OrderReport;
-import com.ftohbackend.dto.PaymentVerificationRequest;
-import com.ftohbackend.dto.PaymentVerificationRequest.Item;
 import com.ftohbackend.dto.SellerOrderDTO;
 import com.ftohbackend.exception.OrderException;
 import com.ftohbackend.model.Customer;
@@ -196,118 +194,235 @@ public class OrderControllerImpl implements OrderController {
     }
     
     
+    
     @PostMapping("/payment/createAll")
-    public ResponseEntity<?> createAllPaymentOrder(@RequestBody List<OrderDTO> orderDTOList) {
-    	
-    	System.out.println("Hello Harsha all");
+    public ResponseEntity<?> createAllPaymentOrder(
+            @RequestBody List<OrderDTO> orderDTOList
+    ) {
         try {
-            // Step 1: Validate that the order list is not empty
+            // 1. Validate input
             if (orderDTOList == null || orderDTOList.isEmpty()) {
-                return ResponseEntity.badRequest().body("Order list cannot be empty");
+                return ResponseEntity
+                        .badRequest()
+                        .body("Order list cannot be empty");
             }
 
-            // Step 2: Ensure all items belong to the same customer
+            // 2. Ensure same customer across all DTOs
             Integer customerId = orderDTOList.get(0).getCustomerId();
-            for (OrderDTO orderDTO : orderDTOList) {
-                if (!orderDTO.getCustomerId().equals(customerId)) {
-                    return ResponseEntity.badRequest().body("All items must belong to the same customer");
-                }
-            }
-
             if (customerId == null) {
-                return ResponseEntity.badRequest().body("Customer ID is required");
+                return ResponseEntity
+                        .badRequest()
+                        .body("Customer ID is required");
             }
-
-            // Step 3: Get customer information
-            Customer customer = customerService.getCustomerById(customerId);
-            if (customer == null) {
-                return ResponseEntity.badRequest().body("Invalid customer ID");
-            }
-
-            // Step 4: Calculate the total amount for all items and prepare order details
-            double totalAmount = 0;
-            List<Order> orders = new ArrayList<>();
-            List<String> errorMessages = new ArrayList<>();
-
-            for (OrderDTO orderDTO : orderDTOList) {
-                // Validate product ID and quantity
-                if (orderDTO.getProductId() == null || orderDTO.getOrderQuantity() == null) {
-                    errorMessages.add("Product ID and Quantity are required for product with ID: " + orderDTO.getProductId());
-                    continue;
+            for (OrderDTO dto : orderDTOList) {
+                if (!customerId.equals(dto.getCustomerId())) {
+                    return ResponseEntity
+                            .badRequest()
+                            .body("All items must belong to the same customer");
                 }
-
-                // Get the product details
-                Product product = productService.getProductById(orderDTO.getProductId());
-                if (product == null) {
-                    errorMessages.add("Invalid product ID for product with ID: " + orderDTO.getProductId());
-                    continue;
+                if (dto.getOrderId() == null) {
+                    return ResponseEntity
+                            .badRequest()
+                            .body("Each item must include an orderId");
                 }
-
-                // Create an order object for each item
-                Order order = new Order();
-                order.setProduct(product);
-                order.setCustomer(customer);
-                order.setOrderQuantity(orderDTO.getOrderQuantity());
-                order.setOrderStatus("PENDING");
-                order.setPaymentStatus("CREATED");
-
-                // Calculate price for each item and add to total amount
-                double itemPrice = product.getProductPrice() * orderDTO.getOrderQuantity();
-                totalAmount += itemPrice;
-
-                orders.add(order);
             }
 
-            // If there are any validation errors, return them
-            if (!errorMessages.isEmpty()) {
-                return ResponseEntity.badRequest().body(errorMessages);
+            // 3. Fetch current in-cart DTOs (with orderPrice) from your service
+            List<CustomerOrderDTO> cartDTOs =
+                this.getCartOrdersByCustomerId(customerId);
+
+            // 4. Build a map: orderId → CustomerOrderDTO
+            Map<Long, CustomerOrderDTO> dtoMap = cartDTOs.stream()
+                .collect(Collectors.toMap(CustomerOrderDTO::getOrderId, dto -> dto));
+
+            // 5. Filter and sum up their orderPrice
+            double subtotal = 0;
+            List<Order> ordersToUpdate = new ArrayList<>();
+
+            for (OrderDTO inputDto : orderDTOList) {
+                long oid = inputDto.getOrderId();
+                CustomerOrderDTO lineDto = dtoMap.get(oid);
+                if (lineDto == null) {
+                    return ResponseEntity
+                            .badRequest()
+                            .body("Order " + oid + " is not in cart or invalid");
+                }
+                Double linePrice = lineDto.getOrderPrice();
+                if (linePrice == null) {
+                    return ResponseEntity
+                            .badRequest()
+                            .body("Missing orderPrice for order " + oid);
+                }
+                subtotal += linePrice;
+
+                // Also load the real Order entity so we can stamp it later
+                Order realOrder = orderService.getOrderById(oid);
+                ordersToUpdate.add(realOrder);
             }
 
-            // Step 5: Create a Razorpay order for the total amount
+            // 6. Apply 3% processing fee
+            double processingFee = subtotal * 0.03;
+            double grandTotal    = subtotal + processingFee;
+
+            // 7. Create one Razorpay order
             RazorpayClient razorpay = new RazorpayClient(razorpayKey, razorpaySecret);
+            String receiptId = "rcpt_" + UUID.randomUUID()
+                                       .toString().replace("-", "")
+                                       .substring(0, 20);
 
-            // Generate a unique receipt ID
-            String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
-            String receiptId = "rcpt_" + uuid;
-
-            // Convert the total amount to paise (100x for INR)
-            int amount = (int) (totalAmount * 100); // In paise
-
-            // Razorpay options for creating an order
             JSONObject options = new JSONObject();
-            options.put("amount", amount); // Amount in paise
+            options.put("amount", (int)(grandTotal * 100));  // paise
             options.put("currency", "INR");
             options.put("receipt", receiptId);
 
-            // Create the Razorpay order
             com.razorpay.Order razorpayOrder = razorpay.orders.create(options);
+            String razorpayOrderId = razorpayOrder.get("id");
 
-            // Step 6: Save the orders to the database
-            for (Order order : orders) {
-                order.setRazorpayOrderId(razorpayOrder.get("id"));
-                order.setReceiptId(receiptId);
-                order.setOrderStatus("Ordered");
-                order.setPaymentStatus("CREATED");
-                orderService.saveOrder(order);
-                
+            // 8. Stamp and save each Order entity
+            List<Long> updatedOrderIds = new ArrayList<>();
+            for (Order o : ordersToUpdate) {
+                o.setRazorpayOrderId(razorpayOrderId);
+                o.setReceiptId(receiptId);
+                o.setOrderStatus("ORDERED");
+                o.setPaymentStatus("CREATED");
+                Order saved = orderService.saveOrder(o);
+                updatedOrderIds.add(saved.getOrderId());
             }
 
-            // Step 7: Return the response with Razorpay order details
-            return ResponseEntity.ok(Map.of(
-                    "orderId", razorpayOrder.get("id"),
-                    "razorpayKey", razorpayKey,
-                    "amount", razorpayOrder.get("amount"),
-                    "currency", "INR",
-                    "orderDBIds", orders.stream().map(Order::getOrderId).collect(Collectors.toList())
-            ));
+            // 9. Return frontend payload
+            Map<String,Object> resp = Map.of(
+                "orderId"       , razorpayOrderId,
+                "razorpayKey"   , razorpayKey,
+                "amount"        , razorpayOrder.get("amount"),
+                "currency"      , razorpayOrder.get("currency"),
+                "orderDBIds"    , updatedOrderIds,
+                "subtotal"      , subtotal,
+                "processingFee" , processingFee,
+                "grandTotal"    , grandTotal
+            );
+            return ResponseEntity.ok(resp);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to create Razorpay order for all items in cart");
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to create Razorpay order for cart items");
         }
     }
 
+    
+//    @PostMapping("/payment/createAll")
+//    public ResponseEntity<?> createAllPaymentOrder(@RequestBody List<OrderDTO> orderDTOList) {
+//    	
+//    	System.out.println("Hello Harsha all");
+//        try {
+//            // Step 1: Validate that the order list is not empty
+//            if (orderDTOList == null || orderDTOList.isEmpty()) {
+//                return ResponseEntity.badRequest().body("Order list cannot be empty");
+//            }
+//
+//            // Step 2: Ensure all items belong to the same customer
+//            Integer customerId = orderDTOList.get(0).getCustomerId();
+//            for (OrderDTO orderDTO : orderDTOList) {
+//                if (!orderDTO.getCustomerId().equals(customerId)) {
+//                    return ResponseEntity.badRequest().body("All items must belong to the same customer");
+//                }
+//            }
+//
+//            if (customerId == null) {
+//                return ResponseEntity.badRequest().body("Customer ID is required");
+//            }
+//
+//            // Step 3: Get customer information
+//            Customer customer = customerService.getCustomerById(customerId);
+//            if (customer == null) {
+//                return ResponseEntity.badRequest().body("Invalid customer ID");
+//            }
+//
+//            // Step 4: Calculate the total amount for all items and prepare order details
+//            double totalAmount = 0;
+//            List<Order> orders = new ArrayList<>();
+//            List<String> errorMessages = new ArrayList<>();
+//
+//            for (OrderDTO orderDTO : orderDTOList) {
+//                // Validate product ID and quantity
+//                if (orderDTO.getProductId() == null || orderDTO.getOrderQuantity() == null) {
+//                    errorMessages.add("Product ID and Quantity are required for product with ID: " + orderDTO.getProductId());
+//                    continue;
+//                }
+//
+//                // Get the product details
+//                Product product = productService.getProductById(orderDTO.getProductId());
+//                if (product == null) {
+//                    errorMessages.add("Invalid product ID for product with ID: " + orderDTO.getProductId());
+//                    continue;
+//                }
+//
+//                // Create an order object for each item
+//                Order order = new Order();
+//                order.setProduct(product);
+//                order.setCustomer(customer);
+//                order.setOrderQuantity(orderDTO.getOrderQuantity());
+//                order.setOrderStatus("PENDING");
+//                order.setPaymentStatus("CREATED");
+//
+//                // Calculate price for each item and add to total amount
+//                double itemPrice = product.getProductPrice() * orderDTO.getOrderQuantity();
+//                totalAmount += itemPrice;
+//
+//                orders.add(order);
+//            }
+//
+//            // If there are any validation errors, return them
+//            if (!errorMessages.isEmpty()) {
+//                return ResponseEntity.badRequest().body(errorMessages);
+//            }
+//
+//            // Step 5: Create a Razorpay order for the total amount
+//            RazorpayClient razorpay = new RazorpayClient(razorpayKey, razorpaySecret);
+//
+//            // Generate a unique receipt ID
+//            String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+//            String receiptId = "rcpt_" + uuid;
+//
+//            // Convert the total amount to paise (100x for INR)
+//            int amount = (int) (totalAmount * 100); // In paise
+//
+//            // Razorpay options for creating an order
+//            JSONObject options = new JSONObject();
+//            options.put("amount", amount); // Amount in paise
+//            options.put("currency", "INR");
+//            options.put("receipt", receiptId);
+//
+//            // Create the Razorpay order
+//            com.razorpay.Order razorpayOrder = razorpay.orders.create(options);
+//
+//            // Step 6: Save the orders to the database
+//            for (Order order : orders) {
+//                order.setRazorpayOrderId(razorpayOrder.get("id"));
+//                order.setReceiptId(receiptId);
+//                order.setOrderStatus("Ordered");
+//                order.setPaymentStatus("CREATED");
+//                orderService.saveOrder(order);
+//                
+//            }
+//
+//            // Step 7: Return the response with Razorpay order details
+//            return ResponseEntity.ok(Map.of(
+//                    "orderId", razorpayOrder.get("id"),
+//                    "razorpayKey", razorpayKey,
+//                    "amount", razorpayOrder.get("amount"),
+//                    "currency", "INR",
+//                    "orderDBIds", orders.stream().map(Order::getOrderId).collect(Collectors.toList())
+//            ));
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body("Failed to create Razorpay order for all items in cart");
+//        }
+//    }
+//
 
 //    @PostMapping("/payment/verify")
 //    public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerificationRequest payload) {
