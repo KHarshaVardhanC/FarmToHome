@@ -131,7 +131,7 @@ import com.ftohbackend.service.RatingService;
         testProduct.setSeller(testSeller);
 
         testCustomer = new Customer();
-        testCustomer.setCustomerId(1);
+        testCustomer.setCustomerId(2);
         testCustomer.setCustomerFirstName("Jane");
         testCustomer.setCustomerLastName("Smith");
         testCustomer.setCustomerPlace("Customer Place");
@@ -152,7 +152,7 @@ import com.ftohbackend.service.RatingService;
         testOrderDTO = new OrderDTO();
         testOrderDTO.setOrderId(1);
         testOrderDTO.setProductId(1);
-        testOrderDTO.setCustomerId(1);
+        testOrderDTO.setCustomerId(2);
         testOrderDTO.setOrderQuantity(2.0);
         testOrderDTO.setOrderStatus("Ordered");
 
@@ -522,12 +522,15 @@ import com.ftohbackend.service.RatingService;
 
     @Test
     @DisplayName("Should add order successfully")
-     void testAddOrder() throws Exception {
+    void testAddOrder() throws Exception {
         // Arrange
         String expectedResponse = "Order added successfully";
         Order mappedOrder = new Order();
         mappedOrder.setOrderQuantity(2.0);
         mappedOrder.setOrderStatus("Incart");
+        
+        // Mock product service to return product when queried
+        when(productService.getProductById(anyInt())).thenReturn(testProduct);
         
         when(modelMapper.map(any(OrderDTO.class), eq(Order.class))).thenReturn(mappedOrder);
         when(orderService.addOrder(any(Order.class))).thenReturn(expectedResponse);
@@ -540,14 +543,19 @@ import com.ftohbackend.service.RatingService;
                .andExpect(content().string(expectedResponse));
         
         verify(modelMapper, times(1)).map(any(OrderDTO.class), eq(Order.class));
+        verify(productService, times(1)).getProductById(testOrderDTO.getProductId());
         verify(orderService, times(1)).addOrder(any(Order.class));
     }
-    
+
     @Test
     @DisplayName("Should set order status to Incart when adding order")
-     void testAddOrderSetsIncartStatus() throws Exception {
+    void testAddOrderSetsIncartStatus() throws Exception {
         // Arrange
         String expectedResponse = "Order added successfully";
+        
+        // Mock product service to return product when queried
+        when(productService.getProductById(anyInt())).thenReturn(testProduct);
+        
         when(modelMapper.map(any(OrderDTO.class), eq(Order.class))).thenAnswer(invocation -> {
             OrderDTO dto = invocation.getArgument(0);
             Order order = new Order();
@@ -569,12 +577,17 @@ import com.ftohbackend.service.RatingService;
                .content(objectMapper.writeValueAsString(testOrderDTO)))
                .andExpect(status().isOk())
                .andExpect(content().string(expectedResponse));
+        
+        verify(productService, times(1)).getProductById(testOrderDTO.getProductId());
     }
-    
+
     @Test
     @DisplayName("Should handle exception when adding order")
-     void testAddOrderWithException() throws Exception {
+    void testAddOrderWithException() throws Exception {
         // Arrange
+        // Mock product service to return product when queried
+        when(productService.getProductById(anyInt())).thenReturn(testProduct);
+        
         when(modelMapper.map(any(OrderDTO.class), eq(Order.class))).thenReturn(testOrder);
         when(orderService.addOrder(any(Order.class))).thenThrow(new OrderException("Failed to add order"));
 
@@ -585,9 +598,9 @@ import com.ftohbackend.service.RatingService;
                .andExpect(status().isBadRequest());
         
         verify(modelMapper, times(1)).map(any(OrderDTO.class), eq(Order.class));
+        verify(productService, times(1)).getProductById(testOrderDTO.getProductId());
         verify(orderService, times(1)).addOrder(any(Order.class));
     }
-
     @Test
     @DisplayName("Should delete order successfully")
      void testDeleteOrder() throws Exception {
@@ -649,10 +662,9 @@ import com.ftohbackend.service.RatingService;
         
         verify(orderService, times(1)).getOrderInvoice(999);
     }
-    
     @Test
     @DisplayName("Should handle multiple order types in customer orders")
-     void testGetOrdersByCustomerIdWithMultipleOrderTypes() throws Exception {
+    void testGetOrdersByCustomerIdWithMultipleOrderTypes() throws Exception {
         // Arrange
         Order deliveredOrder = new Order();
         deliveredOrder.setOrderId(1);
@@ -667,7 +679,7 @@ import com.ftohbackend.service.RatingService;
         shippedOrder.setCustomer(testCustomer);
         
         List<Order> orders = new ArrayList<>();
-        orders.add(deliveredOrder);
+        orders.add(deliveredOrder);  // Note: deliveredOrder with ID 1 comes first
         orders.add(shippedOrder);
         
         when(orderService.getOrderByCustomerId(anyInt())).thenReturn(orders);
@@ -675,19 +687,19 @@ import com.ftohbackend.service.RatingService;
         when(ratingService.getRatingByOrderId(2)).thenReturn(false);
 
         // Act & Assert
-     mockMvc.perform(get("/order/customer/1")
+        mockMvc.perform(get("/order/customer/1")
                 .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$").isArray())
-               .andExpect(jsonPath("$.length()").value(2))
-               .andExpect(jsonPath("$[0].orderId").value(1))
-               .andExpect(jsonPath("$[0].orderRatingStatus").value("Rated"))
-               .andExpect(jsonPath("$[1].orderId").value(2))
-               .andExpect(jsonPath("$[1].orderRatingStatus").value("Not Rated"))
-               .andReturn();
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].orderId").value(2))
+                .andExpect(jsonPath("$[0].orderRatingStatus").value("Not Rated"))  // Fix here
+                .andExpect(jsonPath("$[1].orderId").value(1))
+                .andExpect(jsonPath("$[1].orderRatingStatus").value("Rated"));
+
         
         verify(orderService, times(1)).getOrderByCustomerId(1);
         verify(ratingService, times(1)).getRatingByOrderId(1);
         verify(ratingService, times(1)).getRatingByOrderId(2);
     }
-}	
+ }

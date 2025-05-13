@@ -404,7 +404,8 @@ public class ProductServiceTest {
         outOfStockProduct.setProductRatingCount(5);
         
         products.add(outOfStockProduct);
-        when(productRepository.findProductsByNameWithSeller("Banana")).thenReturn(products);
+        when(productRepository.findByProductNameContainingIgnoreCase(anyString()))
+        .thenReturn(products);
 
         // Act
         List<Product> result = productService.searchProductsWithSellerDetails("Banana");
@@ -434,15 +435,16 @@ public class ProductServiceTest {
     @Test
     void testSearchProductsWithSellerDetails_NoProductsFound() throws ProductException {
         // Arrange
-        when(productRepository.findProductsByNameWithSeller(anyString())).thenReturn(new ArrayList<>());
+        when(productRepository.findByProductNameContainingIgnoreCase(anyString())).thenReturn(new ArrayList<>());  // Empty list
 
         // Act & Assert
         ProductException exception = assertThrows(ProductException.class, 
             () -> productService.searchProductsWithSellerDetails("Orange"));
-        
-        // Optional: Verify the exception message if needed
+            
+        // Assert exception message
         assertEquals("No products found with name: Orange", exception.getMessage());
     }
+
 
     @Test
     void testGetProduct_Success() throws ProductException {

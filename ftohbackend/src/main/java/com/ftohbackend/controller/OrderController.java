@@ -10,7 +10,7 @@ import com.ftohbackend.model.Order;
 
 public interface OrderController {
 
-	List<Order> getAllOrders() throws Exception;
+	List<CustomerOrderDTO> getAllOrders() throws Exception;
 
 	Order getOrderById(Integer orderId) throws Exception;
 

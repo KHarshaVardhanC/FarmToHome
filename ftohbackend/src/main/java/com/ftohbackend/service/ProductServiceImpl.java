@@ -243,13 +243,22 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	public List<Product> searchProductsWithSellerDetails(String productName) throws ProductException {
-		if (productName == null || productName.trim().isEmpty()) {
-			throw new ProductException("Product name cannot be null or empty.");
-		}
+	    // Check if productName is null or empty
+	    if (productName == null || productName.trim().isEmpty()) {
+	        throw new ProductException("Product name cannot be null or empty.");
+	    }
 
-		return productRepository.findByProductNameContainingIgnoreCase(productName.trim());
-		
+	    // Trim and search for products by name, ignoring case
+	    List<Product> products = productRepository.findByProductNameContainingIgnoreCase(productName.trim());
+
+	    // If no products are found, throw an exception
+	    if (products.isEmpty()) {
+	        throw new ProductException("No products found with name: " + productName);
+	    }
+
+	    return products;
 	}
+
 
 	@Override
 	public Product getProduct(Integer productId) throws ProductException {

@@ -73,8 +73,33 @@ public class OrderControllerImpl implements OrderController {
 
 	@GetMapping("")
 	@Override
-	public List<Order> getAllOrders() throws Exception {
-		return orderService.getAllOrders();
+	public List<CustomerOrderDTO> getAllOrders() throws Exception {
+		List<Order> orders= orderService.getAllOrders();
+		List<CustomerOrderDTO> customerorderdtos=new ArrayList<>();
+		for( Order order: orders)
+		{
+			
+			
+			CustomerOrderDTO customerorderdto=new CustomerOrderDTO();
+			customerorderdto.setOrderId(order.getOrderId());
+			customerorderdto.setProductName(order.getProduct().getProductName());
+			customerorderdto.setCustomerName(order.getCustomer().getCustomerFirstName()+" "+order.getCustomer().getCustomerLastName());
+			customerorderdto.setOrderQuantity(order.getOrderQuantity());
+			customerorderdto.setOrderStatus(order.getOrderStatus());
+			if(order.getReportReason() != null)
+			{
+				customerorderdto.setOrderReportStatus("Reported");
+			}
+			else
+			{
+				customerorderdto.setOrderReportStatus("Not Reported");
+			}
+			customerorderdto.setSellerName(order.getProduct().getSeller().getSellerFirstName()+" "+order.getProduct().getSeller().getSellerLastName());
+			customerorderdtos.add(customerorderdto);
+			
+		}
+		
+		return customerorderdtos;
 	}
 
 //	@GetMapping("/{orderId}") 
@@ -82,7 +107,9 @@ public class OrderControllerImpl implements OrderController {
 	public Order getOrderById(@PathVariable Integer orderId) throws Exception {
 		return orderService.getOrderById(orderId);
 	}
+	
 
+	
 
 	 
     //===============================================================================================================================
@@ -410,7 +437,6 @@ public class OrderControllerImpl implements OrderController {
     }
 
 
-//===================================================================================================================================
 
 
 	@GetMapping("/orders/incart/{customerId}")
