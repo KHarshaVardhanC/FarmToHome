@@ -137,17 +137,33 @@ function CartPage() {
   };
 
 
-  const calculateTotal = (items = cartItems) => {
-  const subtotal = items.reduce((total, item) => total + item.orderPrice, 0);
-  const processingFee = subtotal * 0.03;
-  const total = subtotal + processingFee;
+//   const calculateTotal = (items = cartItems) => {
+//   const subtotal = items.reduce((total, item) => total + item.orderPrice, 0);
+//   const processingFee = subtotal * 0.03;
+//   const total = subtotal + processingFee;
+
+//   return {
+//     subtotal: subtotal.toFixed(2),
+//     processingFee: processingFee.toFixed(2),
+//     total: total.toFixed(2)
+//   };
+// };
+
+
+const calculateTotal = (items) => {
+  const subtotal = items.reduce((sum, item) => sum + parseFloat(item.orderPrice), 0);
+
+  const processingFee = parseFloat((subtotal * 0.03).toFixed(2));
+  const total = parseFloat((subtotal + processingFee).toFixed(2));
 
   return {
     subtotal: subtotal.toFixed(2),
     processingFee: processingFee.toFixed(2),
-    total: total.toFixed(2)
+    total: total.toFixed(2),
+    totalAmountInRupees: total // for payment gateway
   };
 };
+
 
  const { subtotal, processingFee, total } = calculateTotal(cartItems);
 

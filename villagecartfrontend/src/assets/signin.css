@@ -32,21 +32,20 @@
 }
   */
 
-/* Add new right image container */
 .signin-container::after {
-  content: '';
-  position: absolute;
+  content: '';               /* ← generate the pseudo-element! */
+  position: fixed;           /* pin it to the viewport */
   top: 0;
   right: 0;
-  width: 40%;
-  height: 100%;
-  /* background-image: url('https://img.freepik.com/premium-photo/lychee-fruits-pink-background_1151178-3843.jpg');  */
+  width: 40vw;               /* ← use vw, not vh */
+  height: 100vh;
   background-image: url('https://ogden_images.s3.amazonaws.com/www.grit.com/images/2017/04/05204041/AdobeStock_283505441.jpeg');
   background-size: cover;
   background-position: center;
-  z-index: 1;
+  z-index: 0;                 /* push it behind your form (which is z-index: 2) */
   animation: fadeInRight 1s ease-out;
 }
+
 
 
 
