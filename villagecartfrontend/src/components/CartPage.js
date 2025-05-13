@@ -85,7 +85,7 @@ function CartPage() {
       if (!item) return;
       
       // 1. Update backend quantity
-      await axios.put(`http://localhost:8080/order/update/${orderId}/${newQuantity}`);
+      await axios.put(`${API_BASE_URL}/order/update/${orderId}/${newQuantity}`);
       
       // 2. Check if this item has a special offer and if the new quantity qualifies
       const hasOffer = item.minOrderQuantity > 0 && item.discountPercentage > 0;
@@ -99,7 +99,7 @@ function CartPage() {
           : parseFloat(item.originalPrice || item.productPrice);
           
         // Update price in backend
-        await axios.put(`http://localhost:8080/order/updatePrice/${orderId}`, {
+        await axios.put(`${API_BASE_URL}/order/updatePrice/${orderId}`, {
           productPrice: newPrice
         });
         
@@ -483,7 +483,74 @@ const placeOrderAll = async () => {
                   </div>
                 </div>
               </div>
+<<<<<<< HEAD
             ))}
+=======
+
+              <button className="checkout-btn" onClick={handleBuyAll}>Buy All Items</button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {showOrderPopup && (
+        <div className="order-popup-overlay">
+          <div className="order-popup">
+            <button className="close-popup" onClick={() => setShowOrderPopup(false)}>×</button>
+            <h2>Complete Your Order</h2>
+            <div className="order-items-summary">
+              {selectedItem ? (
+                <div className="order-item">
+                  <img src={selectedItem.imageUrl} alt={selectedItem.productName} />
+                  <div className="order-item-details">
+                    <h3>{selectedItem.productName}</h3>
+                    {/* Show the correct quantity type in the order popup */}
+                    <p>Quantity: {selectedItem.orderQuantity.toFixed(1)} {selectedItem.productQuantityType || 'kg'}</p>
+                    <p>Price: ₹{selectedItem.productPrice}/{selectedItem.productQuantityType || 'kg'}</p>
+                  
+                     <p className="order-item-total">Item Total: ₹{selectedItem.orderPrice}</p>
+                    {/* <p>Processing Fee (3% share): ₹{itemProcessingFee.toFixed(2)}</p>
+        <p>
+          <strong>Total (Incl. Fee): ₹{itemFinalTotal.toFixed(2)}</strong>
+        </p> 
+       */}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h3>Order Summary ({cartItems.length} items)</h3>
+                  <div className="order-items-list">
+                    {cartItems.map(item => {
+                      const isEligibleForDiscount = item.orderQuantity >= item.minOrderQuantity;
+                      const finalPrice = isEligibleForDiscount
+                        ? item.productPrice * (1 - item.discountPercentage / 100)
+                        : item.productPrice;
+                      const itemTotal = (finalPrice * item.orderQuantity).toFixed(2);
+
+                      return (
+                        <div key={item.orderId} className="order-summary-item">
+                          <span>{item.productName} ({item.orderQuantity.toFixed(1)} kg)</span>
+                          <span>₹{itemTotal}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="order-total">
+                    <strong>Total: ₹{calculateTotal()}</strong>
+                  </div>
+                </>
+              )}
+            </div>
+
+           <button
+              className="place-order-btn"
+              onClick={selectedItem ? placeOrder : placeOrderAll}
+              disabled={placingOrder}>
+              {placingOrder ? "Processing..." : "Proceed to Payment"}
+            </button>
+
+>>>>>>> 419767ec73cc59fbd51727b2dfb2ec9b70c70d4e
           </div>
           <div className="cart-summary">
             <h2>Order Summary</h2>

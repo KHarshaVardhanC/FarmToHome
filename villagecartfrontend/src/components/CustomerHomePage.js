@@ -236,7 +236,7 @@ function CustomerHomePage() {
             newQuantity >= product.minOrderQuantity && 
             currentQuantity < product.minOrderQuantity) {
           // Also update the price to apply the discount
-          await axios.put(`http://localhost:8080/order/updatePrice/${orderId}`, {
+          await axios.put(`${API_BASE_URL}/order/updatePrice/${orderId}`, {
             productPrice: priceToUse
           });
           
