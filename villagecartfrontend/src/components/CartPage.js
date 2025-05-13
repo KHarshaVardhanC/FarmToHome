@@ -27,7 +27,10 @@ function CartPage() {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const navigate = useNavigate();
-  const customerId = localStorage.getItem('customerId');
+  
+  const customerId = parseInt(localStorage.getItem('customerId'), 10);
+
+  // const customerId = localStorage.getItem('customerId');
  
 
 
@@ -137,17 +140,33 @@ function CartPage() {
   };
 
 
-  const calculateTotal = (items = cartItems) => {
-  const subtotal = items.reduce((total, item) => total + item.orderPrice, 0);
-  const processingFee = subtotal * 0.03;
-  const total = subtotal + processingFee;
+//   const calculateTotal = (items = cartItems) => {
+//   const subtotal = items.reduce((total, item) => total + item.orderPrice, 0);
+//   const processingFee = subtotal * 0.03;
+//   const total = subtotal + processingFee;
+
+//   return {
+//     subtotal: subtotal.toFixed(2),
+//     processingFee: processingFee.toFixed(2),
+//     total: total.toFixed(2)
+//   };
+// };
+
+
+const calculateTotal = (items) => {
+  const subtotal = items.reduce((sum, item) => sum + parseFloat(item.orderPrice), 0);
+
+  const processingFee = parseFloat((subtotal * 0.03).toFixed(2));
+  const total = parseFloat((subtotal + processingFee).toFixed(2));
 
   return {
     subtotal: subtotal.toFixed(2),
     processingFee: processingFee.toFixed(2),
-    total: total.toFixed(2)
+    total: total.toFixed(2),
+    totalAmountInRupees: total // for payment gateway
   };
 };
+
 
  const { subtotal, processingFee, total } = calculateTotal(cartItems);
 
@@ -255,7 +274,7 @@ try {
       amount: totalAmountInPaise, // Use our calculated amount
       currency: currency || "INR",
       order_id: orderId, // Use the existing orderId here
-      name: "Farm To Home",
+      name: "Village Cart",
       description: itemsToOrder.length === 1 
         ? `Order for ${itemsToOrder[0].productName}` 
         : `Order for ${itemsToOrder.length} items`,
