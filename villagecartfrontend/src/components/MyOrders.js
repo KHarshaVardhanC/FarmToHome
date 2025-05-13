@@ -18,8 +18,8 @@ function MyOrders() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportData, setReportData] = useState({
     orderId: '',
-    reason: '',
-    image: null,
+    reportReason: '',  // Fixed property name
+    orderImage: null,
     previewImage: null
   });
 
@@ -105,8 +105,8 @@ function MyOrders() {
   const openReportModal = (orderId) => {
     setReportData({
       orderId: orderId,
-      reason: '',
-      image: null,
+      reportReason: '',  // Fixed property name
+      orderImage: null,
       previewImage: null
     });
     setShowReportModal(true);
@@ -116,14 +116,14 @@ function MyOrders() {
     setShowReportModal(false);
     setReportData({
       orderId: '',
-      reason: '',
-      image: null,
+      reportReason: '',  // Fixed property name
+      orderImage: null,
       previewImage: null
     });
   };
 
   const handleReasonChange = (e) => {
-    setReportData({ ...reportData, reason: e.target.value });
+    setReportData({ ...reportData, reportReason: e.target.value });
   };
 
   const handleImageChange = (e) => {
@@ -131,7 +131,7 @@ function MyOrders() {
     if (file) {
       setReportData({
         ...reportData,
-        image: file,
+        orderImage: file,
         previewImage: URL.createObjectURL(file)
       });
     }
@@ -140,7 +140,7 @@ function MyOrders() {
   const handleSubmitReport = async (e) => {
     e.preventDefault();
 
-    if (!reportData.reason.trim()) {
+    if (!reportData.reportReason.trim()) {
       alert('Please provide a reason for your report');
       return;
     }
@@ -148,13 +148,14 @@ function MyOrders() {
     try {
       const formData = new FormData();
       formData.append('orderId', reportData.orderId);
-      formData.append('reportReason', reportData.reason);
-      if (reportData.image) {
-        formData.append('orderImage', reportData.image);
+      formData.append('reportReason', reportData.reportReason);
+      if (reportData.orderImage) {  // Fixed check to match the property name
+        formData.append('orderImage', reportData.orderImage);
       }
       formData.append('customerId', customerId);
 
-      const response = await axios.post('${API_BASE_URL}/order/report', formData, {
+      // Fixed the API endpoint URL (removed template literal inside a template literal)
+      const response = await axios.post(`${API_BASE_URL}/order/report`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -179,7 +180,7 @@ function MyOrders() {
       }
     } catch (err) {
       console.error('Error submitting report:', err);
-      alert('Failed to submit report. Please try again.');
+      alert(`Failed to submit report: ${err.message}`);  // Added error message to alert
     }
   };
 
@@ -315,7 +316,7 @@ function MyOrders() {
                 <label htmlFor="report-reason">Reason for Report:</label>
                 <textarea
                   id="report-reason"
-                  value={reportData.reason}
+                  value={reportData.reportReason}  // Fixed property name
                   onChange={handleReasonChange}
                   placeholder="Please describe the issue with your order..."
                   required
@@ -323,7 +324,7 @@ function MyOrders() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="report-image">Upload Image (Optional):</label>
+                <label htmlFor="report-image">Upload Image :</label>
                 <input
                   type="file"
                   id="report-image"

@@ -14,6 +14,7 @@ const ViewOrders = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedReportOrder, setSelectedReportOrder] = useState(null);
+ const [openDropdownId, setOpenDropdownId] = useState(null);
 
   const sellerId = localStorage.getItem('sellerId');
 
@@ -176,37 +177,44 @@ const ViewOrders = () => {
                           <span className="badge bg-danger ms-2">Out of Stock</span>
                         )}
                       </td>
-                      <td>
-                        <div className="dropdown">
-                          <button
-                            className={`btn btn-sm badge ${getStatusBadgeClass(order.orderStatus)} dropdown-toggle`}
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            data-bs-auto-close="true"
-                            aria-expanded="false"
-                            disabled={
-                              updatingStatus ||
-                              ['refunded', 'exchanged', 'deliveredtostore'].includes(order.orderStatus?.toLowerCase())
-                            }
-                          >
-                            {order.orderStatus || 'Ordered'}
-                          </button>
-                          {order.orderStatus?.toLowerCase() === 'ordered' && (
-                            <ul className="dropdown-menu" data-bs-popper="static">
-                              {statusOptions.map((status) => (
-                                <li key={status.value}>
-                                  <button
-                                    className="dropdown-item"
-                                    onClick={() => handleStatusUpdate(order.orderId, status.value)}
-                                  >
-                                    {status.label}
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      </td>
+<td style={{ position: 'relative' }}>
+  <button
+    className={`btn btn-sm badge ${getStatusBadgeClass(order.orderStatus)}`}
+    onClick={() =>
+      setOpenDropdownId(openDropdownId === order.orderId ? null : order.orderId)
+    }
+    disabled={
+      updatingStatus ||
+      ['refunded', 'exchanged', 'deliveredtostore'].includes(order.orderStatus?.toLowerCase())
+    }
+  >
+    {order.orderStatus || 'Ordered'}
+  </button>
+
+  {openDropdownId === order.orderId &&
+    order.orderStatus?.toLowerCase() === 'ordered' && (
+      <ul
+        className="dropdown-menu show"
+        style={{ position: 'absolute', top: '100%', zIndex: 999 }}
+      >
+        {statusOptions.map((status) => (
+          <li key={status.value}>
+            <button
+              className="dropdown-item"
+              onClick={() => {
+                handleStatusUpdate(order.orderId, status.value);
+                setOpenDropdownId(null);
+              }}
+            >
+              {status.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    )}
+</td>
+
+
                       <td>
                         {hasReport(order) ? (
                           <button

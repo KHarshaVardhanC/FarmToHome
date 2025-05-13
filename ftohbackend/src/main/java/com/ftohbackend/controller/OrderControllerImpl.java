@@ -102,7 +102,9 @@ public class OrderControllerImpl implements OrderController {
 		return customerorderdtos;
 	}
 
-//	@GetMapping("/{orderId}") 
+
+	
+	//	@GetMapping("/{orderId}") 
 	@Override
 	public Order getOrderById(@PathVariable Integer orderId) throws Exception {
 		return orderService.getOrderById(orderId);
@@ -466,19 +468,20 @@ public class OrderControllerImpl implements OrderController {
 				System.out.println(product.getProductQuantityType());
 				customerorderdto.setDiscountPercentage(product.getDiscountPercentage());
 				customerorderdto.setMinOrderQuantity(product.getMinOrderQuantity());
-				if(product.getMinOrderQuantity() == null)
-				{
-					customerorderdto.setOrderPrice(customerorderdto.getProductPrice()*customerorderdto.getOrderQuantity());
-				}
-				else if(product.getMinOrderQuantity() == 1.0)
-				{
-					customerorderdto.setOrderPrice(((100-customerorderdto.getDiscountPercentage())/100.0) * product.getProductPrice());
-				}
-				else
-				{
-					customerorderdto.setOrderPrice(product.getProductPrice());
-				}
+//				if(product.getMinOrderQuantity() == null)
+//				{
+//					customerorderdto.setOrderPrice(customerorderdto.getProductPrice()*customerorderdto.getOrderQuantity());
+//				}
+//				else if(product.getMinOrderQuantity() <= order.)
+//				{
+//					customerorderdto.setOrderPrice(((100-customerorderdto.getDiscountPercentage())/100.0) * product.getProductPrice());
+//				}
+//				else
+//				{
+//					customerorderdto.setOrderPrice(product.getProductPrice());
+//				}
 				
+				customerorderdto.setOrderPrice(order.getOrderPrice());
 				customerorderdto.setOrderRatingStatus(ratingService.getRatingByOrderId(customerId) + "");
 				
 				Seller seller = product.getSeller();
