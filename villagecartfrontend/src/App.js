@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, BrowserRouter as Router, Routes , useLocation, useNavigate} from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
 import CartPage from "./components/CartPage";
@@ -18,7 +18,7 @@ import OrderInvoice from './pages/OrderInvoice';
 
 import CustomerProfilePage from './components/CustomerProfilePage';
 // import SignUp from './pages/Login/SignUp';
-import CustomerHomePage from './components/CustomerHomePage'; 
+import CustomerHomePage from './components/CustomerHomePage';
 
 
 import RequireAuthSeller from './components/RequireAuth';
@@ -28,6 +28,9 @@ import Rating from './pages/Rating';
 import ViewOrders from './pages/ViewOrders';
 import ViewProducts from './pages/ViewProducts';
 import ViewRatings from './pages/ViewRatings';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 
 // Styles
@@ -36,6 +39,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './assets/styles.css';
 import RequireAuthCustomer from './components/RequireAuthCustomer';
 import RequireAuthAdmin from './components/RequireAuthAdmin';
+import StoreDashboard from './pages/StoreDashboard';
 
 
 function NavigationBlocker() {
@@ -69,7 +73,7 @@ function NavigationBlocker() {
 function App() {
   return (
     <Router>
-       <NavigationBlocker />
+      <NavigationBlocker />
       <div className="App">
         <Routes>
           <Route path="/" element={<MainHome />} />
@@ -105,7 +109,7 @@ function App() {
 
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          
+
           <Route path="/admin" element={
             <RequireAuthAdmin><Admin /></RequireAuthAdmin>
           } />
@@ -147,7 +151,19 @@ function App() {
 
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<SignIn />} />
+          <Route path="/store" element={<StoreDashboard />} />
         </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </div>
     </Router>
   );

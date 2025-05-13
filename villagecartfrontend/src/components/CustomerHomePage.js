@@ -365,9 +365,9 @@ function CustomerHomePage() {
   };
 
   // New function to add the minimum quantity to cart
-  const addMinimumQuantityToCart = () => {
-    if (offerProduct && offerProduct.minOrderQuantity) {
-      addToCart(offerProduct, offerProduct.minOrderQuantity);
+  const AddToCart = () => {
+    if (offerProduct && 1) {
+      addToCart(offerProduct, 1);
       closeOfferModal();
     }
   };
@@ -580,7 +580,7 @@ function CustomerHomePage() {
             </div>
             <div className="offer-actions">
               <button className="close-offer-btn" onClick={closeOfferModal}>No Thanks</button>
-              <button className="add-offer-btn" onClick={addMinimumQuantityToCart}>Add to Cart</button>
+              <button className="add-offer-btn" onClick={AddToCart}>Add to Cart</button>
             </div>
           </div>
         </div>
