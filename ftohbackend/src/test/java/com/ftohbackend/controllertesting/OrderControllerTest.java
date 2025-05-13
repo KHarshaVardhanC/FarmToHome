@@ -532,6 +532,9 @@ import com.ftohbackend.service.RatingService;
         // Mock product service to return product when queried
         when(productService.getProductById(anyInt())).thenReturn(testProduct);
         
+        // Mock customer service to return customer when queried - this was missing
+        when(customerService.getCustomerById(anyInt())).thenReturn(testCustomer);
+        
         when(modelMapper.map(any(OrderDTO.class), eq(Order.class))).thenReturn(mappedOrder);
         when(orderService.addOrder(any(Order.class))).thenReturn(expectedResponse);
 
@@ -544,6 +547,7 @@ import com.ftohbackend.service.RatingService;
         
         verify(modelMapper, times(1)).map(any(OrderDTO.class), eq(Order.class));
         verify(productService, times(1)).getProductById(testOrderDTO.getProductId());
+        verify(customerService, times(1)).getCustomerById(testOrderDTO.getCustomerId());
         verify(orderService, times(1)).addOrder(any(Order.class));
     }
 
@@ -555,6 +559,9 @@ import com.ftohbackend.service.RatingService;
         
         // Mock product service to return product when queried
         when(productService.getProductById(anyInt())).thenReturn(testProduct);
+        
+        // Mock customer service to return customer when queried - this was missing
+        when(customerService.getCustomerById(anyInt())).thenReturn(testCustomer);
         
         when(modelMapper.map(any(OrderDTO.class), eq(Order.class))).thenAnswer(invocation -> {
             OrderDTO dto = invocation.getArgument(0);
@@ -579,6 +586,7 @@ import com.ftohbackend.service.RatingService;
                .andExpect(content().string(expectedResponse));
         
         verify(productService, times(1)).getProductById(testOrderDTO.getProductId());
+        verify(customerService, times(1)).getCustomerById(testOrderDTO.getCustomerId());
     }
 
     @Test
@@ -587,6 +595,9 @@ import com.ftohbackend.service.RatingService;
         // Arrange
         // Mock product service to return product when queried
         when(productService.getProductById(anyInt())).thenReturn(testProduct);
+        
+        // Mock customer service to return customer when queried - this was missing
+        when(customerService.getCustomerById(anyInt())).thenReturn(testCustomer);
         
         when(modelMapper.map(any(OrderDTO.class), eq(Order.class))).thenReturn(testOrder);
         when(orderService.addOrder(any(Order.class))).thenThrow(new OrderException("Failed to add order"));
@@ -599,6 +610,7 @@ import com.ftohbackend.service.RatingService;
         
         verify(modelMapper, times(1)).map(any(OrderDTO.class), eq(Order.class));
         verify(productService, times(1)).getProductById(testOrderDTO.getProductId());
+        verify(customerService, times(1)).getCustomerById(testOrderDTO.getCustomerId());
         verify(orderService, times(1)).addOrder(any(Order.class));
     }
     @Test

@@ -132,9 +132,9 @@ const Store = () => {
                         <span className="fw-bold fs-4 text-primary">Village Cart Store</span>
                     </Link>
                     <div className="d-flex gap-3">
-                        <Link to="/StoreHome" className="btn btn-outline-primary">
+                        <Link to="/login" className="btn btn-outline-primary">
                             <i className="fas fa-arrow-left me-2" />
-                            Back to Dashboard
+                            Back
                         </Link>
                         <ProfileDropdown />
                     </div>

@@ -1,5 +1,3 @@
-
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../assets/signin.css";
@@ -50,6 +48,8 @@ const Signin = () => {
       } else if (formData.userType === "seller") {
         endpoint += "/seller/login";
       } else if (formData.userType === "admin") {
+        endpoint += "/admin/login";
+      } else if (formData.userType === "store") {
         endpoint += "/admin/login";
       }
 
@@ -113,6 +113,10 @@ const Signin = () => {
         localStorage.setItem("adminEmail", data.adminEmail);
         localStorage.setItem("userType", "admin");
         navigate("/admin");
+      } else if (formData.userType === "store") {
+
+        localStorage.setItem("userType", "store");
+        navigate("/store");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -158,8 +162,14 @@ const Signin = () => {
               Seller
             </button>
             <button
-              className={formData.userType === "admin" ? "active" : ""}
-              onClick={() => handleRoleSelect("admin")}
+              className={formData.userType === "store" ? "active" : ""}
+              onClick={() => handleRoleSelect("store")}
+            >
+              Store
+            </button>
+            <button
+              className={formData.userType === "store" ? "active" : ""}
+              onClick={() => handleRoleSelect("store")}
             >
               Admin
             </button>
@@ -245,6 +255,3 @@ const Signin = () => {
 };
 
 export default Signin;
-
-
-
