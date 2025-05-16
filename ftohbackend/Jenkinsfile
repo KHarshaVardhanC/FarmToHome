@@ -34,7 +34,7 @@ pipeline {
             steps {
                 dir('ftohbackend') {
                     bat 'mvn clean package -Dmaven.test.skip=true'
-                    junit 'target/surefire-reports/*.xml'  // Archive test results
+                    // junit 'target/surefire-reports/*.xml'  // Archive test results
                     archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
                 }
             }
