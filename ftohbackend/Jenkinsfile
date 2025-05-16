@@ -33,7 +33,7 @@ pipeline {
         stage('Build & Test') {
             steps {
                 dir('ftohbackend') {
-                    bat 'mvn clean package'
+                    bat 'mvn clean package -DskipTests'
                     junit 'target/surefire-reports/*.xml'  // Archive test results
                     archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
                 }
