@@ -76,24 +76,31 @@ public class OrderControllerImpl implements OrderController {
 		List<CustomerOrderDTO> customerorderdtos = new ArrayList<>();
 		for (Order order : orders) {
 
-			CustomerOrderDTO customerorderdto = new CustomerOrderDTO();
-			customerorderdto.setOrderId(order.getOrderId());
-			customerorderdto.setProductName(order.getProduct().getProductName());
-			customerorderdto.setCustomerName(
-					order.getCustomer().getCustomerFirstName() + " " + order.getCustomer().getCustomerLastName());
-			customerorderdto.setOrderQuantity(order.getOrderQuantity());
-			customerorderdto.setOrderStatus(order.getOrderStatus());
-			if (order.getReportReason() != null) {
-				customerorderdto.setOrderReportStatus("Reported");
-			} else {
-				customerorderdto.setOrderReportStatus("Not Reported");
+			if (!order.getOrderStatus().equalsIgnoreCase("Incart")
+					&& !order.getOrderStatus().equalsIgnoreCase("In cart")) {
+
+				CustomerOrderDTO customerorderdto = new CustomerOrderDTO();
+				customerorderdto.setOrderId(order.getOrderId());
+				customerorderdto.setProductName(order.getProduct().getProductName());
+				customerorderdto.setCustomerName(
+						order.getCustomer().getCustomerFirstName() + " " + order.getCustomer().getCustomerLastName());
+				customerorderdto.setOrderQuantity(order.getOrderQuantity());
+				customerorderdto.setOrderStatus(order.getOrderStatus());
+				if (order.getReportReason() != null) {
+					customerorderdto.setOrderReportStatus("Reported");
+				} else {
+					customerorderdto.setOrderReportStatus("Not Reported");
+				}
+				customerorderdto.setSellerName(order.getProduct().getSeller().getSellerFirstName() + " "
+						+ order.getProduct().getSeller().getSellerLastName());
+				customerorderdtos.add(customerorderdto);
 			}
-			customerorderdto.setSellerName(order.getProduct().getSeller().getSellerFirstName() + " "
-					+ order.getProduct().getSeller().getSellerLastName());
-			customerorderdtos.add(customerorderdto);
 
 		}
 
+		Collections.sort(customerorderdtos, (cod1, cod2)->{
+			return cod2.getOrderId()-cod1.getOrderId();
+		});
 		return customerorderdtos;
 	}
 
@@ -194,6 +201,7 @@ public class OrderControllerImpl implements OrderController {
 
 			}
 		}
+		totalAmount += totalAmount * 0.03;
 
 		RazorpayClient razorpay = new RazorpayClient(razorpayKey, razorpaySecret);
 
@@ -216,13 +224,13 @@ public class OrderControllerImpl implements OrderController {
 		for (Order order : orders) {
 			if (order.getOrderStatus().equalsIgnoreCase("incart")
 					|| order.getOrderStatus().equalsIgnoreCase("in cart")) {
-			order.setRazorpayOrderId(razorpayOrder.get("id"));
-			order.setReceiptId(receiptId);
-			order.setOrderStatus("Ordered");
-			order.setPaymentStatus("CREATED");
-			orderService.updateOrderStatus(order.getOrderId(), "ordered");
+				order.setRazorpayOrderId(razorpayOrder.get("id"));
+				order.setReceiptId(receiptId);
+				order.setOrderStatus("Ordered");
+				order.setPaymentStatus("CREATED");
+				orderService.updateOrderStatus(order.getOrderId(), "ordered");
 
-			orderService.saveOrder(order);
+				orderService.saveOrder(order);
 			}
 
 		}
@@ -233,8 +241,6 @@ public class OrderControllerImpl implements OrderController {
 				orders.stream().map(Order::getOrderId).collect(Collectors.toList())));
 
 	}
-
-	
 
 //    @PostMapping("/payment/verify")
 //    public ResponseEntity<?> verifyPayment(@RequestBody PaymentVerificationRequest payload) {
@@ -385,6 +391,7 @@ public class OrderControllerImpl implements OrderController {
 				System.out.println(product.getProductQuantityType());
 				customerorderdto.setDiscountPercentage(product.getDiscountPercentage());
 				customerorderdto.setMinOrderQuantity(product.getMinOrderQuantity());
+				customerorderdto.setProductQuantity(product.getProductQuantity());
 //				if(product.getMinOrderQuantity() == null)
 //				{
 //					customerorderdto.setOrderPrice(customerorderdto.getProductPrice()*customerorderdto.getOrderQuantity());
@@ -523,27 +530,12 @@ public class OrderControllerImpl implements OrderController {
 	public String addOrder(@RequestBody OrderDTO orderDTO) throws Exception, OrderException {
 		Product product = productService.getProductById(orderDTO.getProductId());
 		Customer customer = customerService.getCustomerById(orderDTO.getCustomerId());
-
-		if (product == null) {
-			throw new Exception("Product not found for ID: " + orderDTO.getProductId());
-		}
-
-		if (customer == null) {
-			throw new Exception("Customer not found for ID: " + orderDTO.getCustomerId());
-		}
-
 		Order order = modelMapper.map(orderDTO, Order.class);
-		order.setProduct(product); // important
-		order.setCustomer(customer); // important
-		if (product.getMinOrderQuantity() == null) {
-			order.setOrderPrice(product.getProductPrice() * order.getOrderQuantity());
-		} else if (product.getMinOrderQuantity() == 1.0) {
-			order.setOrderPrice(((100 - product.getDiscountPercentage()) / 100.0) * product.getProductPrice());
-		} else {
-			order.setOrderPrice(product.getProductPrice());
-		}
-        order.setOrderPrice(product.getProductPrice());
-		order.setOrderStatus("Incart");
+		order.setOrderId(orderDTO.getOrderId());
+		order.setProduct(product);
+		order.setCustomer(customer);
+		order.setOrderQuantity(orderDTO.getOrderQuantity());
+		order.setOrderStatus("incart");
 
 		return orderService.addOrder(order);
 	}

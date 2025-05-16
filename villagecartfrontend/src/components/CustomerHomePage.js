@@ -198,77 +198,83 @@ function CustomerHomePage() {
     const customerId = localStorage.getItem("customerId");
 
     // First check if product already exists in cart
-    const existingCartItems = [...cartItems];
-    const existingItemIndex = existingCartItems.findIndex(
-      item => item.productId === product.productId ||
-        (item.orderId && item.orderStatus &&
-          item.orderStatus.toLowerCase() === "incart" &&
-          parseInt(item.productId) === parseInt(product.productId))
-    );
+    // const existingCartItems = [...cartItems];
+    // const existingItemIndex = existingCartItems.findIndex(
+    //   item => item.productId === product.productId ||
+    //     (item.orderId && item.orderStatus &&
+    //       item.orderStatus.toLowerCase() === "incart" &&
+    //       parseInt(item.productId) === parseInt(product.productId))
+    // );
 
     // Calculate the price to use (apply discount if applicable)
     const priceToUse = hasSpecialOffer(product) && quantity >= product.minOrderQuantity 
       ? parseFloat(calculateDiscountedPrice(product.productPrice, product.discountPercentage))
       : product.productPrice;
 
-    if (existingItemIndex >= 0) {
-      // Product exists in cart - update quantity instead of adding new item
-      try {
-        // Get the existing order ID
-        const orderId = existingCartItems[existingItemIndex].orderId;
-        const currentQuantity = existingCartItems[existingItemIndex].orderQuantity;
-        // For existing items, use the passed quantity parameter
-        const newQuantity = currentQuantity + quantity;
+    // if (existingItemIndex >= 0) {
+    //   // Product exists in cart - update quantity instead of adding new item
+    //   try {
+    //     // Get the existing order ID
+    //     const orderId = existingCartItems[existingItemIndex].orderId;
+    //     const currentQuantity = existingCartItems[existingItemIndex].orderQuantity;
+    //     // For existing items, use the passed quantity parameter
+    //     const newQuantity = currentQuantity + quantity;
 
-        // Check if requested quantity is available
-        if (newQuantity > product.productQuantity) {
-          alert(`Sorry, only ${product.productQuantity} ${product.productQuantityType || 'kg'} available in stock`);
-          return;
-        }
+    //     // Check if requested quantity is available
+    //     if (newQuantity > product.productQuantity) {
+    //       alert(`Sorry, only ${product.productQuantity} ${product.productQuantityType || 'kg'} available in stock`);
+    //       return;
+    //     }
+    //     const orderData = {
+    //     productId: product.productId,
+    //     orderQuantity: initialQuantity, // Always use 1.0 for new items
+    //     customerId: customerId ? parseInt(customerId) : null,
+    //     orderStatus: "INCART",
+    //     productPrice: priceToUse // Use potentially discounted price
+    //   };
 
-        // Update the quantity on the server
-        const response = await axios.put(`${API_BASE_URL}/order/updateQuantity/${orderId}`, {
-          orderQuantity: newQuantity
-        });
+    //     // Update the quantity on the server
+    //     const response = await axios.post(`${API_BASE_URL}/order/add`, orderData);
 
-        // If this update qualifies for a discount that wasn't applied before, update the price too
-        if (hasSpecialOffer(product) && 
-            newQuantity >= product.minOrderQuantity && 
-            currentQuantity < product.minOrderQuantity) {
-          // Also update the price to apply the discount
-          await axios.put(`${API_BASE_URL}/order/updatePrice/${orderId}`, {
-            productPrice: priceToUse
-          });
+    //     // If this update qualifies for a discount that wasn't applied before, update the price too
+    //     if (hasSpecialOffer(product) && 
+    //         newQuantity >= product.minOrderQuantity && 
+    //         currentQuantity < product.minOrderQuantity) {
+    //       // Also update the price to apply the discount
+    //       // await axios.put(`${API_BASE_URL}/order/updatePrice/${orderId}`, {
+    //       //   productPrice: priceToUse
+    //       // });
+    //       await axios.post(`${API_BASE_URL}/order/add`, orderData);
           
-          // Update local cart item with new price
-          existingCartItems[existingItemIndex].productPrice = priceToUse;
-        }
+    //       // Update local cart item with new price
+    //       existingCartItems[existingItemIndex].productPrice = priceToUse;
+    //     }
 
-        if (response.status === 200) {
-          // Update local state
-          const updatedCartItems = [...existingCartItems];
-          updatedCartItems[existingItemIndex].orderQuantity = newQuantity;
-          setCartItems(updatedCartItems);
+    //     if (response.status === 200) {
+    //       // Update local state
+    //       const updatedCartItems = [...existingCartItems];
+    //       updatedCartItems[existingItemIndex].orderQuantity = newQuantity;
+    //       setCartItems(updatedCartItems);
 
-          // Also update localStorage
-          if (!customerId) {
-            localStorage.setItem("cart", JSON.stringify(updatedCartItems));
-          }
+    //       // Also update localStorage
+    //       if (!customerId) {
+    //         localStorage.setItem("cart", JSON.stringify(updatedCartItems));
+    //       }
           
-          // Show success message for quantity update
-          setSuccessMessage(`${product.productName} quantity updated in cart!`);
-          setShowSuccessMessage(true);
-        }
-      } catch (error) {
-        console.error("Error updating cart item quantity:", error);
-      }
-    } else {
+    //       // Show success message for quantity update
+    //       setSuccessMessage(`${product.productName} quantity updated in cart!`);
+    //       setShowSuccessMessage(true);
+    //     }
+    //   } catch (error) {
+    //     console.error("Error updating cart item quantity:", error);
+    //   }
+    // } else {
       // Product doesn't exist in cart - add new item with quantity exactly 1.0
       const orderData = {
         productId: product.productId,
         orderQuantity: initialQuantity, // Always use 1.0 for new items
         customerId: customerId ? parseInt(customerId) : null,
-        orderStatus: "IN_CART",
+        orderStatus: "INCART",
         productPrice: priceToUse // Use potentially discounted price
       };
 
@@ -316,7 +322,7 @@ function CustomerHomePage() {
         console.error("Error adding to cart:", error);
         alert("Error adding item to cart. Please try again.");
       }
-    }
+    
   };
 
   const handleSearch = (term) => {
@@ -502,7 +508,8 @@ function CustomerHomePage() {
                 {hasSpecialOffer(product) ? (
                   <div className="discount-price">
                     <span className="original-price">₹{product.productPrice}/{product.productQuantityType || 'kg'}</span>
-                    <span className="price">₹{calculateDiscountedPrice(product.productPrice, product.discountPercentage)}/{product.productQuantityType || 'kg'}</span>
+                    <span></span><br></br>
+                    <span className="price"> Get at ₹{calculateDiscountedPrice(product.productPrice, product.discountPercentage)}/{product.productQuantityType || 'kg'}</span>
                     <span className="discount-percentage">{product.discountPercentage}% OFF</span>
                   </div>
                 ) : (
@@ -524,6 +531,7 @@ function CustomerHomePage() {
                       e.stopPropagation();
                       if (product.productQuantity > 0) {
                         if (hasSpecialOffer(product)) {
+                          <p>Get at </p>
                           openOfferModal(e, product);
                         } else {
                           addToCart(product);

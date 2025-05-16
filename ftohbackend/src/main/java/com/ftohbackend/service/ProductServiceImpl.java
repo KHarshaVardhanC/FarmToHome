@@ -1,4 +1,4 @@
-  package com.ftohbackend.service;
+package com.ftohbackend.service;
 
 import java.io.IOException;
 import java.util.List;
@@ -85,22 +85,14 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	private String uploadImage(MultipartFile file) throws IOException {
-	    try {
-	        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-	            "transformation", new Transformation()
-	                .width(300)
-	                .height(300)
-	                .crop("fill")
-	                .gravity("auto")
-	                .fetchFormat("webp")
-	                .quality("100")
-	                .dpr("2.0")
-	                .effect("sharpen")
-	        ));
-	        return uploadResult.get("url").toString(); // Transformed image URL
-	    } catch (IOException e) {
-	        throw new IOException("Failed to upload image to Cloudinary", e);
-	    }
+		try {
+			Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+					ObjectUtils.asMap("transformation", new Transformation().width(300).height(300).crop("fill")
+							.gravity("auto").fetchFormat("webp").quality("100").dpr("2.0").effect("sharpen")));
+			return uploadResult.get("url").toString(); // Transformed image URL
+		} catch (IOException e) {
+			throw new IOException("Failed to upload image to Cloudinary", e);
+		}
 	}
 
 //	private ProductDTO convertToDTO(Product product) {
@@ -116,9 +108,7 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public List<Product> getAllProduct() throws ProductException {
 		List<Product> products = productRepository.findAll();
-		if (products.isEmpty()) {
-			throw new ProductException("No products found.");
-		}
+		
 		return products;
 	}
 
@@ -154,8 +144,6 @@ public class ProductServiceImpl implements ProductService {
 		}
 		throw new ProductException("Product with name '" + name + "' not found.");
 	}
-	
-	
 
 	@Override
 	public String updateProduct(Integer productId, Product updatedDetails) throws ProductException, Exception {
@@ -182,12 +170,11 @@ public class ProductServiceImpl implements ProductService {
 		if (updatedDetails.getProductCategory() != null) {
 			product.setProductCategory(updatedDetails.getProductCategory());
 		}
-		
-		if(updatedDetails.getProductQuantityType() != null)
-		{
+
+		if (updatedDetails.getProductQuantityType() != null) {
 			product.setProductQuantityType(updatedDetails.getProductQuantityType());
 		}
-		
+
 		product.setDiscountPercentage(updatedDetails.getDiscountPercentage());
 		product.setMinOrderQuantity(updatedDetails.getMinOrderQuantity());
 
@@ -243,22 +230,21 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	public List<Product> searchProductsWithSellerDetails(String productName) throws ProductException {
-	    // Check if productName is null or empty
-	    if (productName == null || productName.trim().isEmpty()) {
-	        throw new ProductException("Product name cannot be null or empty.");
-	    }
+		// Check if productName is null or empty
+		if (productName == null || productName.trim().isEmpty()) {
+			throw new ProductException("Product name cannot be null or empty.");
+		}
 
-	    // Trim and search for products by name, ignoring case
-	    List<Product> products = productRepository.findByProductNameContainingIgnoreCase(productName.trim());
+		// Trim and search for products by name, ignoring case
+		List<Product> products = productRepository.findByProductNameContainingIgnoreCase(productName.trim());
 
-	    // If no products are found, throw an exception
-	    if (products.isEmpty()) {
-	        throw new ProductException("No products found with name: " + productName);
-	    }
+		// If no products are found, throw an exception
+		if (products.isEmpty()) {
+			throw new ProductException("No products found with name: " + productName);
+		}
 
-	    return products;
+		return products;
 	}
-
 
 	@Override
 	public Product getProduct(Integer productId) throws ProductException {
@@ -279,18 +265,14 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public List<Product> searchProductsWithSellerDetails(ProductCity productCity) throws Exception {
 
-		
-		return productRepository.findByProductNameContainingIgnoreCaseAndSeller_SellerCityIgnoreCase(productCity.getProductName(), productCity.getCityName());
+		return productRepository.findByProductNameContainingIgnoreCaseAndSeller_SellerCityIgnoreCase(
+				productCity.getProductName(), productCity.getCityName());
 	}
-	
+
 	@Override
 	public Product getProductById(Integer productId) throws Exception {
-	    return productRepository.findById(productId)
-	        .orElseThrow(() -> new Exception("Product not found with ID: " + productId));
+		return productRepository.findById(productId)
+				.orElseThrow(() -> new Exception("Product not found with ID: " + productId));
 	}
 
-	
-
 }
-
-

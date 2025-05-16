@@ -115,7 +115,6 @@ export const customerApi = {
 
 export async function getAllProducts() {
   const res = await axios.get(`${API_BASE_URL}/products`); // Fixed BASE_URL to API_BASE_URL
-  console.log("hello");
   return res.data;
 }
 export const getCategoryProducts = async (category) => {

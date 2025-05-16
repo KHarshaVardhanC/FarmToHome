@@ -16,6 +16,7 @@ public class CustomerOrderDTO {
 	String ProductDescription;
 	Double orderQuantity;
 	Double productPrice;
+	Double productQuantity;
 	String orderStatus;
 	String sellerName;
 	String sellerPlace;

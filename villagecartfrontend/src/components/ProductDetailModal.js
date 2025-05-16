@@ -16,6 +16,7 @@ function ProductDetailModal({ product, productDetails, onClose, onAddToCart,cart
   const productDescription = productDetails?.productDescription || product?.productDescription || 'N/A';
   const imageUrl = productDetails?.imageUrl || product?.imageUrl || '';
   const productQuantity = productDetails?.productQuantity || product?.productQuantity || 0;
+  const productQuantityType = productDetails?.productQuantityType || product?.productQuantityType || 0;
 
   // Extract seller information from productDetails
   const sellerName = productDetails?.sellerName || 'N/A';
@@ -117,7 +118,7 @@ function ProductDetailModal({ product, productDetails, onClose, onAddToCart,cart
 
           <div className="product-modal-details">
             <h2>{productName}</h2>
-            <p className="modal-price">₹{productPrice}/kg</p>
+            <p className="modal-price">₹{productPrice}/{productQuantityType}</p>
 
             {/* Rating Summary */}
             <div className="rating-summary">
@@ -131,7 +132,7 @@ function ProductDetailModal({ product, productDetails, onClose, onAddToCart,cart
             {/* Stock information */}
             {productQuantity > 0 ? (
               <p className="product-quantity">
-                {productQuantity < 5 ? `Only ${productQuantity}` : productQuantity} kg available
+                {productQuantity < 5 ? `Only ${productQuantity}` : productQuantity} {productQuantityType} available
               </p>
             ) : (
               <p className="product-quantity out-of-stock">Out of Stock</p>

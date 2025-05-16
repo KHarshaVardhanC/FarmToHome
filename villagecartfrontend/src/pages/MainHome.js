@@ -47,7 +47,7 @@ const MainHome = () => {
             block: 'start'
           });
         }
-      }, 100); // Small delay to ensure state has updated
+      }, 10); // Small delay to ensure state has updated
     } catch (err) {
       console.error('Error fetching category products:', err);
       setCategoryProducts([]);
@@ -87,18 +87,18 @@ const MainHome = () => {
     ],
   };
 
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-    if (!term.trim()) {
-      setFilteredProducts(products);
-      return;
-    }
+  // const handleSearch = (term) => {
+  //   setSearchTerm(term);
+  //   if (!term.trim()) {
+  //     setFilteredProducts(products);
+  //     return;
+  //   }
 
-    const filtered = products.filter((product) =>
-      product.productName.toLowerCase().includes(term.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-  };
+  //   const filtered = products.filter((product) =>
+  //     product.productName.toLowerCase().includes(term.toLowerCase())
+  //   );
+  //   setFilteredProducts(filtered);
+  // };
 
   useEffect(() => {
     const fetchProducts = async () => {
