@@ -13,7 +13,7 @@ import seedsImg from '../images/grains.jpg';
 const MainHome = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]); // Added state for filtered products
-  const [searchTerm, setSearchTerm] = useState(''); // Added state for search term
+  // const [searchTerm, setSearchTerm] = useState(''); // Added state for search term
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);

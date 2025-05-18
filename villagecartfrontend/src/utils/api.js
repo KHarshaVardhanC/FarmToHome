@@ -114,8 +114,15 @@ export const customerApi = {
 };
 
 export async function getAllProducts() {
-  const res = await axios.get(`${API_BASE_URL}/products`); // Fixed BASE_URL to API_BASE_URL
-  return res.data;
+  try {
+    const res = await axios.get(`${API_BASE_URL}/products`);
+
+    // Ensure the return type is always an array
+    return Array.isArray(res.data) ? res.data : [];
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return []; // Return an empty array on error
+  }
 }
 export const getCategoryProducts = async (category) => {
   try {
@@ -128,7 +135,8 @@ export const getCategoryProducts = async (category) => {
     return await response.json();
   } catch (error) {
     console.error('Error fetching category products:', error);
-    throw error;
+    // throw error;
+    return [];
   }
 };
 
